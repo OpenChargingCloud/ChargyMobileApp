@@ -1,0 +1,21 @@
+# Windows
+Thumbs.db
+Desktop.ini
+
+# Mac
+.DS_Store
+
+# Node
+npm-debug.log
+/node_modules
+
+# Cordova
+/platforms
+/plugins
+
+# res
+resources/signing
+
+# The "www" directory needs to be present, otherwise "cordova prepare" after a "git clone ..." will fail!
+www/*
+!www/.gitkeep
