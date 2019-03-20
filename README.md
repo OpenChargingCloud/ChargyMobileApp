@@ -118,7 +118,7 @@ Creating Cordova project for the Android platform:
         Name: ChargyMobileApp
         Activity: MainActivity
         Android target: android-27
-Android project created with cordova-android@7.1.4
+Android project created with cordova-android@8.0.0
 Running npm install...
 Starting webpack bundling and transpilation phase...
 --save flag or autosave detected
@@ -126,16 +126,6 @@ Saving android@latest into config.xml file ...
 ```
 
 #### Local browser
-
-The browser support within the template seems to be old shit (~4.1.0). Just remove it!
-
-```
-$ cordova platform remove browser
-Removing platform browser from config.xml file...
-Removing browser from cordova.platforms array in package.json
-```
-
-And readd the latest version
 
 ```
 $ cordova platform add browser@latest
@@ -145,6 +135,7 @@ Creating Cordova project for cordova-browser:
         Path: E:\Coding\OpenChargingCloud\ChargyMobileApp\platforms\browser
         Name: ChargyMobileApp
 Installing "cordova-plugin-whitelist" for browser
+Android project created with cordova-browser@6.0.0
 Running npm install...
 Starting webpack bundling and transpilation phase...
 --save flag or autosave detected
