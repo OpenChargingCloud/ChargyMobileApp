@@ -8,16 +8,16 @@
         "webpack": "webpack"
     },
     "keywords": [
-      "Chargy",
-      "Transparenzsoftware",
-      "Transparenz",
-      "Eichrecht",
-      "Elektromobilität",
-      "E-Mobilität",
-      "E-Mobility",
-      "Ladestationen",
-      "charging stations",
-      "PTB"
+        "Chargy",
+        "Transparenzsoftware",
+        "Transparenz",
+        "Eichrecht",
+        "Elektromobilität",
+        "E-Mobilität",
+        "E-Mobility",
+        "Ladestationen",
+        "charging stations",
+        "PTB"
     ],
     "author": "Achim Friedland <achim.friedland@graphdefined.com>",
     "license": "AGPL-3.0-or-later",

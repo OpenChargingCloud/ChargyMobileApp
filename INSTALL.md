@@ -2,23 +2,27 @@
 
 ## Install dependencies
 
-Using node.js 11.9.0 (includes npm 6.5.0) for Microsoft Windows: https://nodejs.org/en/download/current/    
+Using node.js 11.10.1 (includes npm 6.7.0) for Microsoft Windows: https://nodejs.org/en/download/current/    
 
 ```
 $ npm install -g cordova
++ cordova@8.1.2
+added 594 packages from 523 contributors in 27.026s
 ```
 
 ```
 $ npm install -g typescript@latest
 C:\Users\ahzf\AppData\Roaming\npm\tsc -> C:\Users\ahzf\AppData\Roaming\npm\node_modules\typescript\bin\tsc
 C:\Users\ahzf\AppData\Roaming\npm\tsserver -> C:\Users\ahzf\AppData\Roaming\npm\node_modules\typescript\bin\tsserver
-+ typescript@3.3.3
++ typescript@3.3.3333
+added 1 package from 1 contributor in 1.738s
 ```
 
 ```
 $ npm install -g sass@latest
-C:\Users\achim\AppData\Roaming\npm\sass -> C:\Users\achim\AppData\Roaming\npm\node_modules\sass\sass.js
-+ sass@1.17.0
+C:\Users\ahzf\AppData\Roaming\npm\sass -> C:\Users\ahzf\AppData\Roaming\npm\node_modules\sass\sass.js
++ sass@1.17.2
+added 135 packages from 106 contributors in 9.64s
 ```
 
 
@@ -197,6 +201,20 @@ Installing "cordova-plugin-camera" for browser
 Installing "cordova-plugin-camera" for ios
 Adding cordova-plugin-camera to package.json
 Saved plugin info for "cordova-plugin-camera" to config.xml
+```
+
+#### cordova-plugin-network-information
+
+This plugin provides an implementation of an old version of the Network Information API. It provides information about the device's cellular and wifi connection, and whether the device has an internet connection.
+
+```
+$ cordova plugin add cordova-plugin-network-information
+Installing "cordova-plugin-network-information" for android
+Android Studio project detected
+Installing "cordova-plugin-network-information" for browser
+Installing "cordova-plugin-network-information" for ios
+Adding cordova-plugin-network-information to package.json
+Saved plugin info for "cordova-plugin-network-information" to config.xml
 ```
 
 
