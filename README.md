@@ -21,8 +21,14 @@ This application is based on [Apache Cordova](https://cordova.apache.org), a cro
 
 Chargy is developed for and tested on the following mobile operating systems:
  - Apple iOS
- - Google Android 
- 
+ - Google Android
+
+The Chargy Mobile project has a sister project called [Chargy Desktop](https://github.com/OpenChargingCloud/ChargyDesktopApp) which provides the same features, but is based on [Electron](https://github.com/electron-userland/electron-forge/tree/5.x) and is available for the following operating systems:
+
+ - Microsoft Windows 10+
+ - Apple Mac OS X
+ - Linux Debian/Ubuntu
+
 
 
 TRuDI: https://www.ptb.de/cms/ptb/fachabteilungen/abt2/fb-23/ag-234/info-center-234/trudi.html
