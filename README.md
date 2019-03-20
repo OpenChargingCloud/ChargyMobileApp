@@ -248,6 +248,8 @@ Saved plugin info for "cordova-plugin-network-information" to config.xml
 
 ### Adding JavaScript modules
 
+Add the line '"moduleResolution": "node",' to /tsconfig.json
+
 #### elliptic
 
 Fast elliptic-curve cryptography in a plain javascript implementation: https://www.npmjs.com/package/elliptic
@@ -257,18 +259,22 @@ $ npm install elliptic
 + elliptic@6.4.1 
 ```
 
+The typescript type definitions can be installed via
+
 ```
 npm install @types/elliptic
 ```
 
 #### moment.js
 
+For displaying user-friendly time and date information we use https://momentjs.com.
+It comes with its own typescript type definitions.
+
 ```
 $ npm install moment --save
 + moment@2.24.0
 ```
 
-Add the line '"moduleResolution": "node",' to /tsconfig.json
 
 
 ### Setting up the .gitignore file
