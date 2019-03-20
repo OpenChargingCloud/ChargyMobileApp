@@ -1,15 +1,26 @@
 {
-    "name": "cloud.charging.open.apps.mobile",
-    "version": "1.0.0",
-    "description": "",
+    "name": "cloud.charging.open.apps.mobile.chargy",
+    "version": "0.1.0",
+    "description": "Transparenzsoftware für die Elektromobilität",
     "main": "index.js",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
         "webpack": "webpack"
     },
-    "keywords": [],
-    "author": "",
-    "license": "Apache-2.0",
+    "keywords": [
+      "Chargy",
+      "Transparenzsoftware",
+      "Transparenz",
+      "Eichrecht",
+      "Elektromobilität",
+      "E-Mobilität",
+      "E-Mobility",
+      "Ladestationen",
+      "charging stations",
+      "PTB"
+    ],
+    "author": "Achim Friedland <achim.friedland@graphdefined.com>",
+    "license": "AGPL-3.0-or-later",
     "devDependencies": {
         "copy-webpack-plugin": "^4.0.1",
         "core-js": "^2.4.1",
