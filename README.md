@@ -266,6 +266,19 @@ $ npm install elliptic
 + elliptic@6.4.1 
 ```
 
+```
+npm install @types/elliptic
+```
+
+#### moment.js
+
+```
+$ npm install moment --save
++ moment@2.24.0
+```
+
+Add the line '"moduleResolution": "node",' to /tsconfig.json
+
 
 ### Setting up the .gitignore file
 

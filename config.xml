@@ -25,13 +25,13 @@
     </platform>
     <hook src="scripts/beforePrepare.js" type="before_prepare" />
     <plugin name="cordova-plugin-device" spec="^2.0.2" />
-    <plugin name="cordova-plugin-geolocation" spec="^4.0.1" />
     <plugin name="cordova-plugin-dialogs" spec="^2.0.1" />
+    <plugin name="cordova-plugin-geolocation" spec="^4.0.1" />
     <plugin name="cordova-plugin-app-version" spec="^0.1.9" />
     <plugin name="cordova-plugin-file" spec="^6.0.1" />
     <plugin name="cordova-plugin-camera" spec="^4.0.3" />
-    <engine name="ios" spec="^5.0.0" />
-    <engine name="android" spec="^7.1.4" />
-    <engine name="browser" spec="^6.0.0" />
     <plugin name="cordova-plugin-network-information" spec="^2.0.1" />
+    <engine name="browser" spec="^6.0.0" />
+    <engine name="ios" spec="^5.0.0" />
+    <engine name="android" spec="^8.0.0" />
 </widget>

@@ -138,6 +138,7 @@ var webpackConfig = {
             { from: "vendor/**/*" },
             { from: "lib/**/*" },
             { from: "html/**/*" },
+            { from: "webfonts/**/*" },
 
             /* any other files you need to copy */
 
