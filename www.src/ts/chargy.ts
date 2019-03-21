@@ -27,13 +27,11 @@ export default class chargy {
 
     inputInfosDiv: HTMLDivElement;
     
-    chargingSessionReportPage:          HTMLDivElement;
+    chargingSessionsPage:               HTMLDivElement;
     chargingSessionReportDiv:           HTMLDivElement;
-    chargingSessionReportbackButtonDiv: HTMLDivElement;
 
     evseTarifInfosPage:                 HTMLDivElement;
     evseTarifInfosDiv:                  HTMLDivElement;
-    evseTarifInfosbackButtonDiv:        HTMLDivElement;
     
     errorTextDiv: HTMLDivElement;
     overlayDiv: HTMLDivElement;
@@ -44,13 +42,11 @@ export default class chargy {
 
     constructor (map: any) {
 
-        this.chargingSessionReportPage      = document.getElementById("chargingSessionReportPage") as HTMLDivElement;
-        this.chargingSessionReportDiv       = this.chargingSessionReportPage.querySelector<HTMLDivElement>("#chargingSessionReport");
-        this.chargingSessionReportbackButtonDiv                  = this.chargingSessionReportPage.querySelector<HTMLDivElement>("#backButton");
+        this.chargingSessionsPage           = document.getElementById("chargingSessionsPage") as HTMLDivElement;
+        this.chargingSessionReportDiv       = this.chargingSessionsPage.querySelector<HTMLDivElement>("#chargingSessionReport");
 
         this.evseTarifInfosPage             = document.getElementById("evseTarifInfosPage") as HTMLDivElement;
         this.evseTarifInfosDiv              = this.evseTarifInfosPage.querySelector<HTMLDivElement>("#evseTarifInfos");
-        this.evseTarifInfosbackButtonDiv    = this.evseTarifInfosPage.querySelector<HTMLDivElement>("#backButton");  
 
         this.map = map;
 
@@ -287,20 +283,20 @@ export default class chargy {
 
             //#region Show CTR infos
 
-            me.chargingSessionReportPage.style.display = "block";
+            me.chargingSessionsPage.style.display = "block";
 
             if (CTR.description) {
-                let descriptionDiv = me.chargingSessionReportPage.querySelector<HTMLDivElement>('#description');
+                let descriptionDiv = me.chargingSessionsPage.querySelector<HTMLDivElement>('#description');
                 descriptionDiv.innerText = me.lib.firstValue(CTR.description);
             }
 
             if (CTR.begin) {
-                let beginDiv = me.chargingSessionReportPage.querySelector<HTMLDivElement>('#begin');
+                let beginDiv = me.chargingSessionsPage.querySelector<HTMLDivElement>('#begin');
                 beginDiv.innerHTML = "von " + me.lib.parseUTC(CTR.begin).format('dddd, D. MMMM YYYY');
             }
 
             if (CTR.end) {
-                let endDiv = me.chargingSessionReportPage.querySelector<HTMLDivElement>('#end');
+                let endDiv = me.chargingSessionsPage.querySelector<HTMLDivElement>('#end');
                 endDiv.innerHTML   = "bis " + me.lib.parseUTC(CTR.end).format('dddd, D. MMMM YYYY');
             }
 
@@ -556,7 +552,7 @@ export default class chargy {
 
             if (CTR.chargingSessions) {
 
-                let chargingSessionsDiv = me.chargingSessionReportPage.querySelector<HTMLDivElement>('#chargingSessions');
+                let chargingSessionsDiv = me.chargingSessionsPage.querySelector<HTMLDivElement>('#chargingSessions');
                 chargingSessionsDiv.innerText = '';
 
                 for (var chargingSession of CTR.chargingSessions)
@@ -1442,9 +1438,6 @@ export default class chargy {
         if (Content == null)
             return;
 
-        // inputInfosDiv.style.display  = 'none';
-        // errorTextDiv.style.display   = 'none';
-
         switch (Content["@context"])
         {
 
@@ -1509,7 +1502,6 @@ export default class chargy {
         {
 
             this.evseTarifInfosPage.style.display = 'block';
-            this.evseTarifInfosbackButtonDiv.style.display = 'block';
             this.evseTarifInfosDiv.innerHTML = "";
 
             if (chargingSession.measurements)

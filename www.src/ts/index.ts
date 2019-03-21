@@ -30,14 +30,14 @@ let appVersion:         string;
 class App {
 
   public importantInfo:               HTMLDivElement;
-  public inputPage: 		              HTMLDivElement;
-  public chargingSessionReportPage:   HTMLDivElement;
+  public startPage: 		              HTMLDivElement;
+  public chargingSessionsPage:        HTMLDivElement;
   public cryptoDetailsPage:           HTMLDivElement;
   public issueTrackerPage:            HTMLDivElement;
   public aboutPage: 		              HTMLDivElement;
   
 
-  x0 = null;
+  chargingSessionsPage_MovementStartX = null;
 
   _chargy: chargy;
 
@@ -57,8 +57,8 @@ class App {
   
   hideAllPages() {
 
-    this.inputPage.style.display                  = 'none';
-    this.chargingSessionReportPage.style.display  = 'none';
+    this.startPage.style.display                  = 'none';
+    this.chargingSessionsPage.style.display       = 'none';
     this.cryptoDetailsPage.style.display          = 'none';
     this.issueTrackerPage.style.display           = 'none';
     this.aboutPage.style.display                  = 'none';
@@ -69,7 +69,7 @@ class App {
 
     this.hideAllPages();
 
-    if (page == this.inputPage)
+    if (page == this.startPage)
     {
 
       //document.getElementById("importantInfo").style.display = "none";
@@ -98,43 +98,42 @@ class App {
 
     var me = this;
     
-    this.importantInfo                = document.getElementById("importantInfo")              as HTMLDivElement;
-    this.inputPage                    = document.getElementById("inputPage")                  as HTMLDivElement;
-    this.chargingSessionReportPage    = document.getElementById("chargingSessionReportPage")  as HTMLDivElement;
-	  this.cryptoDetailsPage            = document.getElementById("cryptoDetailsPage")          as HTMLDivElement;
-	  this.issueTrackerPage             = document.getElementById("issueTrackerPage")           as HTMLDivElement;
-	  this.aboutPage                    = document.getElementById("aboutPage")                  as HTMLDivElement;
+    this.importantInfo              = document.getElementById("importantInfo")              as HTMLDivElement;
+    this.startPage                  = document.getElementById("startPage")                  as HTMLDivElement;
+    this.chargingSessionsPage       = document.getElementById("chargingSessionsPage")       as HTMLDivElement;
+	  this.cryptoDetailsPage          = document.getElementById("cryptoDetailsPage")          as HTMLDivElement;
+	  this.issueTrackerPage           = document.getElementById("issueTrackerPage")           as HTMLDivElement;
+	  this.aboutPage                  = document.getElementById("aboutPage")                  as HTMLDivElement;
     
-    var fileInputButton           = <HTMLButtonElement>   document.getElementById('fileInputButton');
-    var fileInput                 = <HTMLInputElement>    document.getElementById('fileInput');
-    fileInputButton.onclick = function (this: HTMLElement, ev: MouseEvent) {
-      me.importantInfo.style.display              = 'none';
-      me.importantInfo.innerHTML                  = '';
+    var fileInputButton             = <HTMLButtonElement> document.getElementById('fileInputButton');
+    var fileInput                   = <HTMLInputElement>  document.getElementById('fileInput');
+    fileInputButton.onclick         = (event) => {
+      this.importantInfo.style.display  = 'none';
+      this.importantInfo.innerHTML      = '';
+      fileInput.value = '';
       fileInput.click();
     }
-    fileInput.onchange            = this.readFileFromDisk;
+    // @ts-ignore
+    fileInput.onchange              = (event) => this.readAndParseFile(event.target.files[0]);
 
-    var pasteButton               = <HTMLButtonElement>   document.getElementById('pasteButton');
-    pasteButton.onclick           = function (this: HTMLElement, ev: MouseEvent) {
-       me.PasteFile(me);
-    }
+    var pasteButton                 = <HTMLButtonElement> document.getElementById('pasteButton');
+    pasteButton.onclick             = (event) => this.PasteFile();
 
 
-    function unify(e) {
-       return e.changedTouches ? e.changedTouches[0] : e
-    };
 
     function lock(e) {
-      this.x0 = unify(e).clientX;
-      console.log("lock: " + this.x0);
+
+      me.chargingSessionsPage_MovementStartX = (e.changedTouches
+                                                    ? e.changedTouches[0]
+                                                    : e).clientX;
+
     };
 
     function move(e) {
 
-      let dx = unify(e).clientX - this.x0;
-      let s  = Math.sign(dx);
-
-      console.log("move: " + dx + " / " + s);
+      let distance = (e.changedTouches
+                          ? e.changedTouches[0]
+                          : e).clientX - me.chargingSessionsPage_MovementStartX;
 
       if (e.target.id == "map")
         return;
@@ -171,19 +170,19 @@ class App {
 
       }
 
-      if (dx > me.chargingSessionReportPage.clientWidth / 2)
+      if (distance > me.chargingSessionsPage.clientWidth / 2)
       {
-        me.chargingSessionReportPage.style.display = 'none';
+        me.chargingSessionsPage.style.display = 'none';
         e.preventDefault();
       }
 
     };
 
-    this.chargingSessionReportPage.addEventListener('mousedown',  lock, false);
-    this.chargingSessionReportPage.addEventListener('touchstart', lock, false);
+    this.chargingSessionsPage.addEventListener('mousedown',  lock, false);
+    this.chargingSessionsPage.addEventListener('touchstart', lock, false);
 
-    this.chargingSessionReportPage.addEventListener('mouseup',    move, false);
-    this.chargingSessionReportPage.addEventListener('touchend',   move, false);
+    this.chargingSessionsPage.addEventListener('mouseup',    move, false);
+    this.chargingSessionsPage.addEventListener('touchend',   move, false);
 
     var ACCESS_TOKEN = "pk.eyJ1IjoiYWh6ZiIsImEiOiJOdEQtTkcwIn0.Cn0iGqUYyA6KPS8iVjN68w";
 
@@ -201,7 +200,7 @@ class App {
         id: 'ahzf.nc811hb2'
     }).addTo(map);
 
-	  app.showPage(this.inputPage);
+	  app.showPage(this.startPage);
 
     this._chargy = new chargy(map);
     
@@ -237,14 +236,6 @@ class App {
 
   //#endregion
 
-  //#region Process loaded CTR file...
-
-  readFileFromDisk(event) {
-      this.readAndParseFile(event.target.files[0]);
-  }
-
-  //#endregion
-
   //#region Read and parse CTR file
 
   readAndParseFile(file: File) {
@@ -258,7 +249,6 @@ class App {
     reader.onload = function(event) {
         try
         {
-
             me._chargy.detectContentFormat(JSON.parse((event.target as any).result)).
                        catch((exception) => {
                          me.doGlobalError("Fehlerhafter Transparenzdatensatz!", exception);
@@ -281,28 +271,24 @@ class App {
 
   //#region Process pasted CTR file
 
-  PasteFile (me: App) {
+  async PasteFile() {
 
-    (navigator as any).clipboard.readText().then(function (clipText: string) {
+    //@ts-ignore
+    var clipText = await navigator.clipboard.readText();
 
-        me.importantInfo.style.display  = 'none';
-        me.importantInfo.innerHTML      = '';
+    this.importantInfo.style.display  = 'none';
+    this.importantInfo.innerHTML      = '';
 
-        try {
+    try {
 
-          me._chargy.detectContentFormat(JSON.parse(clipText)).
-                     catch((exception) => {
-                       me.doGlobalError("Fehlerhafter Transparenzdatensatz!", exception);
-                     });
+      await this._chargy.detectContentFormat(JSON.parse(clipText));
 
-        }
-        catch(exception) {
-          me.doGlobalError("Fehlerhafter Transparenzdatensatz!", exception);
-        }
+    }
+    catch(exception) {
+      this.doGlobalError("Fehlerhafter Transparenzdatensatz!", exception);
+    }
 
-    });
-
-}
+  }
 
 //#endregion
   
