@@ -346,8 +346,8 @@ export default class chargyLib
 
 
     public CreateDiv(ParentDiv:   HTMLDivElement,
-                    ClassName?:  string,
-                    InnerHTML?:  string) : HTMLDivElement
+                     ClassName?:  string,
+                     InnerHTML?:  string) : HTMLDivElement
     {
 
         let childDiv            = ParentDiv.appendChild(document.createElement('div'));

@@ -21,17 +21,24 @@ import chargy from './chargy';
 
 declare let cordova: any;
 
+var map:     any = "";
+// @ts-ignore
+var leaflet: any = L;
+
 let appVersion:         string;
 
 class App {
 
-  public importantInfo:          HTMLDivElement;
-  public inputPage: 		         HTMLDivElement;
-  public chargingSessionReportPage:  HTMLDivElement;
-  public cryptoDetailsPage:      HTMLDivElement;
-  public issueTrackerPage:       HTMLDivElement;
-  public aboutPage: 		         HTMLDivElement;
+  public importantInfo:               HTMLDivElement;
+  public inputPage: 		              HTMLDivElement;
+  public chargingSessionReportPage:   HTMLDivElement;
+  public cryptoDetailsPage:           HTMLDivElement;
+  public issueTrackerPage:            HTMLDivElement;
+  public aboutPage: 		              HTMLDivElement;
   
+
+  x0 = null;
+
   _chargy: chargy;
 
   start() {
@@ -46,17 +53,15 @@ class App {
         });
     }
 
-    this._chargy = new chargy();
-
   }
   
   hideAllPages() {
 
-    this.inputPage.style.display              = 'none';
+    this.inputPage.style.display                  = 'none';
     this.chargingSessionReportPage.style.display  = 'none';
-    this.cryptoDetailsPage.style.display      = 'none';
-    this.issueTrackerPage.style.display       = 'none';
-    this.aboutPage.style.display              = 'none';
+    this.cryptoDetailsPage.style.display          = 'none';
+    this.issueTrackerPage.style.display           = 'none';
+    this.aboutPage.style.display                  = 'none';
 
   }
   
@@ -115,8 +120,91 @@ class App {
     }
 
 
+    function unify(e) {
+       return e.changedTouches ? e.changedTouches[0] : e
+    };
+
+    function lock(e) {
+      this.x0 = unify(e).clientX;
+      console.log("lock: " + this.x0);
+    };
+
+    function move(e) {
+
+      let dx = unify(e).clientX - this.x0;
+      let s  = Math.sign(dx);
+
+      console.log("move: " + dx + " / " + s);
+
+      if (e.target.id == "map")
+        return;
+      
+      if (e.target.parentElement    != null)
+      {
+
+        if (e.target.parentElement.id == "map")
+          return;
+
+        if (e.target.parentElement.parentElement != null)
+        {
+
+          if (e.target.parentElement.parentElement.id == "map")
+            return;
+
+          if (e.target.parentElement.parentElement.parentElement != null)
+          {
+
+            if (e.target.parentElement.parentElement.parentElement.id == "map")
+              return;
+
+            if (e.target.parentElement.parentElement.parentElement.parentElement != null)
+            {
+
+              if (e.target.parentElement.parentElement.parentElement.parentElement.id == "map")
+                return;
+
+            }
+
+          }
+
+        }
+
+      }
+
+      if (dx > me.chargingSessionReportPage.clientWidth / 2)
+      {
+        me.chargingSessionReportPage.style.display = 'none';
+        e.preventDefault();
+      }
+
+    };
+
+    this.chargingSessionReportPage.addEventListener('mousedown',  lock, false);
+    this.chargingSessionReportPage.addEventListener('touchstart', lock, false);
+
+    this.chargingSessionReportPage.addEventListener('mouseup',    move, false);
+    this.chargingSessionReportPage.addEventListener('touchend',   move, false);
+
+    var ACCESS_TOKEN = "pk.eyJ1IjoiYWh6ZiIsImEiOiJOdEQtTkcwIn0.Cn0iGqUYyA6KPS8iVjN68w";
+
+    //@ts-ignore
+    leaflet = L;
+    //@ts-ignore
+    map     = L.map('map').setView([49.7325504,10.1424442], 13);
+
+    //@ts-ignore
+    L.tileLayer('https://{s}.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=' + ACCESS_TOKEN, {
+        maxZoom: 18,
+        attribution: '<a href="http://openstreetmap.org">OSM</a> contr., ' +
+        '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
+        'Imagery © <a href="http://mapbox.com">Mapbox</a>',
+        id: 'ahzf.nc811hb2'
+    }).addTo(map);
+
 	  app.showPage(this.inputPage);
-	  
+
+    this._chargy = new chargy(map);
+    
   }
   
   onPause() {
@@ -170,7 +258,7 @@ class App {
     reader.onload = function(event) {
         try
         {
-          
+
             me._chargy.detectContentFormat(JSON.parse((event.target as any).result)).
                        catch((exception) => {
                          me.doGlobalError("Fehlerhafter Transparenzdatensatz!", exception);

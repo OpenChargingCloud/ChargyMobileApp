@@ -8,8 +8,8 @@ import * as iface from './chargyInterfaces';
 // import * as crypto from "crypto";
 // import { readSync } from "fs";
 
-var map:     any = "";
-var leaflet: any = "";
+// @ts-ignore
+var leaflet: any = L;
 
 //const { randomBytes } = require('crypto')
 
@@ -27,28 +27,32 @@ export default class chargy {
 
     inputInfosDiv: HTMLDivElement;
     
-    chargingSessionReportPage: HTMLDivElement;
-    chargingSessionReportDiv: HTMLDivElement;
-    backButtonDiv: HTMLDivElement;
+    chargingSessionReportPage:          HTMLDivElement;
+    chargingSessionReportDiv:           HTMLDivElement;
+    chargingSessionReportbackButtonDiv: HTMLDivElement;
 
-    evseTarifInfosPage: HTMLDivElement;
-    evseTarifInfosDiv: HTMLDivElement;
-    evseTarifInfosbackButtonDiv: HTMLDivElement;
+    evseTarifInfosPage:                 HTMLDivElement;
+    evseTarifInfosDiv:                  HTMLDivElement;
+    evseTarifInfosbackButtonDiv:        HTMLDivElement;
     
     errorTextDiv: HTMLDivElement;
     overlayDiv: HTMLDivElement;
 
     readonly lib    = new chargyLib.default();
 
-    constructor () {
+    map: any;
+
+    constructor (map: any) {
 
         this.chargingSessionReportPage      = document.getElementById("chargingSessionReportPage") as HTMLDivElement;
         this.chargingSessionReportDiv       = this.chargingSessionReportPage.querySelector<HTMLDivElement>("#chargingSessionReport");
-        this.backButtonDiv                  = this.chargingSessionReportPage.querySelector<HTMLDivElement>("#backButton");
+        this.chargingSessionReportbackButtonDiv                  = this.chargingSessionReportPage.querySelector<HTMLDivElement>("#backButton");
 
         this.evseTarifInfosPage             = document.getElementById("evseTarifInfosPage") as HTMLDivElement;
         this.evseTarifInfosDiv              = this.evseTarifInfosPage.querySelector<HTMLDivElement>("#evseTarifInfos");
         this.evseTarifInfosbackButtonDiv    = this.evseTarifInfosPage.querySelector<HTMLDivElement>("#backButton");  
+
+        this.map = map;
 
     }
 
@@ -60,7 +64,7 @@ export default class chargy {
 
     //#region GetMethods...
 
-    public GetChargingPool: iface.GetChargingPoolFunc = function (Id: String)
+    public GetChargingPool: iface.GetChargingPoolFunc = (Id: String) => 
     {
 
         for (var chargingPool of this.chargingPools)
@@ -73,7 +77,7 @@ export default class chargy {
 
     }
 
-    public GetChargingStation: iface.GetChargingStationFunc = function (Id: String)
+    public GetChargingStation: iface.GetChargingStationFunc = (Id: String) =>
     {
 
         for (var chargingStation of this.chargingStations)
@@ -86,7 +90,7 @@ export default class chargy {
 
     }
 
-    public GetEVSE: iface.GetEVSEFunc = function (Id: String)
+    public GetEVSE: iface.GetEVSEFunc = (Id: String) =>
     {
 
         for (var evse of this.EVSEs)
@@ -99,7 +103,7 @@ export default class chargy {
 
     }
 
-    public GetMeter: iface.GetMeterFunc = function(Id: string)
+    public GetMeter: iface.GetMeterFunc = (Id: string) =>
     {
     
         for (var meter of this.meters)
@@ -206,7 +210,7 @@ export default class chargy {
                 if (geoLocation != null)
                 {
 
-                    var marker = leaflet.marker([geoLocation.lat, geoLocation.lng], { icon: markerIcon }).addTo(map);
+                    var marker = leaflet.marker([geoLocation.lat, geoLocation.lng], { icon: markerIcon }).addTo(me2.map);
                     markers.push(marker);
 
                     if (minlat > geoLocation.lat)
@@ -281,33 +285,22 @@ export default class chargy {
             var minlng                    = +1000;
             var maxlng                    = -1000;
 
-            //#region Prepare View
-
-            me.chargingSessionReportDiv.style.display  = "flex";
-            me.chargingSessionReportDiv.innerText      = "";
-            me.backButtonDiv.style.display             = "block";
-
-            //#endregion
-
             //#region Show CTR infos
 
+            me.chargingSessionReportPage.style.display = "block";
+
             if (CTR.description) {
-                let descriptionDiv = me.chargingSessionReportDiv.appendChild(document.createElement('div'));
-                descriptionDiv.id  = "description";
+                let descriptionDiv = me.chargingSessionReportPage.querySelector<HTMLDivElement>('#description');
                 descriptionDiv.innerText = me.lib.firstValue(CTR.description);
             }
 
             if (CTR.begin) {
-                let beginDiv = me.chargingSessionReportDiv.appendChild(document.createElement('div'));
-                beginDiv.id        = "begin";
-                beginDiv.className = "defi";
+                let beginDiv = me.chargingSessionReportPage.querySelector<HTMLDivElement>('#begin');
                 beginDiv.innerHTML = "von " + me.lib.parseUTC(CTR.begin).format('dddd, D. MMMM YYYY');
             }
 
             if (CTR.end) {
-                let endDiv = me.chargingSessionReportDiv.appendChild(document.createElement('div'));
-                endDiv.id          = "begin";
-                endDiv.className   = "defi";
+                let endDiv = me.chargingSessionReportPage.querySelector<HTMLDivElement>('#end');
                 endDiv.innerHTML   = "bis " + me.lib.parseUTC(CTR.end).format('dddd, D. MMMM YYYY');
             }
 
@@ -563,16 +556,13 @@ export default class chargy {
 
             if (CTR.chargingSessions) {
 
-                me2.chargingSessionReportPage.style.display = "block";
-                me2.backButtonDiv.style.display = "block";
-
-                let chargingSessionsDiv  = me.chargingSessionReportDiv.appendChild(document.createElement('div'));
-                chargingSessionsDiv.id   = "chargingSessions";
+                let chargingSessionsDiv = me.chargingSessionReportPage.querySelector<HTMLDivElement>('#chargingSessions');
+                chargingSessionsDiv.innerText = '';
 
                 for (var chargingSession of CTR.chargingSessions)
                 {
 
-                    let chargingSessionDiv      = me.lib.CreateDiv(chargingSessionsDiv, "chargingSessions");               
+                    let chargingSessionDiv      = me.lib.CreateDiv(chargingSessionsDiv, "chargingSession");               
                     chargingSession.GUI         = chargingSessionDiv;
                     chargingSessionDiv.onclick  = me.captureChargingSession(chargingSession);
 
@@ -882,11 +872,13 @@ export default class chargy {
                 }
 
                 // If there is only one charging session show its details at once...
-                if (me.chargingSessions.length == 1)
-                    me.chargingSessions[0].GUI.click();
+                // if (me.chargingSessions.length == 1)
+                //     me.chargingSessions[0].GUI.click();
 
-                // map.fitBounds([[minlat, minlng], [maxlat, maxlng]],
-                //     { padding: [40, 40] });
+                me2.map.invalidateSize();
+
+                me2.map.fitBounds([[minlat, minlng], [maxlat, maxlng]],
+                                  { padding: [40, 40] });
 
             }
 
@@ -1476,10 +1468,12 @@ export default class chargy {
     public async showChargingSessionDetails(chargingSession: iface.IChargingSession)
     {
 
+        var me = this;
+
         async function checkMeasurementCrypto(measurementValue: iface.IMeasurementValue)
         {
 
-            var result = await this.verifyMeasurementCryptoDetails(measurementValue);
+            var result = await me.verifyMeasurementCryptoDetails(measurementValue);
 
             switch (result.status)
             {
@@ -1650,8 +1644,7 @@ export default class chargy {
 
                             // Show signature status
                             let verificationStatusDiv        = this.lib.CreateDiv(MeasurementValueDiv, "verificationStatus",
-                                                                         //await checkMeasurementCrypto(measurementValue)
-                                                                         "lalaal!!");
+                                                                         await checkMeasurementCrypto(measurementValue));
 
                             previousValue                    = currentValue;
 
@@ -1675,16 +1668,20 @@ export default class chargy {
     //#region Capture the correct charging session and its context!
 
     public captureChargingSession(cs: iface.IChargingSession) {
+
         var me = this;
+
         return function(this: HTMLDivElement, ev: MouseEvent) {
 
             //#region Highlight the selected charging session...
 
-            var AllChargingSessionsDivs = document.getElementsByClassName("chargingSessions");
-            for(var i=0; i<AllChargingSessionsDivs.length; i++)
-                AllChargingSessionsDivs[i].classList.remove("activated");
+            // var AllChargingSessionsDivs = document.getElementsByClassName("chargingSession");
+            // for(var i=0; i<AllChargingSessionsDivs.length; i++)
+            //     AllChargingSessionsDivs[i].classList.remove("activated");
 
-            this.classList.add("activated");
+            // this.classList.add("activated");
+
+            this.parentElement.parentElement.style.display = 'none';
 
             //#endregion
 
