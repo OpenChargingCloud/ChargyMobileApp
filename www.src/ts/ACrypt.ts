@@ -1,17 +1,18 @@
-///<reference path="chargyInterfaces.ts" />
-///<reference path="chargyLib.ts" />
+import * as chargyLib from './chargyLib';
+import * as iface from './chargyInterfaces';
 
-abstract class ACrypt {
+export abstract class ACrypt {
 
     readonly description:  string;
-    readonly GetMeter:     GetMeterFunc;
+    readonly GetMeter:     iface.GetMeterFunc;
+    readonly lib           = new chargyLib.default();
 
 //    readonly elliptic  = require('elliptic');
     // variable 'crypto' is already defined differently in Google Chrome!
 //    readonly crypt     = require('electron').remote.require('crypto');
 
     constructor(description:  string,
-                GetMeter:     GetMeterFunc) { 
+                GetMeter:     iface.GetMeterFunc) { 
 
         this.description  = description;
         this.GetMeter     = GetMeter;
@@ -26,9 +27,9 @@ abstract class ACrypt {
                bufferDiv:  HTMLDivElement)
     {
 
-        var lineDiv = CreateDiv(infoDiv, "row");
-                      CreateDiv(lineDiv, "id",    id);
-                      CreateDiv(lineDiv, "value", (typeof value === "string" ? value : value.toString()));
+        var lineDiv = this.lib.CreateDiv(infoDiv, "row");
+                      this.lib.CreateDiv(lineDiv, "id",    id);
+                      this.lib.CreateDiv(lineDiv, "value", (typeof value === "string" ? value : value.toString()));
 
         this.AddToBuffer(valueHEX, bufferDiv, lineDiv);
 
@@ -40,7 +41,7 @@ abstract class ACrypt {
                 lineDiv:    HTMLDivElement) 
     {
 
-        let newText = CreateDiv(bufferDiv, "entry", valueHEX);
+        let newText = this.lib.CreateDiv(bufferDiv, "entry", valueHEX);
 
         newText.onmouseenter = function(this: GlobalEventHandlers, ev: MouseEvent) {
             lineDiv.children[0].classList.add("overEntry");
@@ -70,15 +71,15 @@ abstract class ACrypt {
         return hashHex;
     }        
 
-    abstract VerifyChargingSession(chargingSession:   IChargingSession): ISessionCryptoResult;
+    abstract VerifyChargingSession(chargingSession:   iface.IChargingSession): Promise<iface.ISessionCryptoResult>
 
-    abstract SignMeasurement(measurementValue:        IMeasurementValue,
+    abstract SignMeasurement(measurementValue:        iface.IMeasurementValue,
                              privateKey:              any,
-                             publicKey:               any): ICryptoResult;
+                             publicKey:               any): Promise<iface.ICryptoResult>;
 
-    abstract VerifyMeasurement(measurementValue:      IMeasurementValue): ICryptoResult;
+    abstract VerifyMeasurement(measurementValue:      iface.IMeasurementValue): Promise<iface.ICryptoResult>;
 
-    abstract ViewMeasurement(measurementValue:        IMeasurementValue,
+    abstract ViewMeasurement(measurementValue:        iface.IMeasurementValue,
                              introDiv:                HTMLDivElement,
                              infoDiv:                 HTMLDivElement,
                              bufferValue:             HTMLDivElement,

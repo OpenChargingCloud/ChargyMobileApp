@@ -1,22 +1,22 @@
-﻿///<reference path="ACrypt.ts" />
+﻿import * as ACrypt from './ACrypt';
 
-interface GetChargingPoolFunc {
+export interface GetChargingPoolFunc {
     (Id: String): IChargingPool;
 }
 
-interface GetChargingStationFunc {
+export interface GetChargingStationFunc {
     (Id: String): IChargingStation;
 }
 
-interface GetEVSEFunc {
+export interface GetEVSEFunc {
     (Id: String): IEVSE;
 }
 
-interface GetMeterFunc {
+export interface GetMeterFunc {
     (Id: String): IMeter;
 }
 
-interface IChargeTransparencyRecord
+export interface IChargeTransparencyRecord
 {
     "@id":                      string;
     "@context":                 string;
@@ -32,14 +32,14 @@ interface IChargeTransparencyRecord
     mediationServices:          Array<IMediationService>;
 }
 
-interface IContract
+export interface IContract
 {
     "@id":                      string;
     username:                   string;
     email:                      string
 }
 
-interface IChargingStationOperator
+export interface IChargingStationOperator
 {
     "@id":                      string;
     "@context":                 string;
@@ -52,7 +52,7 @@ interface IChargingStationOperator
     tariffs:                    Array<ITariff>;
 }
 
-interface IChargingPool
+export interface IChargingPool
 {
     "@id":                      string;
     "@context":                 string;
@@ -64,7 +64,7 @@ interface IChargingPool
     tariffs:                    Array<ITariff>;
 }
 
-interface IChargingStation
+export interface IChargingStation
 {
     "@id":                      string;
     "@context":                 string;
@@ -82,7 +82,7 @@ interface IChargingStation
     tariffs:                    Array<ITariff>;
 }
 
-interface IEVSE
+export interface IEVSE
 {
     "@id":                      string;
     "@context":                 string;
@@ -93,7 +93,7 @@ interface IEVSE
     tariffs:                    Array<ITariff>;
 }
 
-interface IMeter
+export interface IMeter
 {
     "@id":                      string;
     "@context":                 string;
@@ -108,7 +108,7 @@ interface IMeter
     publicKeys:                 Array<IPublicKey>;
 }
 
-interface IEMobilityProvider
+export interface IEMobilityProvider
 {
     "@id":                      string;
     "@context":                 string;
@@ -116,21 +116,21 @@ interface IEMobilityProvider
     tariffs:                    Array<ITariff>;
 }
 
-interface ITariff
+export interface ITariff
 {
     "@id":                      string;
     "@context":                 string;
     description:                {};
 }
 
-interface IMediationService
+export interface IMediationService
 {
     "@id":                      string;
     "@context":                 string;
     description:                {};
 }
 
-interface IChargingSession
+export interface IChargingSession
 {
     "@id":                      string;
     "@context":                 string;
@@ -149,16 +149,16 @@ interface IChargingSession
     authorizationStop:          IAuthorization;
     product:                    IChargingProduct;
     measurements:               Array<IMeasurement>;
-    method:                     ACrypt;
+    method:                     ACrypt.ACrypt;
 }
 
-interface IChargingProduct
+export interface IChargingProduct
 {
     "@id":                      string;
     "@context":                 string;
 }
 
-interface IAuthorization
+export interface IAuthorization
 {
     "@id":                      string;
     "@context":                 string;
@@ -169,7 +169,7 @@ interface IAuthorization
     eMobilityProvider:          string;
 }
 
-interface IMeasurement
+export interface IMeasurement
 {
     "@context":                 string;
     chargingSession:            IChargingSession;
@@ -185,7 +185,7 @@ interface IMeasurement
     values:                     Array<IMeasurementValue>;
 }
 
-interface ISignatureInfos {
+export interface ISignatureInfos {
     hash:                       string;
     hashTruncation:             number;
     algorithm:                  string;
@@ -193,15 +193,15 @@ interface ISignatureInfos {
     format:                     SignatureFormats;
 }
 
-enum SignatureFormats {
+export enum SignatureFormats {
     DER,
     rs
 }
 
-interface IMeasurementValue
+export interface IMeasurementValue
 {
     measurement:                IMeasurement;
-    method:                     ACrypt;
+    method:                     ACrypt.ACrypt;
     result:                     ICryptoResult;
 
     timestamp:                  string;
@@ -209,17 +209,17 @@ interface IMeasurementValue
     signatures:                 Array<ISignature>;
 }
 
-interface ISessionCryptoResult
+export interface ISessionCryptoResult
 {
     status:                     SessionVerificationResult;
 }
 
-interface ICryptoResult
+export interface ICryptoResult
 {
     status:                     VerificationResult;
 }
 
-interface IPublicKey
+export interface IPublicKey
 {
     algorithm:                  string;
     format:                     string;
@@ -227,7 +227,7 @@ interface IPublicKey
     value:                      string;
 }
 
-interface ISignature
+export interface ISignature
 {
     algorithm:                  string;
     format:                     SignatureFormats;
@@ -235,7 +235,7 @@ interface ISignature
     value?:                     string;
 }
 
-interface IECCSignature extends ISignature
+export interface IECCSignature extends ISignature
 {
     algorithm:                  string;
     format:                     SignatureFormats;
@@ -245,7 +245,7 @@ interface IECCSignature extends ISignature
     s:                          string;
 }
 
-interface IAddress {
+export interface IAddress {
     "@context":         	    string;
     city:                       any;
     street:                     string;
@@ -256,13 +256,13 @@ interface IAddress {
     comment:                    any;
 }
 
-interface IGeoLocation {
+export interface IGeoLocation {
     lat:                        number;
     lng:                        number;
 }
 
 
-enum SessionVerificationResult {
+export enum SessionVerificationResult {
     UnknownSessionFormat,
     PublicKeyNotFound,
     InvalidPublicKey,
@@ -270,7 +270,7 @@ enum SessionVerificationResult {
     ValidSignature
 }
 
-enum VerificationResult {
+export enum VerificationResult {
     UnknownCTRFormat,
     EnergyMeterNotFound,
     PublicKeyNotFound,

@@ -17,6 +17,7 @@
  * under the License.
  */
 import 'core-js';
+import chargy from './chargy';
 
 declare let cordova: any;
 
@@ -24,11 +25,14 @@ let appVersion:         string;
 
 class App {
 
-  public importantInfo:       HTMLDivElement;
-  public inputPage: 		      HTMLDivElement;
-  public cryptoDetailsPage:   HTMLDivElement;
-  public issueTrackerPage:    HTMLDivElement;
-  public aboutPage: 		      HTMLDivElement;
+  public importantInfo:          HTMLDivElement;
+  public inputPage: 		         HTMLDivElement;
+  public chargingSessionReportPage:  HTMLDivElement;
+  public cryptoDetailsPage:      HTMLDivElement;
+  public issueTrackerPage:       HTMLDivElement;
+  public aboutPage: 		         HTMLDivElement;
+  
+  _chargy: chargy;
 
   start() {
 	  
@@ -42,14 +46,17 @@ class App {
         });
     }
 
+    this._chargy = new chargy();
+
   }
   
   hideAllPages() {
 
-    this.inputPage.style.display          = 'none';
-    this.cryptoDetailsPage.style.display  = 'none';
-    this.issueTrackerPage.style.display   = 'none';
-    this.aboutPage.style.display          = 'none';
+    this.inputPage.style.display              = 'none';
+    this.chargingSessionReportPage.style.display  = 'none';
+    this.cryptoDetailsPage.style.display      = 'none';
+    this.issueTrackerPage.style.display       = 'none';
+    this.aboutPage.style.display              = 'none';
 
   }
   
@@ -86,11 +93,12 @@ class App {
 
     var me = this;
     
-    this.importantInfo                = document.getElementById("importantInfo")     as HTMLDivElement;
-    this.inputPage                    = document.getElementById("inputPage")         as HTMLDivElement;
-	  this.cryptoDetailsPage            = document.getElementById("cryptoDetailsPage") as HTMLDivElement;
-	  this.issueTrackerPage             = document.getElementById("issueTrackerPage")  as HTMLDivElement;
-	  this.aboutPage                    = document.getElementById("aboutPage")         as HTMLDivElement;
+    this.importantInfo                = document.getElementById("importantInfo")              as HTMLDivElement;
+    this.inputPage                    = document.getElementById("inputPage")                  as HTMLDivElement;
+    this.chargingSessionReportPage    = document.getElementById("chargingSessionReportPage")  as HTMLDivElement;
+	  this.cryptoDetailsPage            = document.getElementById("cryptoDetailsPage")          as HTMLDivElement;
+	  this.issueTrackerPage             = document.getElementById("issueTrackerPage")           as HTMLDivElement;
+	  this.aboutPage                    = document.getElementById("aboutPage")                  as HTMLDivElement;
     
     var fileInputButton           = <HTMLButtonElement>   document.getElementById('fileInputButton');
     var fileInput                 = <HTMLInputElement>    document.getElementById('fileInput');
@@ -99,7 +107,7 @@ class App {
       me.importantInfo.innerHTML                  = '';
       fileInput.click();
     }
-   // fileInput.onchange            = readFileFromDisk;
+    fileInput.onchange            = this.readFileFromDisk;
 
     var pasteButton               = <HTMLButtonElement>   document.getElementById('pasteButton');
     pasteButton.onclick           = function (this: HTMLElement, ev: MouseEvent) {
@@ -141,22 +149,67 @@ class App {
 
   //#endregion
 
+  //#region Process loaded CTR file...
+
+  readFileFromDisk(event) {
+      this.readAndParseFile(event.target.files[0]);
+  }
+
+  //#endregion
+
+  //#region Read and parse CTR file
+
+  readAndParseFile(file: File) {
+
+    if (!file)
+        return;
+
+    var me = this;
+    var reader = new FileReader();
+
+    reader.onload = function(event) {
+        try
+        {
+          
+            me._chargy.detectContentFormat(JSON.parse((event.target as any).result)).
+                       catch((exception) => {
+                         me.doGlobalError("Fehlerhafter Transparenzdatensatz!", exception);
+                       });
+        }
+        catch (exception) {
+            me.doGlobalError("Fehlerhafter Transparenzdatensatz!", exception);
+        }
+    }
+
+    reader.onerror = function(event) {
+        me.doGlobalError("Fehlerhafter Transparenzdatensatz!", event);
+    }
+
+    reader.readAsText(file, 'UTF-8');
+
+  }
+
+  //#endregion
+
   //#region Process pasted CTR file
 
-  PasteFile (me) {
+  PasteFile (me: App) {
 
     (navigator as any).clipboard.readText().then(function (clipText: string) {
 
         me.importantInfo.style.display  = 'none';
         me.importantInfo.innerHTML      = '';
 
-        try
-        {
-            //detectContentFormat(JSON.parse(clipText));
-            this.doGlobalError("Ein Transparenzdatensatz!");
+        try {
+
+          me._chargy.detectContentFormat(JSON.parse(clipText)).
+                     catch((exception) => {
+                       me.doGlobalError("Fehlerhafter Transparenzdatensatz!", exception);
+                     });
+
         }
-        catch (exception) {
-            me.doGlobalError("Fehlerhafter Transparenzdatensatz!", exception);
+        catch(exception) {
+          me.doGlobalError("Fehlerhafter Transparenzdatensatz!", exception);
         }
 
     });
