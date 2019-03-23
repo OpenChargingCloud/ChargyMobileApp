@@ -34,8 +34,17 @@ The Chargy Mobile project has a sister project called [Chargy Desktop](https://g
 TRuDI: https://www.ptb.de/cms/ptb/fachabteilungen/abt2/fb-23/ag-234/info-center-234/trudi.html
 
 
-## Test the app within the local browser
+## Test the mobile application
+
+In order to test Chargy within the local browser just type...
 
 ```
 $ cordova run browser
 ```
+
+To test it on your Android smart phone please install [Android Studio](https://developer.android.com/studio), attach your smart phone via USB to your computer and run the following command. If you have installed the Android simulators and did not attach your smart phone Chary will be started within the default simulation profile.
+
+```
+$ cordova run android
+```
+
