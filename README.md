@@ -68,13 +68,13 @@ $ cordova prepare
 
 ## Test the mobile application
 
-In order to test Chargy within the local browser just type...
+In order to test Chargy within the local browser just type the following command and Cordova will open the application within your default web browser automatically.
 
 ```
 $ cordova run browser
 ```
 
-To test it on your Android smart phone please install [Android Studio](https://developer.android.com/studio), attach your smart phone via USB to your computer and run the following command. If you have installed the Android simulators and did not attach your smart phone Chary will be started within the default simulation profile.
+To test Chargy on your Android smart phone please install [Android Studio](https://developer.android.com/studio), attach your smart phone via USB to your computer and run the following command. If you have installed the Android simulators and did not attach your smart phone Chary will be started within the default simulator profile.
 
 ```
 $ cordova run android
