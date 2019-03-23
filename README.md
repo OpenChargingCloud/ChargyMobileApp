@@ -273,8 +273,8 @@ $ npm install moment --save
 
 #### leaflet.js
 
-Leaflet is the leading open-source JavaScript library for mobile-friendly interactive maps: https://leafletjs.com
-Note: leaflet comes with additional CSS and image files for markers etc.pp. Those have to be copied into the www.src folder!
+Leaflet is the leading open-source JavaScript library for mobile-friendly interactive maps: https://leafletjs.com    
+**Note**: leaflet comes with additional CSS and image files for markers etc.pp. Those have to be copied into the www.src folder!
 
 ```
 npm install leaflet
