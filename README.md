@@ -3,6 +3,8 @@
 
 Chargy is a transparency software for secure and transparent e-mobility charging processes, as defined by the German "Eichrecht". The software allows you to verify the cryptographic signatures of energy measurements within charge detail records and comes with a couple of useful extentions to simplify the entire process for endusers and operators.
 
+Chargy was inspired by [TRuDI](https://www.ptb.de/cms/ptb/fachabteilungen/abt2/fb-23/ag-234/info-center-234/trudi.html) an Open Source Software project for transparency of smart meters.
+
 
 ## Benefits of Chargy
 
@@ -29,9 +31,6 @@ The Chargy Mobile project has a sister project called [Chargy Desktop](https://g
  - Apple Mac OS X
  - Linux Debian/Ubuntu
 
-
-
-TRuDI: https://www.ptb.de/cms/ptb/fachabteilungen/abt2/fb-23/ag-234/info-center-234/trudi.html
 
 ## Install dependencies
 
