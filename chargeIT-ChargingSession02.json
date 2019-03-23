@@ -100,7 +100,7 @@
     "placeInfo": {
          "evseId": "DE*BDO*74778874*1",
          "address": {
-             "street": "Musterstra√üe 12",
+             "street": "Musterstraﬂe 12",
              "zipCode": "74789",
              "town": "Musterstadt" 
           },

@@ -1,5 +1,11 @@
 ﻿import * as ACrypt from './ACrypt';
 
+export interface IApp {
+    map: any;
+    showPage(page: HTMLDivElement): void;
+    hidePage(page: HTMLDivElement): void;
+}
+
 export interface GetChargingPoolFunc {
     (Id: String): IChargingPool;
 }

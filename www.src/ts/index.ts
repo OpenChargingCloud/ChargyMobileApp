@@ -21,13 +21,12 @@ import chargy from './chargy';
 
 declare let cordova: any;
 
-var map:     any = "";
 // @ts-ignore
 var leaflet: any = L;
 
 let appVersion:         string;
 
-class App {
+export default class App {
 
   public importantInfo:               HTMLDivElement;
   public startPage: 		              HTMLDivElement;
@@ -35,6 +34,8 @@ class App {
   public cryptoDetailsPage:           HTMLDivElement;
   public issueTrackerPage:            HTMLDivElement;
   public aboutPage: 		              HTMLDivElement;
+
+  public map: any;
   
 
   chargingSessionsPage_MovementStartX = null;
@@ -55,17 +56,7 @@ class App {
 
   }
   
-  hideAllPages() {
-
-    this.startPage.style.display                  = 'none';
-    this.chargingSessionsPage.style.display       = 'none';
-    this.cryptoDetailsPage.style.display          = 'none';
-    this.issueTrackerPage.style.display           = 'none';
-    this.aboutPage.style.display                  = 'none';
-
-  }
-  
-  showPage(page) {
+  showPage(page: HTMLDivElement) {
 
     this.hideAllPages();
 
@@ -90,6 +81,20 @@ class App {
     // }
 
     page.style.display = 'block';
+
+  }
+
+  hidePage(page: HTMLDivElement) {
+    page.style.display = 'none';
+  }
+
+  hideAllPages() {
+
+    this.startPage.style.display                  = 'none';
+    this.chargingSessionsPage.style.display       = 'none';
+    this.cryptoDetailsPage.style.display          = 'none';
+    this.issueTrackerPage.style.display           = 'none';
+    this.aboutPage.style.display                  = 'none';
 
   }
   
@@ -120,6 +125,8 @@ class App {
     pasteButton.onclick             = (event) => this.PasteFile();
 
 
+
+    //#region ChargingSessions Back-Swipe
 
     function lock(e) {
 
@@ -172,8 +179,9 @@ class App {
 
       if (distance > me.chargingSessionsPage.clientWidth / 2)
       {
-        me.chargingSessionsPage.style.display = 'none';
+        app.showPage(me.startPage);
         e.preventDefault();
+        e.stopPropagation();
       }
 
     };
@@ -184,12 +192,16 @@ class App {
     this.chargingSessionsPage.addEventListener('mouseup',    move, false);
     this.chargingSessionsPage.addEventListener('touchend',   move, false);
 
+    //#endregion
+
+    //#region Create the map
+
     var ACCESS_TOKEN = "pk.eyJ1IjoiYWh6ZiIsImEiOiJOdEQtTkcwIn0.Cn0iGqUYyA6KPS8iVjN68w";
 
     //@ts-ignore
     leaflet = L;
     //@ts-ignore
-    map     = L.map('map').setView([49.7325504,10.1424442], 13);
+    this.map     = L.map('map').setView([49.7325504,10.1424442], 13);
 
     //@ts-ignore
     L.tileLayer('https://{s}.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=' + ACCESS_TOKEN, {
@@ -198,11 +210,13 @@ class App {
         '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
         'Imagery © <a href="http://mapbox.com">Mapbox</a>',
         id: 'ahzf.nc811hb2'
-    }).addTo(map);
+    }).addTo(this.map);
+
+    //#endregion
+
+    this._chargy = new chargy(this);
 
 	  app.showPage(this.startPage);
-
-    this._chargy = new chargy(map);
     
   }
   

@@ -38,9 +38,9 @@ export default class chargy {
 
     readonly lib    = new chargyLib.default();
 
-    map: any;
+    app: iface.IApp;
 
-    constructor (map: any) {
+    constructor (app: iface.IApp) {
 
         this.chargingSessionsPage           = document.getElementById("chargingSessionsPage") as HTMLDivElement;
         this.chargingSessionReportDiv       = this.chargingSessionsPage.querySelector<HTMLDivElement>("#chargingSessionReport");
@@ -48,7 +48,7 @@ export default class chargy {
         this.evseTarifInfosPage             = document.getElementById("evseTarifInfosPage") as HTMLDivElement;
         this.evseTarifInfosDiv              = this.evseTarifInfosPage.querySelector<HTMLDivElement>("#evseTarifInfos");
 
-        this.map = map;
+        this.app = app;
 
     }
 
@@ -144,7 +144,26 @@ export default class chargy {
         async function processChargeTransparencyRecord(CTR: iface.IChargeTransparencyRecord)
         {
 
+            //#region Data
+
             var me2: chargy = me;
+
+            me.chargingStationOperators  = [];
+            me.chargingPools             = [];
+            me.chargingStations          = [];
+            me.EVSEs                     = [];
+            me.meters                    = [];
+            me.eMobilityProviders        = [];
+            me.mediationServices         = [];
+            me.chargingSessions          = [];
+
+            var markers: any = [];
+            var minlat                    = +1000;
+            var maxlat                    = -1000;
+            var minlng                    = +1000;
+            var maxlng                    = -1000;
+
+            //#endregion
 
             async function checkSessionCrypto(chargingSession: iface.IChargingSession)
             {
@@ -206,7 +225,7 @@ export default class chargy {
                 if (geoLocation != null)
                 {
 
-                    var marker = leaflet.marker([geoLocation.lat, geoLocation.lng], { icon: markerIcon }).addTo(me2.map);
+                    var marker = leaflet.marker([geoLocation.lat, geoLocation.lng], { icon: markerIcon }).addTo(me2.app.map);
                     markers.push(marker);
 
                     if (minlat > geoLocation.lat)
@@ -265,25 +284,9 @@ export default class chargy {
     
             }
 
-
-            me.chargingStationOperators  = [];
-            me.chargingPools             = [];
-            me.chargingStations          = [];
-            me.EVSEs                     = [];
-            me.meters                    = [];
-            me.eMobilityProviders        = [];
-            me.mediationServices         = [];
-            me.chargingSessions          = [];
-
-            var markers: any = [];
-            var minlat                    = +1000;
-            var maxlat                    = -1000;
-            var minlng                    = +1000;
-            var maxlng                    = -1000;
-
             //#region Show CTR infos
 
-            me.chargingSessionsPage.style.display = "block";
+            me.app.showPage(me.chargingSessionsPage);
 
             if (CTR.description) {
                 let descriptionDiv = me.chargingSessionsPage.querySelector<HTMLDivElement>('#description');
@@ -292,12 +295,12 @@ export default class chargy {
 
             if (CTR.begin) {
                 let beginDiv = me.chargingSessionsPage.querySelector<HTMLDivElement>('#begin');
-                beginDiv.innerHTML = "von " + me.lib.parseUTC(CTR.begin).format('dddd, D. MMMM YYYY');
+                beginDiv.innerHTML = me.lib.parseUTC(CTR.begin).format('dddd, D. MMMM YYYY');
             }
 
             if (CTR.end) {
                 let endDiv = me.chargingSessionsPage.querySelector<HTMLDivElement>('#end');
-                endDiv.innerHTML   = "bis " + me.lib.parseUTC(CTR.end).format('dddd, D. MMMM YYYY');
+                endDiv.innerHTML   = me.lib.parseUTC(CTR.end).format('dddd, D. MMMM YYYY');
             }
 
             //#endregion
@@ -871,10 +874,10 @@ export default class chargy {
                 // if (me.chargingSessions.length == 1)
                 //     me.chargingSessions[0].GUI.click();
 
-                me2.map.invalidateSize();
+                me2.app.map.invalidateSize();
 
-                me2.map.fitBounds([[minlat, minlng], [maxlat, maxlng]],
-                                  { padding: [40, 40] });
+                me2.app.map.fitBounds([[minlat, minlng], [maxlat, maxlng]],
+                                      { padding: [40, 40] });
 
             }
 
@@ -1673,11 +1676,15 @@ export default class chargy {
 
             // this.classList.add("activated");
 
-            this.parentElement.parentElement.style.display = 'none';
+            //this.parentElement.parentElement.style.display = 'none';
 
             //#endregion
 
-            me.showChargingSessionDetails(cs);
+            if (me.chargingSessionsPage.style.display != 'none')
+            {
+                me.app.hidePage(me.chargingSessionsPage);
+                me.showChargingSessionDetails(cs);
+            }
 
         };
     }
