@@ -257,11 +257,7 @@ Fast elliptic-curve cryptography in a plain javascript implementation: https://w
 ```
 $ npm install elliptic
 + elliptic@6.4.1 
-```
 
-The typescript type definitions can be installed via
-
-```
 npm install @types/elliptic
 ```
 
@@ -275,6 +271,28 @@ $ npm install moment --save
 + moment@2.24.0
 ```
 
+#### leaflet.js
+
+Leaflet is the leading open-source JavaScript library for mobile-friendly interactive maps: https://leafletjs.com
+Note: leaflet comes with additional CSS and image files for markers etc.pp. Those have to be copied into the www.src folder!
+
+```
+npm install leaflet
++ leaflet@1.4.0
+
+npm install @types/leaflet
++ @types/leaflet@1.4.3
+```
+
+Additional markers for leaflet:
+
+```
+npm install leaflet.awesome-markers
++ leaflet.awesome-markers@2.0.5
+
+npm install @types/leaflet.awesome-markers
++ @types/leaflet.awesome-markers@2.0.24
+```
 
 
 ### Setting up the .gitignore file
