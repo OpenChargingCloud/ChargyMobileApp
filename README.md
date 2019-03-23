@@ -60,8 +60,14 @@ added 135 packages from 106 contributors in 9.64s
 
 
 ## Clone and build this Apache Cordova project
+
+The Chargy git repository can be cloned via the following command.
 ```
 $ git clone https://github.com/OpenChargingCloud/ChargyMobileApp.git
+```
+
+Afterwards all node.js dependencies and additional Open Source Software libraries have to be downloaded.
+```
 $ cordova prepare
 ```
 
