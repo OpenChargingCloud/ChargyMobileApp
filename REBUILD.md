@@ -28,13 +28,6 @@ added 135 packages from 106 contributors in 9.64s
 ```
 
 
-## Clone and build this Apache Cordova project
-```
-$ git clone https://github.com/OpenChargingCloud/ChargyMobileApp.git
-$ cordova prepare
-```
-
-
 ## Create a new Apache Cordova project
 
 Create a new Apache Cordova project with TypeScript and SCSS support: https://www.npmjs.com/package/cordova-template-webpack-ts-scss
