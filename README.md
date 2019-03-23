@@ -39,19 +39,16 @@ Using node.js 11.10.1 (includes npm 6.7.0) for Microsoft Windows: https://nodejs
 ```
 $ npm install -g cordova
 + cordova@8.1.2
-added 594 packages from 523 contributors in 27.026s
 ```
 
 ```
 $ npm install -g typescript@latest
 + typescript@3.3.3333
-added 1 package from 1 contributor in 1.738s
 ```
 
 ```
 $ npm install -g sass@latest
 + sass@1.17.2
-added 135 packages from 106 contributors in 9.64s
 ```
 
 
