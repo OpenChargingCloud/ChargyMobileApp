@@ -242,6 +242,8 @@ Additional markers for leaflet:
 npm install leaflet.awesome-markers
 + leaflet.awesome-markers@2.0.5
 
+Note: These types seem to make the build fail sometimes.
+
 npm install @types/leaflet.awesome-markers
 + @types/leaflet.awesome-markers@2.0.24
 ```
