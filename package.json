@@ -47,7 +47,6 @@
     "dependencies": {
         "@types/elliptic": "^6.4.5",
         "@types/leaflet": "^1.4.3",
-        "@types/leaflet.awesome-markers": "^2.0.24",
         "cordova-android": "^8.0.0",
         "cordova-browser": "^6.0.0",
         "cordova-ios": "^5.0.0",

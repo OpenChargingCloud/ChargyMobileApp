@@ -1,9 +1,19 @@
 ﻿import * as ACrypt from './ACrypt';
 
 export interface IApp {
+
+    importantInfo:               HTMLDivElement;
+    startPage: 		             HTMLDivElement;
+    chargingSessionsPage:        HTMLDivElement;
+    evseTarifInfosPage:          HTMLDivElement;
+    cryptoDetailsPage:           HTMLDivElement;
+    issueTrackerPage:            HTMLDivElement;
+    aboutPage: 		             HTMLDivElement;
+
     map: any;
     showPage(page: HTMLDivElement): void;
     hidePage(page: HTMLDivElement): void;
+    
 }
 
 export interface GetChargingPoolFunc {

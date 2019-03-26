@@ -25,12 +25,14 @@ export default class chargy {
     chargingSessions          = new Array<iface.IChargingSession>();
 
 
+    private chargingSessionsPage_MovementStartX: any;
+
     inputInfosDiv: HTMLDivElement;
     
-    chargingSessionsPage:               HTMLDivElement;
+    // chargingSessionsPage:               HTMLDivElement;
     chargingSessionReportDiv:           HTMLDivElement;
 
-    evseTarifInfosPage:                 HTMLDivElement;
+    // evseTarifInfosPage:                 HTMLDivElement;
     evseTarifInfosDiv:                  HTMLDivElement;
     
     errorTextDiv: HTMLDivElement;
@@ -42,13 +44,9 @@ export default class chargy {
 
     constructor (app: iface.IApp) {
 
-        this.chargingSessionsPage           = document.getElementById("chargingSessionsPage") as HTMLDivElement;
-        this.chargingSessionReportDiv       = this.chargingSessionsPage.querySelector<HTMLDivElement>("#chargingSessionReport");
-
-        this.evseTarifInfosPage             = document.getElementById("evseTarifInfosPage") as HTMLDivElement;
-        this.evseTarifInfosDiv              = this.evseTarifInfosPage.querySelector<HTMLDivElement>("#evseTarifInfos");
-
-        this.app = app;
+        this.app                       = app;
+        this.chargingSessionReportDiv  = this.app.chargingSessionsPage.querySelector<HTMLDivElement>("#chargingSessionReport");
+        this.evseTarifInfosDiv         = this.app.evseTarifInfosPage.querySelector<HTMLDivElement>("#evseTarifInfos");
 
     }
 
@@ -286,20 +284,20 @@ export default class chargy {
 
             //#region Show CTR infos
 
-            me.app.showPage(me.chargingSessionsPage);
+            me.app.showPage(me.app.chargingSessionsPage);
 
             if (CTR.description) {
-                let descriptionDiv = me.chargingSessionsPage.querySelector<HTMLDivElement>('#description');
+                let descriptionDiv = me.app.chargingSessionsPage.querySelector<HTMLDivElement>('#description');
                 descriptionDiv.innerText = me.lib.firstValue(CTR.description);
             }
 
             if (CTR.begin) {
-                let beginDiv = me.chargingSessionsPage.querySelector<HTMLDivElement>('#begin');
+                let beginDiv = me.app.chargingSessionsPage.querySelector<HTMLDivElement>('#begin');
                 beginDiv.innerHTML = me.lib.parseUTC(CTR.begin).format('dddd, D. MMMM YYYY');
             }
 
             if (CTR.end) {
-                let endDiv = me.chargingSessionsPage.querySelector<HTMLDivElement>('#end');
+                let endDiv = me.app.chargingSessionsPage.querySelector<HTMLDivElement>('#end');
                 endDiv.innerHTML   = me.lib.parseUTC(CTR.end).format('dddd, D. MMMM YYYY');
             }
 
@@ -555,7 +553,7 @@ export default class chargy {
 
             if (CTR.chargingSessions) {
 
-                let chargingSessionsDiv = me.chargingSessionsPage.querySelector<HTMLDivElement>('#chargingSessions');
+                let chargingSessionsDiv = me.app.chargingSessionsPage.querySelector<HTMLDivElement>('#chargingSessions');
                 chargingSessionsDiv.innerText = '';
 
                 for (var chargingSession of CTR.chargingSessions)
@@ -1504,7 +1502,7 @@ export default class chargy {
         try
         {
 
-            this.evseTarifInfosPage.style.display = 'block';
+            this.app.evseTarifInfosPage.style.display = 'block';
             this.evseTarifInfosDiv.innerHTML = "";
 
             if (chargingSession.measurements)
@@ -1546,24 +1544,24 @@ export default class chargy {
 
                     //#region Show meter infos
 
-                    let MeterDiv                    = this.lib.CreateDiv(MeasurementInfoDiv,  "meter");
+                    let MeterDiv                    = this.lib.CreateDiv(MeasurementInfoDiv,       "meter");
 
-                    let MeterIdDiv                  = this.lib.CreateDiv(MeterDiv,            "meterId",
+                    let MeterIdDiv                  = this.lib.CreateDiv(MeterDiv,                 "meterId",
                                                                 meter != null ? "Seriennummer" : "Zählerseriennummer");
 
-                    let MeterIdValueDiv             = this.lib.CreateDiv(MeterDiv,            "meterIdValue",
+                    let MeterIdValueDiv             = this.lib.CreateDiv(MeterDiv,                 "meterIdValue",
                                                                 measurement.energyMeterId);
 
                     //#endregion
 
                     //#region Show measurement infos
 
-                    let MeasurementDiv               = this.lib.CreateDiv(MeasurementInfoDiv, "measurement");
+                    let MeasurementDiv               = this.lib.CreateDiv(MeasurementInfoDiv,      "measurement");
 
-                    let MeasurementIdDiv             = this.lib.CreateDiv(MeasurementDiv,     "measurementId",
+                    let MeasurementIdDiv             = this.lib.CreateDiv(MeasurementDiv,          "measurementId",
                                                                  "Messung");
 
-                    let MeasurementIdValueDiv        = this.lib.CreateDiv(MeasurementDiv,     "measurementIdValue",
+                    let MeasurementIdValueDiv        = this.lib.CreateDiv(MeasurementDiv,          "measurementIdValue",
                                                                  measurement.name + " (OBIS: " + this.lib.parseOBIS(measurement.obis) + ")");
 
                     //#endregion
@@ -1680,9 +1678,9 @@ export default class chargy {
 
             //#endregion
 
-            if (me.chargingSessionsPage.style.display != 'none')
+            if (me.app.chargingSessionsPage.style.display != 'none')
             {
-                me.app.hidePage(me.chargingSessionsPage);
+                me.app.hidePage(me.app.chargingSessionsPage);
                 me.showChargingSessionDetails(cs);
             }
 
@@ -1789,8 +1787,9 @@ export default class chargy {
         }
 
 
-        let introDiv       = this.overlayDiv.querySelector('#intro')      as HTMLDivElement;
-        let cryptoDataDiv  = this.overlayDiv.querySelector('#cryptoData') as HTMLDivElement;
+        let cryptoDiv      = this.app.cryptoDetailsPage;
+        let introDiv       = cryptoDiv.querySelector('#intro')      as HTMLDivElement;
+        let cryptoDataDiv  = cryptoDiv.querySelector('#cryptoData') as HTMLDivElement;
 
         if (measurementValue             == null ||
             measurementValue.measurement == null)
@@ -1801,13 +1800,13 @@ export default class chargy {
 
         //#region Show data and result on overlay        
 
-        this.overlayDiv.style.display = 'block';
+        cryptoDiv.style.display = 'block';
 
-        let bufferValue               = this.overlayDiv.querySelector('#buffer .value')             as HTMLDivElement;
-        let hashedBufferValue         = this.overlayDiv.querySelector('#hashedBuffer .value')       as HTMLDivElement;
-        let publicKeyValue            = this.overlayDiv.querySelector('#publicKey .value')          as HTMLDivElement;
-        let signatureExpectedValue    = this.overlayDiv.querySelector('#signatureExpected .value')  as HTMLDivElement;
-        let signatureCheckValue       = this.overlayDiv.querySelector('#signatureCheck')            as HTMLDivElement;
+        let bufferValue               = cryptoDiv.querySelector('#buffer .value')             as HTMLDivElement;
+        let hashedBufferValue         = cryptoDiv.querySelector('#hashedBuffer .value')       as HTMLDivElement;
+        let publicKeyValue            = cryptoDiv.querySelector('#publicKey .value')          as HTMLDivElement;
+        let signatureExpectedValue    = cryptoDiv.querySelector('#signatureExpected .value')  as HTMLDivElement;
+        let signatureCheckValue       = cryptoDiv.querySelector('#signatureCheck')            as HTMLDivElement;
 
         //introDiv.innerHTML                = '';
         cryptoDataDiv.innerHTML           = '';

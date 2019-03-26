@@ -31,6 +31,7 @@ export default class App {
   public importantInfo:               HTMLDivElement;
   public startPage: 		              HTMLDivElement;
   public chargingSessionsPage:        HTMLDivElement;
+  public evseTarifInfosPage:          HTMLDivElement;
   public cryptoDetailsPage:           HTMLDivElement;
   public issueTrackerPage:            HTMLDivElement;
   public aboutPage: 		              HTMLDivElement;
@@ -38,7 +39,9 @@ export default class App {
   public map: any;
   
 
-  chargingSessionsPage_MovementStartX = null;
+  chargingSessionsPage_MovementStartX  = null;
+  evseTarifInfosPage_MovementStartX    = null;
+  cryptoDetailsPage_MovementStartX     = null;
 
   _chargy: chargy;
 
@@ -92,6 +95,7 @@ export default class App {
 
     this.startPage.style.display                  = 'none';
     this.chargingSessionsPage.style.display       = 'none';
+    this.evseTarifInfosPage.style.display         = 'none';
     this.cryptoDetailsPage.style.display          = 'none';
     this.issueTrackerPage.style.display           = 'none';
     this.aboutPage.style.display                  = 'none';
@@ -106,6 +110,7 @@ export default class App {
     this.importantInfo              = document.getElementById("importantInfo")              as HTMLDivElement;
     this.startPage                  = document.getElementById("startPage")                  as HTMLDivElement;
     this.chargingSessionsPage       = document.getElementById("chargingSessionsPage")       as HTMLDivElement;
+	  this.evseTarifInfosPage         = document.getElementById("evseTarifInfosPage")         as HTMLDivElement;
 	  this.cryptoDetailsPage          = document.getElementById("cryptoDetailsPage")          as HTMLDivElement;
 	  this.issueTrackerPage           = document.getElementById("issueTrackerPage")           as HTMLDivElement;
 	  this.aboutPage                  = document.getElementById("aboutPage")                  as HTMLDivElement;
@@ -128,7 +133,7 @@ export default class App {
 
     //#region ChargingSessions Back-Swipe
 
-    function lock(e) {
+    function getChargingSessionsPagePosition(e) {
 
       me.chargingSessionsPage_MovementStartX = (e.changedTouches
                                                     ? e.changedTouches[0]
@@ -136,7 +141,7 @@ export default class App {
 
     };
 
-    function move(e) {
+    function releaseChargingSessionsPagePosition(e) {
 
       let distance = (e.changedTouches
                           ? e.changedTouches[0]
@@ -186,31 +191,168 @@ export default class App {
 
     };
 
-    this.chargingSessionsPage.addEventListener('mousedown',  lock, false);
-    this.chargingSessionsPage.addEventListener('touchstart', lock, false);
+    this.chargingSessionsPage.addEventListener('mousedown',  getChargingSessionsPagePosition,     false);
+    this.chargingSessionsPage.addEventListener('touchstart', getChargingSessionsPagePosition,     false);
 
-    this.chargingSessionsPage.addEventListener('mouseup',    move, false);
-    this.chargingSessionsPage.addEventListener('touchend',   move, false);
+    this.chargingSessionsPage.addEventListener('mouseup',    releaseChargingSessionsPagePosition, false);
+    this.chargingSessionsPage.addEventListener('touchend',   releaseChargingSessionsPagePosition, false);
 
     //#endregion
 
+    //#region evseTarifInfosPage Back-Swipe
+
+    function getEvseTarifInfosPagePosition(e) {
+
+        me.evseTarifInfosPage_MovementStartX = (e.changedTouches
+                                                    ? e.changedTouches[0]
+                                                    : e).clientX;
+
+    };
+
+    function releaseEvseTarifInfosPagePosition(e) {
+
+        let distance = (e.changedTouches
+                          ? e.changedTouches[0]
+                          : e).clientX - me.evseTarifInfosPage_MovementStartX;
+
+        if (e.target.id == "map")
+        return;
+        
+        if (e.target.parentElement    != null)
+        {
+
+        if (e.target.parentElement.id == "map")
+            return;
+
+        if (e.target.parentElement.parentElement != null)
+        {
+
+            if (e.target.parentElement.parentElement.id == "map")
+            return;
+
+            if (e.target.parentElement.parentElement.parentElement != null)
+            {
+
+            if (e.target.parentElement.parentElement.parentElement.id == "map")
+                return;
+
+            if (e.target.parentElement.parentElement.parentElement.parentElement != null)
+            {
+
+                if (e.target.parentElement.parentElement.parentElement.parentElement.id == "map")
+                return;
+
+            }
+
+            }
+
+          }
+
+        }
+
+        if (distance > me.evseTarifInfosPage.clientWidth / 2)
+        {
+            app.showPage(app.chargingSessionsPage);
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+    };    
+
+    this.evseTarifInfosPage.addEventListener('mousedown',  getEvseTarifInfosPagePosition,     false);
+    this.evseTarifInfosPage.addEventListener('touchstart', getEvseTarifInfosPagePosition,     false);
+
+    this.evseTarifInfosPage.addEventListener('mouseup',    releaseEvseTarifInfosPagePosition, false);
+    this.evseTarifInfosPage.addEventListener('touchend',   releaseEvseTarifInfosPagePosition, false);
+
+    //#endregion
+    
+    //#region cryptoDetailsPage Back-Swipe
+
+    function getCryptoDetailsPagePosition(e) {
+
+        me.cryptoDetailsPage_MovementStartX = (e.changedTouches
+                                                    ? e.changedTouches[0]
+                                                    : e).clientX;
+
+    };
+
+    function releaseCryptoDetailsPagePosition(e) {
+
+        let distance = (e.changedTouches
+                          ? e.changedTouches[0]
+                          : e).clientX - me.cryptoDetailsPage_MovementStartX;
+
+        if (e.target.id == "map")
+        return;
+        
+        if (e.target.parentElement    != null)
+        {
+
+        if (e.target.parentElement.id == "map")
+            return;
+
+        if (e.target.parentElement.parentElement != null)
+        {
+
+            if (e.target.parentElement.parentElement.id == "map")
+            return;
+
+            if (e.target.parentElement.parentElement.parentElement != null)
+            {
+
+            if (e.target.parentElement.parentElement.parentElement.id == "map")
+                return;
+
+            if (e.target.parentElement.parentElement.parentElement.parentElement != null)
+            {
+
+                if (e.target.parentElement.parentElement.parentElement.parentElement.id == "map")
+                return;
+
+            }
+
+            }
+
+          }
+
+        }
+
+        if (distance > me.cryptoDetailsPage.clientWidth / 2)
+        {
+            app.showPage(app.evseTarifInfosPage);
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+    };    
+
+    this.cryptoDetailsPage.addEventListener('mousedown',  getCryptoDetailsPagePosition,     false);
+    this.cryptoDetailsPage.addEventListener('touchstart', getCryptoDetailsPagePosition,     false);
+
+    this.cryptoDetailsPage.addEventListener('mouseup',    releaseCryptoDetailsPagePosition, false);
+    this.cryptoDetailsPage.addEventListener('touchend',   releaseCryptoDetailsPagePosition, false);
+
+    //#endregion
+  
+
     //#region Create the map
 
-    var ACCESS_TOKEN = "pk.eyJ1IjoiYWh6ZiIsImEiOiJOdEQtTkcwIn0.Cn0iGqUYyA6KPS8iVjN68w";
+    //@ts-ignore
+    leaflet  = L;
 
     //@ts-ignore
-    leaflet = L;
-    //@ts-ignore
-    this.map     = L.map('map').setView([49.7325504,10.1424442], 13);
+    this.map = L.map('map').setView([49.7325504,10.1424442], 13);
 
     //@ts-ignore
-    L.tileLayer('https://{s}.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=' + ACCESS_TOKEN, {
-        maxZoom: 18,
-        attribution: '<a href="http://openstreetmap.org">OSM</a> contr., ' +
-        '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
-        'Imagery © <a href="http://mapbox.com">Mapbox</a>',
-        id: 'ahzf.nc811hb2'
-    }).addTo(this.map);
+    L.tileLayer('https://{s}.tiles.mapbox.com/v4/ahzf.nc811hb2/{z}/{x}/{y}.png?' +
+                'access_token=pk.eyJ1IjoiYWh6ZiIsImEiOiJOdEQtTkcwIn0.Cn0iGqUYyA6KPS8iVjN68w',
+                {
+                  maxZoom:      18,
+                  attribution:  '<a href="http://openstreetmap.org">OSM</a> contr., ' +
+                                '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
+                                'Imagery © <a href="http://mapbox.com">Mapbox</a>'
+                }).addTo(this.map);
 
     //#endregion
 

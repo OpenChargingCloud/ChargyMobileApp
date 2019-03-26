@@ -566,6 +566,140 @@ body {
 
   }
 
+  #cryptoDetailsPage {
+
+    padding:      0 3vw;
+    min-width:    94vw;
+
+    #intro {
+        margin:                 5px 0px 10px 0px;
+    }
+
+    #cryptoData {
+
+        display:                table;
+
+        .row {
+
+            display:                table-row;
+
+            .id {
+                display:                table-cell;
+                padding:                2px 10px 1px 8px;
+                font-weight:            bold;
+                border-radius:          4px 0px 0px 4px;
+            }
+
+            .value {
+                display:                table-cell;
+                padding:                2px 8px 1px 0px;
+                border-radius:          0px 4px 4px 0px;
+            }
+
+        }
+
+        .row:hover {
+            background-color:       orange;        
+        }
+
+        .overEntry {
+            background-color:       orange;        
+        }
+
+    }
+
+    .infoblock {
+
+        font-family:            monospace;
+        font-size:              110%;
+        margin-bottom:          10px;
+
+        .description {
+            position:               relative;
+            top:                    8px;
+            left:                   10px;
+            background-color:     #98c3e2;
+            display:                inline-block;
+            padding:                1px 6px;
+            border-radius:          4px;
+            font-size:              85%;
+        }
+
+        .value {
+            overflow-wrap:          break-word;
+            background-color:     #E1E1E1;
+            border-radius:          4px;
+            padding:                11px 10px 6px 10px;
+            width:                  calc(100% - 20px);
+            word-break:             break-all;
+        }
+        
+    }
+
+    #buffer {
+        .value {
+
+            .entry {
+                display:            inline-block;
+                padding:            1px 4px 1px 4px;
+                margin-left:        -4px;
+                border-radius:      4px;
+            }
+
+            .entry:hover {
+                background-color: orange;        
+            }
+
+            .overEntry {
+                background-color: orange;        
+            }
+
+        }
+    }
+
+    #signatureCheck {
+
+        margin-top:     30px;
+        text-align:     center;
+        font-size:      150%;
+        
+        i {
+            font-size: 200%;
+        }
+
+        #description {
+            position: relative;
+            line-height: 200%;
+        }
+
+    }
+
+    #overlayOkButtonDiv {
+
+        position:       absolute;
+        left:           0px;
+        bottom:         0px;
+
+        #overlayOkButton {
+            border:             0;
+            background-color:   transparent;
+            color:            #b6d8f1;
+            margin:             4px;
+            font-size:          280%;
+        }
+
+        #overlayOkButton:hover {
+            color:            #519ad0;
+        }
+
+    }
+
+  }
+
+  #overlayText::-webkit-scrollbar {
+    display:            none;
+  }
+
 }
 
 body::-webkit-scrollbar {
