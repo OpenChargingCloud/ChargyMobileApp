@@ -4,6 +4,7 @@ body {
     background-color:   #ffffff;
 
     #logo {
+        background-color:   #ffffff;
         background-image:     url('../img/charge-it-logo.jpg');
         background-size:      contain;
         background-repeat:    no-repeat;
@@ -42,7 +43,26 @@ body {
             }
 
         }
-        
+
     }
-    
+
+    #cryptoDetailsPage {
+
+        // #cryptData {
+        //     .row {
+        //         .id {
+        //             padding: 3px 10px 3px 8px;
+        //         }
+        //     }
+        // }
+
+        .infoblock {
+            .description {
+                //background-color: #fba92a;
+                background-color: #acb8e3;
+            }
+        }
+
+    }
+
 }

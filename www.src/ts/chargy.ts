@@ -1,4 +1,5 @@
 import * as moment from 'moment';
+import * as chart from 'chart.js'
 import GDFCrypt01 from './GDFCrypt01';
 import EMHCrypt01 from './EMHCrypt01';
 import * as chargyLib from './chargyLib';
@@ -32,8 +33,8 @@ export default class chargy {
     // chargingSessionsPage:               HTMLDivElement;
     chargingSessionReportDiv:           HTMLDivElement;
 
-    // evseTarifInfosPage:                 HTMLDivElement;
-    evseTarifInfosDiv:                  HTMLDivElement;
+    // measurementInfosPage:                 HTMLDivElement;
+    //chartDiv:                           HTMLCanvasElement;
     
     errorTextDiv: HTMLDivElement;
     overlayDiv: HTMLDivElement;
@@ -46,7 +47,8 @@ export default class chargy {
 
         this.app                       = app;
         this.chargingSessionReportDiv  = this.app.chargingSessionsPage.querySelector<HTMLDivElement>("#chargingSessionReport");
-        this.evseTarifInfosDiv         = this.app.evseTarifInfosPage.querySelector<HTMLDivElement>("#evseTarifInfos");
+        //this.chartDiv                  = this.app.measurementInfosPage.querySelector<HTMLCanvasElement>("#chart");
+        //this.evseTarifInfosDiv         = this.app.measurementInfosPage.querySelector<HTMLDivElement>("#evseTarifInfos");
 
     }
 
@@ -1502,17 +1504,20 @@ export default class chargy {
         try
         {
 
-            this.app.evseTarifInfosPage.style.display = 'block';
-            this.evseTarifInfosDiv.innerHTML = "";
+            //this.app.measurementInfosPage.style.display = 'block';
+            //this.evseTarifInfosDiv.innerHTML = "";
 
             if (chargingSession.measurements)
             {
+
                 for (var measurement of chargingSession.measurements)
                 {
 
                     measurement.chargingSession      = chargingSession;
 
-                    let MeasurementInfoDiv           = this.lib.CreateDiv(this.evseTarifInfosDiv,  "measurementInfo");
+                    let MeasurementInfoDiv           = this.app.measurementInfosPage.querySelector<HTMLDivElement>('#measurementInfo');
+                    MeasurementInfoDiv.innerHTML     = '';
+                    // this.lib.CreateDiv(this.evseTarifInfosDiv,  "measurementInfo");
 
                     //#region Show meter vendor infos
 
@@ -1571,9 +1576,59 @@ export default class chargy {
                     if (measurement.values && measurement.values.length > 0)
                     {
 
-                        //<i class="far fa-chart-bar"></i>
+                        //#region Configure chart
 
-                        let MeasurementValuesDiv         = this.lib.CreateDiv(this.evseTarifInfosDiv, "measurementValues");
+                        let chartDiv           = this.app.measurementInfosPage.querySelector<HTMLCanvasElement>('#chart');
+
+                        let chartData:chart.ChartConfiguration = {
+                            type: 'bar',
+                            data: {
+                                labels: ['Red', 'Blue'], //, 'Yellow', 'Green', 'Purple', 'Orange'],
+                                datasets: [{
+                                    label: 'kWh',
+                                    data: [],
+                                    backgroundColor: [
+                                         'rgba(255, 99, 132, 0.2)',
+                                         'rgba(54, 162, 235, 0.2)'
+                                    //     'rgba(255, 206, 86, 0.2)',
+                                    //     'rgba(75, 192, 192, 0.2)',
+                                    //     'rgba(153, 102, 255, 0.2)',
+                                    //     'rgba(255, 159, 64, 0.2)'
+                                    ],
+                                    // borderColor: [
+                                    //     'rgba(255, 99, 132, 1)',
+                                    //     'rgba(54, 162, 235, 1)',
+                                    //     'rgba(255, 206, 86, 1)',
+                                    //     'rgba(75, 192, 192, 1)',
+                                    //     'rgba(153, 102, 255, 1)',
+                                    //     'rgba(255, 159, 64, 1)'
+                                    // ],
+                                    borderWidth: 1
+                                }]
+                            },
+                            options: {
+                                title: {
+                                    display: false
+                                },
+                                legend: {
+                                    display: false
+                                },
+                                scales: {
+                                    yAxes: [{
+                                        ticks: {
+                                            beginAtZero: true
+                                        }
+                                    }]
+                                }
+                            }
+                        };
+
+                        //#endregion                        
+
+                        let MeasurementValuesDiv         = this.app.measurementInfosPage.querySelector<HTMLDivElement>('#measurementValues');
+                        MeasurementValuesDiv.innerHTML   = '';
+
+                        let chartValues                  = [];
                         let previousValue                = 0;
 
                         for (var measurementValue of measurement.values)
@@ -1626,10 +1681,15 @@ export default class chargy {
 
                             }
 
+                            let value                        = (previousValue > 0
+                                                                    ? parseFloat((currentValue - previousValue).toFixed(10))
+                                                                    : 0);
+
+                            //let aa = chartData.data.datasets[0].data;
+                            chartValues.push(value);
+
                             let valueDiv                     = this.lib.CreateDiv(MeasurementValueDiv, "value",
-                                                                         "+" + (previousValue > 0
-                                                                                    ? parseFloat((currentValue - previousValue).toFixed(10))
-                                                                                    : "0"));
+                                                                         "+" + value);
 
                             let unitDiv                      = this.lib.CreateDiv(MeasurementValueDiv, "unit",
                                                                          "kWh");
@@ -1643,11 +1703,15 @@ export default class chargy {
 
                         }
 
+                        chartData.data.datasets[0].data = chartValues;
+                        var myChart = new chart.Chart(chartDiv, chartData);
+    
                     }
 
                     //#endregion
 
                 }
+;
             }
 
         }
@@ -1680,7 +1744,7 @@ export default class chargy {
 
             if (me.app.chargingSessionsPage.style.display != 'none')
             {
-                me.app.hidePage(me.app.chargingSessionsPage);
+                me.app.showPage(me.app.measurementInfosPage);
                 me.showChargingSessionDetails(cs);
             }
 

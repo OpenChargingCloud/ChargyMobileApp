@@ -31,7 +31,7 @@ export default class App {
   public importantInfo:               HTMLDivElement;
   public startPage: 		              HTMLDivElement;
   public chargingSessionsPage:        HTMLDivElement;
-  public evseTarifInfosPage:          HTMLDivElement;
+  public measurementInfosPage:        HTMLDivElement;
   public cryptoDetailsPage:           HTMLDivElement;
   public issueTrackerPage:            HTMLDivElement;
   public aboutPage: 		              HTMLDivElement;
@@ -40,7 +40,7 @@ export default class App {
   
 
   chargingSessionsPage_MovementStartX  = null;
-  evseTarifInfosPage_MovementStartX    = null;
+  measurementInfosPage_MovementStartX  = null;
   cryptoDetailsPage_MovementStartX     = null;
 
   _chargy: chargy;
@@ -95,7 +95,7 @@ export default class App {
 
     this.startPage.style.display                  = 'none';
     this.chargingSessionsPage.style.display       = 'none';
-    this.evseTarifInfosPage.style.display         = 'none';
+    this.measurementInfosPage.style.display         = 'none';
     this.cryptoDetailsPage.style.display          = 'none';
     this.issueTrackerPage.style.display           = 'none';
     this.aboutPage.style.display                  = 'none';
@@ -110,7 +110,7 @@ export default class App {
     this.importantInfo              = document.getElementById("importantInfo")              as HTMLDivElement;
     this.startPage                  = document.getElementById("startPage")                  as HTMLDivElement;
     this.chargingSessionsPage       = document.getElementById("chargingSessionsPage")       as HTMLDivElement;
-	  this.evseTarifInfosPage         = document.getElementById("evseTarifInfosPage")         as HTMLDivElement;
+	  this.measurementInfosPage         = document.getElementById("measurementInfosPage")         as HTMLDivElement;
 	  this.cryptoDetailsPage          = document.getElementById("cryptoDetailsPage")          as HTMLDivElement;
 	  this.issueTrackerPage           = document.getElementById("issueTrackerPage")           as HTMLDivElement;
 	  this.aboutPage                  = document.getElementById("aboutPage")                  as HTMLDivElement;
@@ -199,21 +199,21 @@ export default class App {
 
     //#endregion
 
-    //#region evseTarifInfosPage Back-Swipe
+    //#region measurementInfosPage Back-Swipe
 
-    function getEvseTarifInfosPagePosition(e) {
+    function getmeasurementInfosPagePosition(e) {
 
-        me.evseTarifInfosPage_MovementStartX = (e.changedTouches
+        me.measurementInfosPage_MovementStartX = (e.changedTouches
                                                     ? e.changedTouches[0]
                                                     : e).clientX;
 
     };
 
-    function releaseEvseTarifInfosPagePosition(e) {
+    function releasemeasurementInfosPagePosition(e) {
 
         let distance = (e.changedTouches
                           ? e.changedTouches[0]
-                          : e).clientX - me.evseTarifInfosPage_MovementStartX;
+                          : e).clientX - me.measurementInfosPage_MovementStartX;
 
         if (e.target.id == "map")
         return;
@@ -250,7 +250,7 @@ export default class App {
 
         }
 
-        if (distance > me.evseTarifInfosPage.clientWidth / 2)
+        if (distance > me.measurementInfosPage.clientWidth / 2)
         {
             app.showPage(app.chargingSessionsPage);
             e.preventDefault();
@@ -259,11 +259,11 @@ export default class App {
 
     };    
 
-    this.evseTarifInfosPage.addEventListener('mousedown',  getEvseTarifInfosPagePosition,     false);
-    this.evseTarifInfosPage.addEventListener('touchstart', getEvseTarifInfosPagePosition,     false);
+    this.measurementInfosPage.addEventListener('mousedown',  getmeasurementInfosPagePosition,     false);
+    this.measurementInfosPage.addEventListener('touchstart', getmeasurementInfosPagePosition,     false);
 
-    this.evseTarifInfosPage.addEventListener('mouseup',    releaseEvseTarifInfosPagePosition, false);
-    this.evseTarifInfosPage.addEventListener('touchend',   releaseEvseTarifInfosPagePosition, false);
+    this.measurementInfosPage.addEventListener('mouseup',    releasemeasurementInfosPagePosition, false);
+    this.measurementInfosPage.addEventListener('touchend',   releasemeasurementInfosPagePosition, false);
 
     //#endregion
     
@@ -320,7 +320,7 @@ export default class App {
 
         if (distance > me.cryptoDetailsPage.clientWidth / 2)
         {
-            app.showPage(app.evseTarifInfosPage);
+            app.showPage(app.measurementInfosPage);
             e.preventDefault();
             e.stopPropagation();
         }

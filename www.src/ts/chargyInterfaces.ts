@@ -5,7 +5,7 @@ export interface IApp {
     importantInfo:               HTMLDivElement;
     startPage: 		             HTMLDivElement;
     chargingSessionsPage:        HTMLDivElement;
-    evseTarifInfosPage:          HTMLDivElement;
+    measurementInfosPage:        HTMLDivElement;
     cryptoDetailsPage:           HTMLDivElement;
     issueTrackerPage:            HTMLDivElement;
     aboutPage: 		             HTMLDivElement;
