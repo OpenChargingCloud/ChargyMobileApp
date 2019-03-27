@@ -1,0 +1,48 @@
+
+body {
+
+    background-color:   #ffffff;
+
+    #logo {
+        background-image:     url('../img/charge-it-logo.jpg');
+        background-size:      contain;
+        background-repeat:    no-repeat;
+        padding-left:         42vw;
+        line-height:          8.2vh;
+        font-size:            130%;
+    }
+
+    #logo::before {
+        content:              "Transparenz-Software";
+    }
+
+    .pages {
+        background-color:   #F8F8F8;
+    }
+
+
+    #startPage {
+
+        #buttonsDiv {
+
+            button {
+
+                color:      #8d420e;
+                background:   linear-gradient(to right, rgb(236,96,57) 0%,rgb(247,164,36) 100%);
+
+                i {
+                    font-size: 220%;
+                }
+
+            }
+
+            button:hover {
+                color:      #fff2ee;
+                background:   linear-gradient(to right, rgb(239, 136, 107) 0%,rgb(240, 182, 93) 100%);
+            }
+
+        }
+        
+    }
+    
+}

@@ -245,201 +245,208 @@ body {
 
   #chargingSessionsPage {
 
-    #infos {
+    #aa {
 
-      padding:        4px 8px 6px 8px;
+      display:          flex;
+      flex-direction:   column;
+      height:           92vh;
 
-      #description {
-        padding:        0px 0px 5px 0px;
-        font-size:      125%;
-        font-weight:    bold;
-      }
+      #infos {
 
-      #dates {
+        padding:        4px 8px 6px 8px;
 
-        display:        table;
-        margin-left:    8px;
+        #description {
+          padding:        0px 0px 5px 0px;
+          font-size:      125%;
+          font-weight:    bold;
+        }
 
-        .row {
+        #dates {
 
-          display:        table-row;
+          display:        table;
+          margin-left:    8px;
 
-          .key {
-            display:        table-cell;
-          }
+          .row {
 
-          .value {
-            display:        table-cell;
-            padding-left:   5px;
+            display:        table-row;
+
+            .key {
+              display:        table-cell;
+            }
+
+            .value {
+              display:        table-cell;
+              padding-left:   5px;
+            }
+
           }
 
         }
 
       }
 
-    }
+      #map {
+        
+        width:      100%;
+        height:     35vh;
 
-    #map {
-      
-      width:      100%;
-      height:     25vh;
-
-      .leaflet-control-zoom {
-        display:    none;
-      }
-
-      .leaflet-control-attribution {
-        font-size:  65%;
-      }
-
-    }
-
-    #chargingSessions {
-
-      flex-direction:     column;
-      margin:             4px 4px 4px 4px;
-      height:             calc(55vh);
-      overflow-y:         scroll;
-      scrollbar-width:    none;  // Firefox only!
-
-      .chargingSession {
-
-        position:           relative;
-        margin-bottom:      4px;
-        padding:            7px 11px;
-        background-color:   #d6e4ef;
-        border-radius:      6px;
-        cursor:             pointer;
-
-        .date {
-          font-weight:        bold;
-          padding:            2px 0px 3px 0px;
-          font-size:          105%;
+        .leaflet-control-zoom {
+          display:    none;
         }
 
-        .table {
-
-          display:            table;
-          border-collapse:    separate;
-          border-spacing:     4px 4px;
-
-          .productInfos {
-
-            display:            table-row;
-
-            .icon {
-              display:            table-cell;
-              padding:            6px 7px 0px 3px;
-              text-align:         center;
-              vertical-align:     top;
-            }
-
-            .text {
-              display:            table-cell;
-              color:            #212427;
-            }
-
-          }
-
-          .authorizationStart {
-
-            display:            table-row;
-
-            .icon {
-              display:            table-cell;
-              padding:            0px 7px 0px 3px;
-              text-align:         center;
-              vertical-align:     top;
-            }
-
-            .id {
-              display:            table-cell;
-            }
-
-          }
-
-          .authorizationStop {
-
-            display:            table-row;
-
-            .icon {
-              display:            table-cell;
-              padding:            0px 7px 0px 3px;
-              text-align:         center;
-              vertical-align:     top;
-            }
-
-            .id {
-              display:            table-cell;
-            }
-
-          }
-
-          .locationInfos {
-
-            display:            table-row;
-
-            .icon {
-              display:            table-cell;
-              padding:            6px 7px 0px 3px;
-              text-align:         center;
-              vertical-align:     top;
-            }
-
-            .text {
-              display:            table-cell;
-              color:            #212427;
-            }                                        
-
-          }
-
-        }
-
-        .verificationStatus {
-
-          position:           absolute;
-          top:                14px;
-          right:              12px;
-          text-align:         center;
-          font-size:          80%;
-
-          i {
-            display:            block;
-            font-size:          250%;
-            padding-bottom:     4px;
-          }
-
+        .leaflet-control-attribution {
+          font-size:  65%;
         }
 
       }
 
-      .chargingSession:hover {
-          background-color:       #b8cdde;
+      #chargingSessions {
+
+        flex-direction:     column;
+        margin:             4px 4px 4px 4px;
+        //height:             calc(55vh);
+        overflow-y:         scroll;
+        scrollbar-width:    none;  // Firefox only!
+
+        .chargingSession {
+
+          position:           relative;
+          margin-bottom:      4px;
+          padding:            7px 11px;
+          background-color:   #d6e4ef;
+          border-radius:      6px;
+          cursor:             pointer;
+
+          .date {
+            font-weight:        bold;
+            padding:            2px 0px 3px 0px;
+            font-size:          105%;
+          }
+
+          .table {
+
+            display:            table;
+            border-collapse:    separate;
+            border-spacing:     4px 4px;
+
+            .productInfos {
+
+              display:            table-row;
+
+              .icon {
+                display:            table-cell;
+                padding:            6px 7px 0px 3px;
+                text-align:         center;
+                vertical-align:     top;
+              }
+
+              .text {
+                display:            table-cell;
+                color:            #212427;
+              }
+
+            }
+
+            .authorizationStart {
+
+              display:            table-row;
+
+              .icon {
+                display:            table-cell;
+                padding:            0px 7px 0px 3px;
+                text-align:         center;
+                vertical-align:     top;
+              }
+
+              .id {
+                display:            table-cell;
+              }
+
+            }
+
+            .authorizationStop {
+
+              display:            table-row;
+
+              .icon {
+                display:            table-cell;
+                padding:            0px 7px 0px 3px;
+                text-align:         center;
+                vertical-align:     top;
+              }
+
+              .id {
+                display:            table-cell;
+              }
+
+            }
+
+            .locationInfos {
+
+              display:            table-row;
+
+              .icon {
+                display:            table-cell;
+                padding:            6px 7px 0px 3px;
+                text-align:         center;
+                vertical-align:     top;
+              }
+
+              .text {
+                display:            table-cell;
+                color:            #212427;
+              }                                        
+
+            }
+
+          }
+
+          .verificationStatus {
+
+            position:           absolute;
+            top:                14px;
+            right:              12px;
+            text-align:         center;
+            font-size:          80%;
+
+            i {
+              display:            block;
+              font-size:          250%;
+              padding-bottom:     4px;
+            }
+
+          }
+
+        }
+
+        .chargingSession:hover {
+            background-color:       #b8cdde;
+        }
+
+        .chargingSession:last-child {
+          margin-bottom:            0px;
+        }
+
+        .activated {
+            background-color:       #b5d4ec;
+        }
+
       }
 
-      .chargingSession:last-child {
-        margin-bottom:            0px;
+      #chargingSessions::-webkit-scrollbar {
+          display:            none;
       }
 
-      .activated {
-          background-color:       #b5d4ec;
-      }
-
-    }
-
-    #chargingSessions::-webkit-scrollbar {
-        display:            none;
     }
 
   }
 
   #evseTarifInfosPage {
 
-    display: none;
+      display: none;
 
-        #evseTarifInfos {
+      #evseTarifInfos {
 
-          background-color:   #b3d6ef;
           padding:            0 3vw;
           width:              94vw;
           font-family:        Arial;
@@ -530,7 +537,7 @@ body {
               .measurementValue {
 
                   display:            table-row;
-                  font-size:          120%;
+                  //font-size:          120%;
 
                   .timestamp {
                       display:            table-cell;
@@ -693,3 +700,5 @@ body::-webkit-scrollbar {
         min-height: 100vh;
     }
 }
+
+@import 'custom';
