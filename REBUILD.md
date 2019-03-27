@@ -249,6 +249,19 @@ npm install @types/leaflet.awesome-markers
 ```
 
 
+#### chart.js
+
+Simple, clean and engaging HTML5 based animated, interactive JavaScript charts: https://www.chartjs.org
+
+```
+npm install chart.js
++ chart.js@2.8.0
+
+npm install @types/chart.js
++ @types/chart.js@2.7.50
+```
+
+
 ### Setting up the .gitignore file
 
 Before you push the source code of your new project to a git server, make sure that the .gitignore file is set up correctly, otherwise you will push >100 MBytes instead of some 100 KBytes.
