@@ -59,6 +59,14 @@ body {
     padding-left:       1vw;
   }
   
+  .fa-check-circle {
+    color:            #5ab337;
+  }
+
+  .fa-times-circle {
+    color:            #CC0000;
+  }
+
   .pages {
 
     display:            none;
@@ -429,140 +437,132 @@ body {
 
     display: none;
 
-                  #evseTarifInfos {
+        #evseTarifInfos {
 
-                    width:              100%;
-                    height:             35%;
-                    background-color:   #b3d6ef;
-                    padding:            20px 20px;
-                    width:              calc(100% - 40px);
-                    font-family:        Arial;
-                    color:              #2c4a60;
-                    overflow-y:         scroll;
+          background-color:   #b3d6ef;
+          padding:            0 3vw;
+          width:              94vw;
+          font-family:        Arial;
+          color:              #2c4a60;
+          font-size:          125%;
+          //overflow-y:         scroll;
 
-                    #headline {
-                        color:              #2e71a2;
-                        font-weight:        bold;
-                        padding-bottom:     20px;
-                    }
+          #headline {
+              color:              #2e71a2;
+              font-weight:        bold;
+              padding-bottom:     20px;
+          }
 
-                    .measurementInfo {
+          .measurementInfo {
 
-                        display:            table;
-                        font-size:          105%;
+              display:            table;
+              padding-top:        2vh;
 
-                        .meter {
+              .meter {
 
-                            display:            table-row;
+                  display:            table-row;
 
-                            .meterId {
-                                display:            table-cell;
-                                padding-right:      20px;
-                            }
+                  .meterId {
+                      display:            table-cell;
+                      padding-right:      20px;
+                  }
 
-                            .meterIdValue {
-                                display:            table-cell;
-                            }
+                  .meterIdValue {
+                      display:            table-cell;
+                  }
 
-                        }
+              }
 
-                        .meterVendor {
+              .meterVendor {
 
-                            display:            table-row;
+                  display:            table-row;
 
-                            .meterVendorId {
-                                display:            table-cell;
-                                padding-right:      20px;
-                            }
+                  .meterVendorId {
+                      display:            table-cell;
+                      padding-right:      20px;
+                  }
 
-                            .meterVendorValue {
-                                display:            table-cell;
-                            }
+                  .meterVendorValue {
+                      display:            table-cell;
+                  }
 
-                        }
+              }
 
-                        .meterModel {
+              .meterModel {
 
-                            display:            table-row;
+                  display:            table-row;
 
-                            .meterModelId {
-                                display:            table-cell;
-                                padding-right:      20px;
-                            }
+                  .meterModelId {
+                      display:            table-cell;
+                      padding-right:      20px;
+                  }
 
-                            .meterModelValue {
-                                display:            table-cell;
-                            }
+                  .meterModelValue {
+                      display:            table-cell;
+                  }
 
-                        }
+              }
 
-                        .measurement {
+              .measurement {
 
-                            display:            table-row;
+                  display:            table-row;
 
-                            .measurementId {
-                                display:            table-cell;
-                                padding-right:      30px;
-                            }
+                  .measurementId {
+                      display:            table-cell;
+                      padding-right:      30px;
+                  }
 
-                            .measurementIdValue {
-                                display:            table-cell;
-                            }
+                  .measurementIdValue {
+                      display:            table-cell;
+                  }
 
-                        }
+              }
 
-                    }
+          }
 
-                    .measurementValues {
+          .measurementValues {
 
-                        display:            table;
-                        margin-top:         5px;
-                        width:              100%;
-                        cursor:             zoom-in;
+              display:            table;
+              padding:            2vh 0;
+              width:              100%;
+              cursor:             zoom-in;
 
-                        .measurementValue {
+              .measurementValue {
 
-                            display:            table-row;
-                            padding:            3px 4px;
-                            border-radius:      3px;
+                  display:            table-row;
+                  font-size:          120%;
 
-                            .timestamp {
-                                display:            table-cell;
-                                padding:            2px 16px 2px 6px;
-                                border-radius:      4px 0px 0px 4px;
-                                white-space:        nowrap
-                            }
+                  .timestamp {
+                      display:            table-cell;
+                      padding:            1vh 3vw 1vh 0vw;
+                      white-space:        nowrap
+                  }
 
-                            .value {
-                                display:            table-cell;
-                                text-align:         right;
-                                padding-right:      5px;
-                                white-space:        nowrap
-                            }
+                  .value {
+                      display:            table-cell;
+                      text-align:         right;
+                      padding-right:      1vw;
+                      white-space:        nowrap
+                  }
 
-                            .unit {
-                                display:            table-cell;
-                                padding-right:      10px;
-                                white-space:        nowrap
-                            }
+                  .unit {
+                      display:            table-cell;
+                      padding-right:      2vw;
+                      white-space:        nowrap
+                  }
 
-                            .verificationStatus {
-                                display:            table-cell;
-                                padding:            2px 6px;
-                                border-radius:      0px 4px 4px 0px;
-                                width:              100%;
-                                white-space:        nowrap
-                            }
+                  .verificationStatus {
+                      display:            table-cell;
+                      padding:            0 1vw;
+                      width:              100%;
+                      white-space:        nowrap
+                  }
 
-                        }
+              }
 
-                        .measurementValue:hover {
-                            background-color:     #72b3e2;
-                        }                        
+          }
 
-                    }
-
-                }
+      }
 
   }
 
@@ -659,7 +659,7 @@ body {
 
     #signatureCheck {
 
-        margin-top:     30px;
+        margin:         5vh 0 4vh 0;
         text-align:     center;
         font-size:      150%;
         
@@ -670,26 +670,6 @@ body {
         #description {
             position: relative;
             line-height: 200%;
-        }
-
-    }
-
-    #overlayOkButtonDiv {
-
-        position:       absolute;
-        left:           0px;
-        bottom:         0px;
-
-        #overlayOkButton {
-            border:             0;
-            background-color:   transparent;
-            color:            #b6d8f1;
-            margin:             4px;
-            font-size:          280%;
-        }
-
-        #overlayOkButton:hover {
-            color:            #519ad0;
         }
 
     }

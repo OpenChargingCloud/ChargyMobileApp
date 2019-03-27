@@ -1591,7 +1591,7 @@ export default class chargy {
 
 
                             // Show energy counter value
-                            let value2Div                    = this.lib.CreateDiv(MeasurementValueDiv, "value",
+                        /*     let value2Div                    = this.lib.CreateDiv(MeasurementValueDiv, "value",
                                                                          parseFloat((measurementValue.value * Math.pow(10, measurementValue.measurement.scale)).toFixed(10)).toString());
 
                             switch (measurement.unit)
@@ -1606,7 +1606,7 @@ export default class chargy {
                                 this.lib.CreateDiv(MeasurementValueDiv, "unit", "Wh");
                                     break;
 
-                            }
+                            } */
 
 
                             // Show energy difference
@@ -1800,8 +1800,6 @@ export default class chargy {
 
         //#region Show data and result on overlay        
 
-        cryptoDiv.style.display = 'block';
-
         let bufferValue               = cryptoDiv.querySelector('#buffer .value')             as HTMLDivElement;
         let hashedBufferValue         = cryptoDiv.querySelector('#hashedBuffer .value')       as HTMLDivElement;
         let publicKeyValue            = cryptoDiv.querySelector('#publicKey .value')          as HTMLDivElement;
@@ -1840,6 +1838,7 @@ export default class chargy {
     public captureMeasurementCryptoDetails(measurementValue: iface.IMeasurementValue) {
         var me = this;
         return function(this: HTMLDivElement, ev: MouseEvent) {
+                   me.app.showPage(me.app.cryptoDetailsPage);
                    me.showMeasurementCryptoDetails(measurementValue);
                };
     }
