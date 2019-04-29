@@ -283,7 +283,8 @@ export enum SessionVerificationResult {
     PublicKeyNotFound,
     InvalidPublicKey,
     InvalidSignature,
-    ValidSignature
+    ValidSignature,
+    AtLeastTwoMeasurementsExpected
 }
 
 export enum VerificationResult {
