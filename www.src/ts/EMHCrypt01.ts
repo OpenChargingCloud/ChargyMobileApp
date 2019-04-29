@@ -143,7 +143,8 @@ export default class EMHCrypt01 extends ACrypt.ACrypt {
 
                 measurement.chargingSession = chargingSession;
 
-                if (measurement.values && measurement.values.length > 0)
+                // Must include at least two measurements (start & stop)
+                if (measurement.values && measurement.values.length > 1)
                 {
 
                     // Validate...
