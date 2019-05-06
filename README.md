@@ -34,8 +34,14 @@ The Chargy Mobile project has a sister project called [Chargy Desktop](https://g
 
 ## Install dependencies
 
-Using node.js 11.10.1 (includes npm 6.7.0) for Microsoft Windows: https://nodejs.org/en/download/current/    
+Using node.js 12.1.0 (includes npm 6.9.0) for Microsoft Windows: https://nodejs.org/en/download/current/    
+Or install nodejs on your Linux / Mac OS X system via
+```
+sudo curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
+sudo apt install nodejs
+```
 
+Afterwards you can install the remaining software using the node packet manager
 ```
 $ npm install -g cordova
 + cordova@8.1.2
