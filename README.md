@@ -43,18 +43,18 @@ sudo apt install nodejs
 
 Afterwards you can install the remaining software using the node packet manager
 ```
-$ npm install -g cordova
-+ cordova@8.1.2
+$ npm install -g cordova@latest
++ cordova@9.0.0
 ```
 
 ```
 $ npm install -g typescript@latest
-+ typescript@3.3.3333
++ typescript@3.4.5
 ```
 
 ```
 $ npm install -g sass@latest
-+ sass@1.17.2
++ sass@1.20.1
 ```
 
 
