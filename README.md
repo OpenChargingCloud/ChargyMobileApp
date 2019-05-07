@@ -67,6 +67,7 @@ $ git clone https://github.com/OpenChargingCloud/ChargyMobileApp.git
 
 Afterwards all node.js dependencies and additional Open Source Software libraries have to be downloaded.
 ```
+$ npm install
 $ cordova prepare
 ```
 
@@ -77,6 +78,11 @@ In order to test Chargy within the local browser just type the following command
 
 ```
 $ cordova run browser
+```
+
+In order to test it using the Electron framework
+```
+$ cordova run electron
 ```
 
 To test Chargy on your Android smart phone please install [Android Studio](https://developer.android.com/studio), attach your smart phone via USB to your computer and run the following command. If you have installed the Android simulators and did not attach your smart phone Chary will be started within the default simulator profile.
