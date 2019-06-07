@@ -47,7 +47,7 @@ export default class App {
 
   start() {
 	  
-	  document.addEventListener('deviceready', () => this.onDeviceReady(),  false);
+	document.addEventListener('deviceready', () => this.onDeviceReady(),  false);
     document.addEventListener('resume',      () => this.onDeviceResume(), false);
     document.addEventListener('pause',       () => this.onPause(),        false);
 
@@ -95,7 +95,7 @@ export default class App {
 
     this.startPage.style.display                  = 'none';
     this.chargingSessionsPage.style.display       = 'none';
-    this.measurementInfosPage.style.display         = 'none';
+    this.measurementInfosPage.style.display       = 'none';
     this.cryptoDetailsPage.style.display          = 'none';
     this.issueTrackerPage.style.display           = 'none';
     this.aboutPage.style.display                  = 'none';
@@ -110,7 +110,7 @@ export default class App {
     this.importantInfo              = document.getElementById("importantInfo")              as HTMLDivElement;
     this.startPage                  = document.getElementById("startPage")                  as HTMLDivElement;
     this.chargingSessionsPage       = document.getElementById("chargingSessionsPage")       as HTMLDivElement;
-	  this.measurementInfosPage         = document.getElementById("measurementInfosPage")         as HTMLDivElement;
+	  this.measurementInfosPage       = document.getElementById("measurementInfosPage")       as HTMLDivElement;
 	  this.cryptoDetailsPage          = document.getElementById("cryptoDetailsPage")          as HTMLDivElement;
 	  this.issueTrackerPage           = document.getElementById("issueTrackerPage")           as HTMLDivElement;
 	  this.aboutPage                  = document.getElementById("aboutPage")                  as HTMLDivElement;
