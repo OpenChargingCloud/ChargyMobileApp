@@ -4,21 +4,27 @@ The following is a documentation of all the step necessary to rebuild this proje
 
 ## Install dependencies
 
-Using node.js 11.10.1 (includes npm 6.7.0) for Microsoft Windows: https://nodejs.org/en/download/current/    
-
+Using node.js 12.1.0 (includes npm 6.9.0) for Microsoft Windows: https://nodejs.org/en/download/current/    
+Or install nodejs on your Linux / Mac OS X system via
 ```
-$ npm install -g cordova
-+ cordova@8.1.2
+sudo curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
+sudo apt install nodejs
+```
+
+Afterwards you can install the remaining software using the node packet manager
+```
+$ npm install -g cordova@latest
++ cordova@9.0.0
 ```
 
 ```
 $ npm install -g typescript@latest
-+ typescript@3.3.3333
++ typescript@3.4.5
 ```
 
 ```
 $ npm install -g sass@latest
-+ sass@1.17.2
++ sass@1.20.1
 ```
 
 
@@ -93,6 +99,21 @@ Starting webpack bundling and transpilation phase...
 --save flag or autosave detected
 Saving browser@latest into config.xml file ...
 ```
+
+#### Electron
+
+Electron is a framework that uses web technologies (HTML, CSS, and JS) to build cross-platform desktop applications.
+
+```
+$ cordova platform add cordova-electron@latest
+Using cordova-fetch for cordova-electron@latest
+Adding electron project...
+Creating Cordova project for cordova-electron:
+        Path: E:\Coding\OpenChargingCloud\ChargyMobileApp\platforms\cordova-electron
+        Name: ChargyMobileApp
+Installing "cordova-plugin-whitelist" for electron
+```
+
 
 ### Adding Cordova plugins
 

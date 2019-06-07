@@ -133,8 +133,7 @@ export default class EMHCrypt01 extends ACrypt.ACrypt {
     async VerifyChargingSession(chargingSession:   iface.IChargingSession): Promise<iface.ISessionCryptoResult>
     {
 
-        var sessionResult       = iface.SessionVerificationResult.UnknownSessionFormat;
-        //var measurementResults  = new Array<IEMHCrypt01Result>();
+        var sessionResult = iface.SessionVerificationResult.UnknownSessionFormat;
 
         if (chargingSession.measurements)
         {
@@ -143,7 +142,8 @@ export default class EMHCrypt01 extends ACrypt.ACrypt {
 
                 measurement.chargingSession = chargingSession;
 
-                if (measurement.values && measurement.values.length > 0)
+                // Must include at least two measurements (start & stop)
+                if (measurement.values && measurement.values.length > 1)
                 {
 
                     // Validate...
@@ -167,6 +167,9 @@ export default class EMHCrypt01 extends ACrypt.ACrypt {
                     }
 
                 }
+
+                else
+                    sessionResult = iface.SessionVerificationResult.AtLeastTwoMeasurementsExpected;
 
             }
         }
