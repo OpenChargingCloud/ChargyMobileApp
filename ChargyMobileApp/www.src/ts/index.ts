@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-import 'core-js';
+//import 'core-js';
 import chargy from './chargy';
 
 declare let cordova: any;
@@ -28,106 +28,107 @@ let appVersion:         string;
 
 export default class App {
 
-  public importantInfo:               HTMLDivElement;
-  public startPage: 		              HTMLDivElement;
-  public chargingSessionsPage:        HTMLDivElement;
-  public measurementInfosPage:        HTMLDivElement;
-  public cryptoDetailsPage:           HTMLDivElement;
-  public issueTrackerPage:            HTMLDivElement;
-  public aboutPage: 		              HTMLDivElement;
+    public importantInfo:               HTMLDivElement;
+    public startPage:                   HTMLDivElement;
+    public chargingSessionsPage:        HTMLDivElement;
+    public measurementInfosPage:        HTMLDivElement;
+    public cryptoDetailsPage:           HTMLDivElement;
+    public issueTrackerPage:            HTMLDivElement;
+    public aboutPage:                   HTMLDivElement;
 
-  public map: any;
-  
+    public map: any;
 
-  chargingSessionsPage_MovementStartX  = null;
-  measurementInfosPage_MovementStartX  = null;
-  cryptoDetailsPage_MovementStartX     = null;
 
-  _chargy: chargy;
+    chargingSessionsPage_MovementStartX  = null;
+    measurementInfosPage_MovementStartX  = null;
+    cryptoDetailsPage_MovementStartX     = null;
 
-  start() {
-	  
-	document.addEventListener('deviceready', () => this.onDeviceReady(),  false);
-    document.addEventListener('resume',      () => this.onDeviceResume(), false);
-    document.addEventListener('pause',       () => this.onPause(),        false);
+    _chargy: chargy;
 
-    if (cordova.getAppVersion != null) {
-        cordova.getAppVersion.getVersionNumber((version) => {
-            appVersion = version;
-        });
-    }
+    start() {
 
-  }
-  
-  showPage(page: HTMLDivElement) {
+        document.addEventListener('deviceready', () => this.onDeviceReady(),  false);
+        document.addEventListener('resume',      () => this.onDeviceResume(), false);
+        document.addEventListener('pause',       () => this.onPause(),        false);
 
-    this.hideAllPages();
-
-    if (page == this.startPage)
-    {
-
-      //document.getElementById("importantInfo").style.display = "none";
-      //document.getElementById("MenuBar").style.display       = "none";
-
-      //window.localStorage.removeItem('MenuBar');
-      //window.localStorage.removeItem('login');
-      //window.localStorage.removeItem('password');
-      //window.localStorage.removeItem('name');
-      //window.localStorage.removeItem('email');
-      //window.localStorage.removeItem('mobilePhone');
-      //window.localStorage.removeItem('userProfile');
+        if (cordova.getAppVersion != null) {
+            cordova.getAppVersion.getVersionNumber((version) => {
+                appVersion = version;
+            });
+        }
 
     }
 
-    // else if (page == this.userProfilePage) {
-    //   _userAPI.getUserProfile();
-    // }
+    showPage(page: HTMLDivElement) {
 
-    page.style.display = 'block';
+      this.hideAllPages();
 
-  }
+      if (page == this.startPage)
+      {
 
-  hidePage(page: HTMLDivElement) {
-    page.style.display = 'none';
-  }
+          //document.getElementById("importantInfo").style.display = "none";
+          //document.getElementById("MenuBar").style.display       = "none";
 
-  hideAllPages() {
+          //window.localStorage.removeItem('MenuBar');
+          //window.localStorage.removeItem('login');
+          //window.localStorage.removeItem('password');
+          //window.localStorage.removeItem('name');
+          //window.localStorage.removeItem('email');
+          //window.localStorage.removeItem('mobilePhone');
+          //window.localStorage.removeItem('userProfile');
 
-    this.startPage.style.display                  = 'none';
-    this.chargingSessionsPage.style.display       = 'none';
-    this.measurementInfosPage.style.display       = 'none';
-    this.cryptoDetailsPage.style.display          = 'none';
-    this.issueTrackerPage.style.display           = 'none';
-    this.aboutPage.style.display                  = 'none';
+      }
 
-  }
-  
-  
-  onDeviceReady() {
+        // else if (page == this.userProfilePage) {
+        //   _userAPI.getUserProfile();
+        // }
 
-    var me = this;
-    
-    this.importantInfo              = document.getElementById("importantInfo")              as HTMLDivElement;
-    this.startPage                  = document.getElementById("startPage")                  as HTMLDivElement;
-    this.chargingSessionsPage       = document.getElementById("chargingSessionsPage")       as HTMLDivElement;
-	  this.measurementInfosPage       = document.getElementById("measurementInfosPage")       as HTMLDivElement;
-	  this.cryptoDetailsPage          = document.getElementById("cryptoDetailsPage")          as HTMLDivElement;
-	  this.issueTrackerPage           = document.getElementById("issueTrackerPage")           as HTMLDivElement;
-	  this.aboutPage                  = document.getElementById("aboutPage")                  as HTMLDivElement;
-    
-    var fileInputButton             = <HTMLButtonElement> document.getElementById('fileInputButton');
-    var fileInput                   = <HTMLInputElement>  document.getElementById('fileInput');
-    fileInputButton.onclick         = (event) => {
-      this.importantInfo.style.display  = 'none';
-      this.importantInfo.innerHTML      = '';
-      fileInput.value = '';
-      fileInput.click();
+        page.style.display = 'block';
+
     }
-    // @ts-ignore
-    fileInput.onchange              = (event) => this.readAndParseFile(event.target.files[0]);
 
-    var pasteButton                 = <HTMLButtonElement> document.getElementById('pasteButton');
-    pasteButton.onclick             = (event) => this.PasteFile();
+    hidePage(page: HTMLDivElement) {
+        page.style.display = 'none';
+    }
+
+    hideAllPages() {
+
+        this.startPage.style.display                  = 'none';
+        this.chargingSessionsPage.style.display       = 'none';
+        this.measurementInfosPage.style.display       = 'none';
+        this.cryptoDetailsPage.style.display          = 'none';
+        this.issueTrackerPage.style.display           = 'none';
+        this.aboutPage.style.display                  = 'none';
+
+    }
+
+
+    onDeviceReady() {
+
+        var me = this;
+
+        this.importantInfo              = document.getElementById("importantInfo")              as HTMLDivElement;
+        this.startPage                  = document.getElementById("startPage")                  as HTMLDivElement;
+        this.chargingSessionsPage       = document.getElementById("chargingSessionsPage")       as HTMLDivElement;
+        this.measurementInfosPage       = document.getElementById("measurementInfosPage")       as HTMLDivElement;
+        this.cryptoDetailsPage          = document.getElementById("cryptoDetailsPage")          as HTMLDivElement;
+        this.issueTrackerPage           = document.getElementById("issueTrackerPage")           as HTMLDivElement;
+        this.aboutPage                  = document.getElementById("aboutPage")                  as HTMLDivElement;
+
+        var fileInputButton             = <HTMLButtonElement> document.getElementById('fileInputButton');
+        var fileInput                   = <HTMLInputElement>  document.getElementById('fileInput');
+        fileInputButton.onclick         = (event) => {
+            this.importantInfo.style.display  = 'none';
+            this.importantInfo.innerHTML      = '';
+            fileInput.value = '';
+            fileInput.click();
+        }
+
+        // @ts-ignore
+        fileInput.onchange              = (event) => this.readAndParseFile(event.target.files[0]);
+
+        var pasteButton                 = <HTMLButtonElement> document.getElementById('pasteButton');
+        pasteButton.onclick             = (event) => this.PasteFile();
 
 
 
@@ -266,7 +267,7 @@ export default class App {
     this.measurementInfosPage.addEventListener('touchend',   releasemeasurementInfosPagePosition, false);
 
     //#endregion
-    
+
     //#region cryptoDetailsPage Back-Swipe
 
     function getCryptoDetailsPagePosition(e) {

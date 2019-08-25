@@ -1,23 +1,38 @@
 import * as chargyLib from './chargyLib';
-import * as iface from './chargyInterfaces';
+import * as iface     from './chargyInterfaces';
 
 export abstract class ACrypt {
 
-    readonly description:  string;
-    readonly GetMeter:     iface.GetMeterFunc;
-    readonly lib           = new chargyLib.default();
+    readonly description:                   string;
+    readonly GetMeter:                      iface.GetMeterFunc;
+    readonly CheckMeterPublicKeySignature:  iface.CheckMeterPublicKeySignatureFunc;
+    readonly lib                       = new chargyLib.default();
 
-//    readonly elliptic  = require('elliptic');
-    // variable 'crypto' is already defined differently in Google Chrome!
-//    readonly crypt     = require('electron').remote.require('crypto');
+    readonly elliptic: any;
+    readonly moment:   any;
 
-    constructor(description:  string,
-                GetMeter:     iface.GetMeterFunc) { 
+    constructor(description:                   string,
+                GetMeter:                      iface.GetMeterFunc,
+                CheckMeterPublicKeySignature:  iface.CheckMeterPublicKeySignatureFunc) {
 
-        this.description  = description;
-        this.GetMeter     = GetMeter;
+        this.description                   = description;
+        this.GetMeter                      = GetMeter;
+        this.CheckMeterPublicKeySignature  = CheckMeterPublicKeySignature;
+
+        this.elliptic                      = require('elliptic');
+        this.moment                        = require('moment');
 
     }
+
+
+    protected pad(text: string|undefined, paddingValue: number) {
+
+        if (text == null || text == undefined)
+            text = "";
+
+        return (text + Array(2*paddingValue).join('0')).substring(0, 2*paddingValue);
+
+    };
 
 
     CreateLine(id:         string,
@@ -31,14 +46,14 @@ export abstract class ACrypt {
                       this.lib.CreateDiv(lineDiv, "id",    id);
                       this.lib.CreateDiv(lineDiv, "value", (typeof value === "string" ? value : value.toString()));
 
-        this.AddToBuffer(valueHEX, bufferDiv, lineDiv);
+        this.AddToVisualBuffer(valueHEX, bufferDiv, lineDiv);
 
     }
 
 
-    AddToBuffer(valueHEX:   string,
-                bufferDiv:  HTMLDivElement,
-                lineDiv:    HTMLDivElement) 
+    protected AddToVisualBuffer(valueHEX:   string,
+                                bufferDiv:  HTMLDivElement,
+                                lineDiv:    HTMLDivElement)
     {
 
         let newText = this.lib.CreateDiv(bufferDiv, "entry", valueHEX);
@@ -63,13 +78,12 @@ export abstract class ACrypt {
 
     }
 
-    async sha256(message) {
-        //const msgUint8 = new TextEncoder().encode(message);                             // encode as UTF-8
-        const hashBuffer = await crypto.subtle.digest('SHA-256', message);             // hash the message
-        const hashArray = Array.from(new Uint8Array(hashBuffer));                       // convert hash to byte array
-        const hashHex = hashArray.map(b => ('00' + b.toString(16)).slice(-2)).join(''); // convert bytes to hex string
+    async sha256(message: DataView) {
+        const hashBuffer = await crypto.subtle.digest('SHA-256', message);// new TextEncoder().encode(message));
+        const hashArray  = Array.from(new Uint8Array(hashBuffer));                                       // convert hash to byte array
+        const hashHex    = hashArray.map(b => ('00' + b.toString(16)).slice(-2)).join('').toLowerCase(); // convert bytes to hex string
         return hashHex;
-    }        
+    }
 
     abstract VerifyChargingSession(chargingSession:   iface.IChargingSession): Promise<iface.ISessionCryptoResult>
 

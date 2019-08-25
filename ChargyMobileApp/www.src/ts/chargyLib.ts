@@ -6,23 +6,23 @@ export default class chargyLib
 
     }
 
-    public ParseJSON_LD<T>(Text:    string,
-        Context: string = null): T {
+    public ParseJSON_LD<T>(Text:     string,
+                           Context:  string = null): T {
 
-    var JObject = JSON.parse(Text);
+        var JObject = JSON.parse(Text);
 
-    JObject["id"] = JObject["@id"];
+        JObject["id"] = JObject["@id"];
 
-    return JObject as T;
+        return JObject as T;
 
     }
 
     public firstKey(obj) {
-    for (var a in obj) return a;
+        for (var a in obj) return a;
     }
 
     public firstValue(obj) {
-    for (var a in obj) return obj[a];
+        for (var a in obj) return obj[a];
     }
 
     public parseUTC(UTCTime: string|number): any {
@@ -77,18 +77,25 @@ export default class chargyLib
         }
     }
 
-    public bufferToHex(buffer) : string {
 
-        //return Array
-        //    .from (new Uint8Array (buffer))
-        //    .map (b => b.toString (16).padStart (2, "0"))
-        //    .join("");
-
-        return Array.prototype.map.call(new Uint8Array(buffer), x => ('00' + x.toString(16)).slice(-2)).join('');
-
+    public IsNullOrEmpty(value: string|undefined): boolean {
+        return (!value || value === null || value == undefined || value == "" || value.length == 0);
     }
 
-    public hex32(val) {
+    public WhenNullOrEmpty(value: string|undefined, replacement: string): string {
+    
+        if (!value || value === null || value == undefined || value == "" || value.length == 0)
+            return replacement;
+    
+        return value;
+    
+    }
+
+    public hex2bin(hex: string) : string {
+        return ("00000000" + (parseInt(hex, 16)).toString(2)).substr(-8);
+    }
+
+    public hex32(val: number) {
         val &= 0xFFFFFFFF;
         var hex = val.toString(16).toUpperCase();
         return ("00000000" + hex).slice(-8);
@@ -96,7 +103,7 @@ export default class chargyLib
 
     public parseHexString(str: string) {
 
-        var result = [];
+        var result:number[] = [];
 
         while (str.length >= 2) {
             result.push(parseInt(str.substring(0, 2), 16));
@@ -273,7 +280,7 @@ export default class chargyLib
 
     }
 
-    SetText(dv: DataView, text: string, offset: number): string
+    public SetText(dv: DataView, text: string, offset: number): string
     {
 
         //var bytes = new TextEncoder("utf-8").encode(text);
@@ -291,7 +298,7 @@ export default class chargyLib
     }
 
 
-    public Clone(obj) {
+    public Clone(obj: any) {
 
         if(obj == null || typeof(obj) != 'object')
             return obj;
@@ -308,39 +315,39 @@ export default class chargyLib
 
     public openFullscreen() {
 
-    var elem = document.documentElement as any;
+        var elem = document.documentElement as any;
 
-    if (elem.requestFullscreen) {
-        elem.requestFullscreen();
+        if (elem.requestFullscreen) {
+            elem.requestFullscreen();
 
-    } else if (elem.mozRequestFullScreen) { /* Firefox */
-        elem.mozRequestFullScreen();
+        } else if (elem.mozRequestFullScreen) {     /* Firefox */
+            elem.mozRequestFullScreen();
 
-    } else if (elem.webkitRequestFullscreen) { /* Chrome, Safari and Opera */
-        elem.webkitRequestFullscreen();
+        } else if (elem.webkitRequestFullscreen) {  /* Chrome, Safari and Opera */
+            elem.webkitRequestFullscreen();
 
-    } else if (elem.msRequestFullscreen) { /* IE/Edge */
-        elem.msRequestFullscreen();
-    }
+        } else if (elem.msRequestFullscreen) {      /* IE/Edge */
+            elem.msRequestFullscreen();
+        }
 
     }
 
     public closeFullscreen() {
 
-    var d = document as any;
+        var d = document as any;
 
-    if (d.exitFullscreen) {
-        d.exitFullscreen();
+        if (d.exitFullscreen) {
+            d.exitFullscreen();
 
-    } else if (d.mozCancelFullScreen) { /* Firefox */
-        d.mozCancelFullScreen();
+        } else if (d.mozCancelFullScreen) {         /* Firefox */
+            d.mozCancelFullScreen();
 
-    } else if (d.webkitExitFullscreen) { /* Chrome, Safari and Opera */
-        d.webkitExitFullscreen();
+        } else if (d.webkitExitFullscreen) {        /* Chrome, Safari and Opera */
+            d.webkitExitFullscreen();
 
-    } else if (d.msExitFullscreen) { /* IE/Edge */
-        d.msExitFullscreen();
-    }
+        } else if (d.msExitFullscreen) {            /* IE/Edge */
+            d.msExitFullscreen();
+        }
 
     }
 
@@ -360,16 +367,6 @@ export default class chargyLib
 
         return childDiv;
         
-    }
-
-
-    public OpenExternal(URL: string)
-    {
-
-        // var shell = require('electron').shell;
-
-        // shell.openExternal(URL);
-
     }
 
 }

@@ -6,16 +6,16 @@ Desktop.ini
 .DS_Store
 
 # Node
-npm-debug.log
-/node_modules
+ChargyMobileApp/npm-debug.log
+ChargyMobileApp/node_modules
 
 # Cordova
-/platforms
-/plugins
+ChargyMobileApp/platforms
+ChargyMobileApp/plugins
 
 # res
-resources/signing
+ChargyMobileApp/resources/signing
 
 # The "www" directory needs to be present, otherwise "cordova prepare" after a "git clone ..." will fail!
-www/*
-!www/.gitkeep
+ChargyMobileApp/www/*
+!ChargyMobileApp/www/.gitkeep

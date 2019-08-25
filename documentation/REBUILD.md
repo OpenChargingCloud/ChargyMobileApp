@@ -53,7 +53,7 @@ Creating Cordova project for the iOS platform:
         Path: platforms\ios
         Package: cloud.charging.open.apps.mobile
         Name: ChargyMobileApp
-iOS project created with cordova-ios@5.0.0
+iOS project created with cordova-ios@5.0.1
 Running npm install...
 Starting webpack bundling and transpilation phase...
 Discovered plugin "cordova-plugin-whitelist" in config.xml. Adding it to the project
@@ -229,7 +229,7 @@ Fast elliptic-curve cryptography in a plain javascript implementation: https://w
 
 ```
 $ npm install elliptic
-+ elliptic@6.4.1 
++ elliptic@6.5.0
 
 npm install @types/elliptic
 ```
@@ -240,7 +240,7 @@ For displaying user-friendly time and date information we use https://momentjs.c
 It comes with its own typescript type definitions.
 
 ```
-$ npm install moment --save
+$ npm install moment
 + moment@2.24.0
 ```
 
@@ -251,10 +251,10 @@ Leaflet is the leading open-source JavaScript library for mobile-friendly intera
 
 ```
 npm install leaflet
-+ leaflet@1.4.0
++ leaflet@1.5.1
 
 npm install @types/leaflet
-+ @types/leaflet@1.4.3
++ @types/leaflet@1.5.1
 ```
 
 Additional markers for leaflet:

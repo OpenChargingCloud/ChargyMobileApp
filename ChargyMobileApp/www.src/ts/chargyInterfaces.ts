@@ -29,7 +29,15 @@ export interface GetEVSEFunc {
 }
 
 export interface GetMeterFunc {
-    (Id: String): IMeter;
+    (Id: string): IMeter|null;
+}
+
+export interface CheckMeterPublicKeySignatureFunc {
+    (chargingStation:  any|null,
+     evse:             any|null,
+     meter:            any|null,
+     publicKey:        any|null,
+     signature:        any|null): Promise<string>;
 }
 
 export interface IChargeTransparencyRecord
@@ -84,9 +92,8 @@ export interface IChargingStation
 {
     "@id":                      string;
     "@context":                 string;
-    begin:                      string;
-    end:                        string;
     description:                {};
+    firmwareVersion:            string;
     address:                    IAddress;
     geoLocation?:               IGeoLocation;
     chargingStationOperator:    IChargingStationOperator;
@@ -114,7 +121,7 @@ export interface IMeter
     "@id":                      string;
     "@context":                 string;
     description:                {};
-    model:                       string;
+    model:                      string;
     vendor:                     string;
     firmwareVersion:            string;
     chargingStation:            IChargingStation;
@@ -155,12 +162,12 @@ export interface IChargingSession
     end:                        string;
     description:                {};
     chargingPoolId:             string;
-    chargingPool:               IChargingPool;
+    chargingPool?:              IChargingPool|null;
     chargingStationId:          string;
-    chargingStation:            IChargingStation;
+    chargingStation?:           IChargingStation|null;
     EVSEId:                     string;
-    EVSE:                       IEVSE;
-    tariff:                     ITariff;
+    EVSE?:                      IEVSE|null;
+    tariff?:                    ITariff|null;
     authorizationStart:         IAuthorization;
     authorizationStop:          IAuthorization;
     product:                    IChargingProduct;
@@ -262,7 +269,7 @@ export interface IECCSignature extends ISignature
 }
 
 export interface IAddress {
-    "@context":         	    string;
+    "@context":                 string;
     city:                       any;
     street:                     string;
     houseNumber:                string;

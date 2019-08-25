@@ -1,9 +1,9 @@
-import * as moment from 'moment';
-import * as chart from 'chart.js'
-import GDFCrypt01 from './GDFCrypt01';
-import EMHCrypt01 from './EMHCrypt01';
+import * as moment    from 'moment';
+import * as chart     from 'chart.js'
+import GDFCrypt01     from './GDFCrypt01';
+import EMHCrypt01     from './EMHCrypt01';
 import * as chargyLib from './chargyLib';
-import * as iface from './chargyInterfaces';
+import * as iface     from './chargyInterfaces';
 
 // import { debug } from "util";
 // import * as crypto from "crypto";
@@ -15,6 +15,9 @@ var leaflet: any = L;
 //const { randomBytes } = require('crypto')
 
 export default class chargy {
+
+    private elliptic: any;
+    private moment:   any;
 
     chargingStationOperators  = new Array<iface.IChargingStationOperator>();
     chargingPools             = new Array<iface.IChargingPool>();
@@ -29,15 +32,15 @@ export default class chargy {
     private chargingSessionsPage_MovementStartX: any;
 
     inputInfosDiv: HTMLDivElement;
-    
+
     // chargingSessionsPage:               HTMLDivElement;
     chargingSessionReportDiv:           HTMLDivElement;
 
     // measurementInfosPage:                 HTMLDivElement;
     //chartDiv:                           HTMLCanvasElement;
-    
+
     errorTextDiv: HTMLDivElement;
-    overlayDiv: HTMLDivElement;
+    overlayDiv:   HTMLDivElement;
 
     readonly lib    = new chargyLib.default();
 
@@ -57,6 +60,97 @@ export default class chargy {
 
     // // variable 'crypto' is already defined differently in Google Chrome!
     // const crypt = require('electron').remote.require('crypto');
+
+
+    async sha256(message: string) {
+        const hashBuffer = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(message));
+        const hashArray  = Array.from(new Uint8Array(hashBuffer));                                       // convert hash to byte array
+        const hashHex    = hashArray.map(b => ('00' + b.toString(16)).slice(-2)).join('').toLowerCase(); // convert bytes to hex string
+        return hashHex;
+    }
+
+
+    //#region CheckMeterPublicKeySignature(...)
+
+    private async CheckMeterPublicKeySignature(chargingStation:  any,
+                                               evse:             any,
+                                               meter:            any,
+                                               publicKey:        any,
+                                               signature:        any): Promise<string>
+    {
+
+        // For now: Do not enforce this feature!
+        if (chargingStation == null || evse == null || meter == null || publicKey == null || signature == null)
+            return "";// "<i class=\"fas fa-exclamation-circle\"></i> Unbekannter Public Key!";
+
+        try {
+
+            var toCheck = {
+
+                "@id":                  chargingStation["@id"],
+                "description":          chargingStation.description,
+                "geoLocation":          chargingStation.geoLocation,
+                "address":              chargingStation.address,
+                "softwareVersion":      chargingStation.softwareVersion,
+
+                "EVSE": {
+                    "@id":                      evse["@id"],
+                    "description":              evse.description,
+                    "sockets":                  evse.sockets,
+
+                    "meter": {
+                        "@id":                      meter["@id"],
+                        "vendor":                   meter.vendor,
+                        "model":                    meter.model,
+                        "firmwareVersion":          meter.firmwareVersion,
+                        "signatureFormat":          meter.signatureFormat,
+
+                        "publicKey": {
+                            "algorithm":                publicKey.algorithm,
+                            "format":                   publicKey.format,
+                            "value":                    publicKey.value,
+
+                            "signature": {
+                                "signer":                   signature.signer,
+                                "timestamp":                signature.timestamp,
+                                "comment":                  signature.comment,
+                                "algorithm":                signature.algorithm,
+                                "format":                   signature.format
+                            }
+
+                        }
+
+                    }
+
+                }
+ 
+            };
+
+            //ToDo: Checking the timestamp might be usefull!
+
+            var Input       = JSON.stringify(toCheck);
+            var sha256value = await this.sha256(Input);
+
+            var result = new this.elliptic.ec('secp256k1').
+                                  keyFromPublic(signature.publicKey, 'hex').
+                                  verify       (sha256value,
+                                                signature.signature);
+
+
+            if (result)
+                return "<i class=\"fas fa-check-circle\"></i>" + signature.signer;
+
+
+        }
+        catch (exception)
+        { }
+
+        return "<i class=\"fas fa-times-circle\"></i>" + signature.signer;
+
+    }
+
+    //#endregion
+
 
     //#region GetMethods...
 
@@ -1775,11 +1869,11 @@ export default class chargy {
         {
 
             case "https://open.charging.cloud/contexts/SessionSignatureFormats/GDFCrypt01+json":
-                chargingSession.method = new GDFCrypt01(this.GetMeter);
+                chargingSession.method = new GDFCrypt01(this.GetMeter, this.CheckMeterPublicKeySignature);
                 return await chargingSession.method.VerifyChargingSession(chargingSession);
 
             case "https://open.charging.cloud/contexts/SessionSignatureFormats/EMHCrypt01+json":
-                chargingSession.method = new EMHCrypt01(this.GetMeter);
+                chargingSession.method = new EMHCrypt01(this.GetMeter, this.CheckMeterPublicKeySignature);
                 return await chargingSession.method.VerifyChargingSession(chargingSession);
 
             default:
@@ -1810,7 +1904,7 @@ export default class chargy {
         {
 
             case "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/GDFCrypt01+json":
-                 measurementValue.method = new GDFCrypt01(this.GetMeter);
+                 measurementValue.method = new GDFCrypt01(this.GetMeter, this.CheckMeterPublicKeySignature);
                  return await measurementValue.method.VerifyMeasurement(measurementValue);
 
             case "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/EMHCrypt01+json":
@@ -1826,7 +1920,7 @@ export default class chargy {
 
                  }
 
-                 measurementValue.method = new EMHCrypt01(this.GetMeter);
+                 measurementValue.method = new EMHCrypt01(this.GetMeter, this.CheckMeterPublicKeySignature);
                  return await measurementValue.method.VerifyMeasurement(measurementValue);
 
             default:
