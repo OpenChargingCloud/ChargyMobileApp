@@ -8,16 +8,16 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
-	  "Chargy",
-      "Transparenzsoftware",
-      "Transparenz",
-      "Eichrecht",
-      "Elektromobilität",
-      "E-Mobilität",
-      "E-Mobility",
-      "Ladestationen",
-      "charging stations",
-	  "PTB"
+    "Chargy",
+    "Transparenzsoftware",
+    "Transparenz",
+    "Eichrecht",
+    "Elektromobilität",
+    "E-Mobilität",
+    "E-Mobility",
+    "Ladestationen",
+    "charging stations",
+    "PTB"
   ],
   "author": "Achim Friedland <achim.friedland@graphdefined.com>",
   "license": "AGPL-3.0-or-later",
@@ -47,7 +47,8 @@
     "plugins": {
       "cordova-plugin-whitelist": {},
       "cordova-plugin-dialogs": {},
-      "cordova-plugin-file": {}
+      "cordova-plugin-file": {},
+      "cordova-plugin-qrscanner": {}
     },
     "platforms": [
       "ios",
