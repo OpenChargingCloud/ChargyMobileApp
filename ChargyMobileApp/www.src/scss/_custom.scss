@@ -21,7 +21,16 @@ body {
         background-color:   #F8F8F8;
     }
 
-
+    #scannerPage{
+        background-color:  transparent;
+    }
+    .cancelScan{
+        position: absolute;
+        bottom: 2rem;
+        right: 2rem;
+        width: 2rem;
+        height: 2rem;
+    }
     #startPage {
 
         #buttonsDiv {
