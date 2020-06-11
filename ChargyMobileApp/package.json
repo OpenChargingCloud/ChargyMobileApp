@@ -22,6 +22,8 @@
   "author": "Achim Friedland <achim.friedland@graphdefined.com>",
   "license": "AGPL-3.0-or-later",
   "dependencies": {
+    "@types/pako": "^1.0.1",
+    "chart.js": "^2.8.0",
     "cordova-android": "^8.0.0",
     "cordova-browser": "^6.0.0",
     "cordova-electron": "^1.1.0",
@@ -29,10 +31,9 @@
     "cordova-plugin-dialogs": "^2.0.2",
     "cordova-plugin-file": "^6.0.2",
     "elliptic": "^6.5.0",
-    "moment": "^2.24.0",
-    "chart.js": "^2.8.0",
     "leaflet": "^1.5.1",
-    "leaflet.awesome-markers": "^2.0.5"
+    "leaflet.awesome-markers": "^2.0.5",
+    "moment": "^2.24.0"
   },
   "devDependencies": {
     "@types/chart.js": "^2.8.3",
