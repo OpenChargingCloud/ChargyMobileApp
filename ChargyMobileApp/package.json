@@ -33,7 +33,8 @@
     "elliptic": "^6.5.0",
     "leaflet": "^1.5.1",
     "leaflet.awesome-markers": "^2.0.5",
-    "moment": "^2.24.0"
+    "moment": "^2.24.0",
+    "pako": "^1.0.11"
   },
   "devDependencies": {
     "@types/chart.js": "^2.8.3",
