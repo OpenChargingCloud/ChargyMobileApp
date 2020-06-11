@@ -37,6 +37,7 @@ export default class App {
     public issueTrackerPage:            HTMLDivElement;
     public aboutPage:                   HTMLDivElement;
     public logo:                        HTMLDivElement;
+    public scannerPage:                 HTMLDivElement;
 
     public map: any;
 
@@ -87,7 +88,6 @@ export default class App {
 
         page.style.display = 'block';
         this.logo.style.display = 'block';
-
     }
 
     hidePage(page: HTMLDivElement) {
@@ -118,6 +118,7 @@ export default class App {
         this.cryptoDetailsPage          = document.getElementById("cryptoDetailsPage")          as HTMLDivElement;
         this.issueTrackerPage           = document.getElementById("issueTrackerPage")           as HTMLDivElement;
         this.aboutPage                  = document.getElementById("aboutPage")                  as HTMLDivElement;
+        this.scannerPage                = document.getElementById("scannerPage")                  as HTMLDivElement;
 
         var fileInputButton             = <HTMLButtonElement> document.getElementById('fileInputButton');
         var fileInput                   = <HTMLInputElement>  document.getElementById('fileInput');
@@ -136,6 +137,9 @@ export default class App {
 
         var scannerButton                 = <HTMLButtonElement> document.getElementById('scannerButton');
         scannerButton.onclick             = (event) => this.scanQRCode();
+
+        var cancelScanButton                 = <HTMLButtonElement> document.getElementById('cancelScan');
+        cancelScanButton.onclick             = (event) => this.cancelScan();
 
 
     //#region ChargingSessions Back-Swipe
@@ -454,19 +458,30 @@ export default class App {
 
   async scanQRCode() {
     this.hideAllPages();
+    this.scannerPage.style.display = 'block';
+
     QRScanner.scan(this.displayContents.bind(this));
     QRScanner.show();
   }
   
   displayContents = function (err, result) {
-    QRScanner.hide();
-    QRScanner.destroy();
+    this.closeScanner();
     if (err) {
       alert(JSON.stringify(err));
       this.showPage(this.startPage);
     } else {
       this.processQRCodeResult(result);
     }
+  }
+  closeScanner(){
+    QRScanner.hide();
+    QRScanner.destroy();
+  }
+
+  cancelScan(){
+    this.closeScanner();
+    this.showPage(this.startPage);
+    this.scannerPage.style.display = 'none'
   }
   //#endregion
   //#region Process pasted CTR file
