@@ -20,7 +20,12 @@ body {
     .pages {
         background-color:   #F8F8F8;
     }
-
+    #homeButton{
+        position: absolute;
+        right: 1rem;
+        top: 0.9rem;
+        
+    }
     #scannerPage{
         background-color:  transparent;
     }
