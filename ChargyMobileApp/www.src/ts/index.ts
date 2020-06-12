@@ -102,7 +102,7 @@ export default class App {
         this.cryptoDetailsPage.style.display          = 'none';
         this.issueTrackerPage.style.display           = 'none';
         this.aboutPage.style.display                  = 'none';
-
+        this.scannerPage.style.display                = 'none';
     }
 
 
@@ -140,6 +140,9 @@ export default class App {
 
         var cancelScanButton                 = <HTMLButtonElement> document.getElementById('cancelScan');
         cancelScanButton.onclick             = (event) => this.cancelScan();
+
+        var homeButton                       = <HTMLButtonElement> document.getElementById('homeButton');
+        homeButton.onclick                   = (event) => this.home();
 
 
     //#region ChargingSessions Back-Swipe
@@ -484,6 +487,11 @@ export default class App {
     this.scannerPage.style.display = 'none'
   }
   //#endregion
+
+  //Home
+  home(){
+    this.showPage(this.startPage);
+  }
   //#region Process pasted CTR file
 
   async PasteFile() {
