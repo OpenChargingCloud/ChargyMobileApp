@@ -61,6 +61,10 @@ export default class App {
         }
 
     }
+    
+    home(){
+      this.showPage(this.startPage);
+    }
 
     showPage(page: HTMLDivElement) {
 
@@ -440,14 +444,11 @@ export default class App {
   }
 
   //#endregion
-  //#region Scan QR Code
 
+  //#region Scan QR Code
   private processQRCodeResult(content: string): void {
 
-    //Example base64 Data
-    // const content = "H4sICBEg3l4CA3Rlc3RkYXRhLnNob3J0LnR4dADtV22L20YQ/iuuPobzMfu+6296zZkmvXJ1EpoSjpU0ckRkyUhy0vTIf++sfNe8lH5oaKGFCCPY2dnZeXlmHvkuOna+wm3fDNHmLtrj8GSo/NwOfVh2fo420l6CUEywi6gLYgaXCrRQHy4iX9cjTlNQneYRkbSjZMR2xr7EcU+yyxWPLqJ5eEcHo6dtX2P3GtsDyX5rj+lQI4mtMcxFZA7fTritSZLlj5Ls+lFugSshpHT8EQ8KU7vvsX6KM47PfXdCuvmXu2huDzjN/nAk35SSzFrJ3EV0CGoPgTXteHjnR3yO47QEFzEuyIvjqeza6nt8TxKXx1Y7U6hUMK5zq2NhuFNK60xpyHKbx9qB4Mo4lro0iY3LBGjGE9qxOYADWyRxpoSRlvFMqSxNRWbBpSIWOv30up8oEj+fxvsQlsBG8uH6iP0qfe3HfdvvV2k3nOovvATpbdNAbTkD4zhXnCOQkGlTVVrZBhAbCbZSwKFxFo3nmqkSBdeomVVca00pF0I1srG18+CN0hXXDVSuKQUdZlIwybQvSyUYmYVG1YbJWgBpYSjox5RHHJhbg14L2AFslt9LUqmGwwH7OSQfQ76vsOuG1bth7OrvQi37YU6wGUY8m7BrxtYgd0xvpNkACyZIJW7mJS8cuFiDWDO+Y2Kj5IbxoDEccVzQesYgZTHFcW6bljAcUtv4bsIzbj5DzTyekHwY8e092p/dbEMlXhGmu/0wtvPrA906YXXkSr9hdBW5egjtQOC8oeXbYIlWgnoDOLOsrpCqIShttZaohOZlZbGUGuu64cLXVWmksLzUwJE1dMYBYOWtKpmXtqxYo2XNlVMMnTSVQWkbDyUYKC1HXnmUjBL3CViqgBPc7laHoWy7dn7/DSrfoPIRKq8eZmAYqTScmFQykxbosSIHo0N13h+Da3j1crV9YfNV/vSKpAffnxpfhfkUMhqElIJ59P1EUsrBYvI8bBlnUkq2WTOnFYGKxrWwtGO1FRu+VLenk9VS3vvrboptdruLH99us08REqinW9S+nOh0iQv0Q/vXTTMFotFAxUI/Df1HyYeLvyKDNjhsQdF0j2PluAMZQjqQAQoyoO+cpeVhwe37rfr5uXp3/6ybD5jQmmug2059GwDzIt7tbq+unwXYTGSFVNbsXnt3zt22n3GPo5b3p/K+Ihol5wX8EZDv6+DfEjSwEBGjd1GERvGHYCX/Ib95/PPt7noXP4nOTN6GwvrugTEDV/+K00OchAOtQNkQ3j4ZhjfnbOmFlmeisikIbFiex9KPQ3tu6Wlo5s+pV1zCJVeXHKx7YPWFC2nLsMLo2ELBDBTWaEPlyhOCFugkybizQqkii00CVpEK8CLOBKc3GCJmlWQ2cYYlmXZJUYBiSRo7IagxaDjxXKTLAP1T3RwX/L/5wfCtgb+qgcVXNjCHAIS/1cCEO/O/aWBr2L/cwDorgGVGg0gT6ZLEaPo8KGyuTSIMo/8RSUFLk9IrE5Z6W2iA2ElBTZHmQB1EWNGZLBKXOWUJ8kYrFquMLoszlxOtffgd5MIUk7UMAAA=";
-
-    //compressed base64 data to 
+    //Decode base-64 encoding string -> Decompress (ungzip) -> detect content
     try {
       const data = Uint8Array.from(atob(content), c => c.charCodeAt(0))
       var decompressedData = pako.ungzip(data, { to: 'string' })  
@@ -492,10 +493,6 @@ export default class App {
   }
   //#endregion
 
-  //Home
-  home(){
-    this.showPage(this.startPage);
-  }
   //#region Process pasted CTR file
 
   async PasteFile() {
