@@ -30,7 +30,7 @@
     "cordova-plugin-file": "^6.0.2",
     "elliptic": "^6.5.3",
     "moment": "^2.24.0",
-    "chart.js": "^2.8.0",
+    "chart.js": "^2.9.4",
     "leaflet": "^1.5.1",
     "leaflet.awesome-markers": "^2.0.5"
   },
