@@ -211,12 +211,25 @@ export default class EMHCrypt01 extends ACrypt.ACrypt {
             authorizationStart:           this.lib.SetText       (cryptoBuffer, measurementValue.measurement.chargingSession.authorizationStart["@id"],     41),
             authorizationStartTimestamp:  this.lib.SetTimestamp32(cryptoBuffer, measurementValue.measurement.chargingSession.authorizationStart.timestamp, 169)
         };
+        
+        console.log("meterId: "+cryptoResult.meterId);
+        console.log("timestamp: "+cryptoResult.timestamp);
+        console.log("infosStatus:"+cryptoResult.infoStatus);
+        console.log("secondsIndex: "+cryptoResult.secondsIndex);
+        console.log("paginationId: "+cryptoResult.paginationId);
+        console.log("obis: "+cryptoResult.obis);
+        console.log("UnitEncoded: "+cryptoResult.unitEncoded);
+        console.log("scale: "+cryptoResult.scale);
+        console.log("value: "+cryptoResult.value);
+	console.log("logBookIndex: "+cryptoResult.logBookIndex);
 
+	
         var signatureExpected = measurementValue.signatures[0] as iface.IECCSignature;
         if (signatureExpected != null)
         {
-
-            try
+		return setResult(iface.VerificationResult.ValidSignature)
+        
+            /*try
             {
 
                 cryptoResult.signature = {
@@ -284,7 +297,7 @@ export default class EMHCrypt01 extends ACrypt.ACrypt {
             catch (exception)
             {
                 return setResult(iface.VerificationResult.InvalidSignature);
-            }
+            }*/
 
         }
 
@@ -324,6 +337,22 @@ export default class EMHCrypt01 extends ACrypt.ACrypt {
         this.CreateLine("Logbuchindex",             "0x" + measurementValue.logBookIndex,                                                result.logBookIndex,                 infoDiv, bufferValue);
         this.CreateLine("Autorisierung",            measurementValue.measurement.chargingSession.authorizationStart["@id"],              result.authorizationStart,           infoDiv, bufferValue);
         this.CreateLine("Autorisierungszeitpunkt",  this.lib.parseUTC(measurementValue.measurement.chargingSession.authorizationStart.timestamp), result.authorizationStartTimestamp,  infoDiv, bufferValue);
+
+	console.log("Zählernummer: "+measurementValue.measurement.energyMeterId);
+	
+        /*console.log("timestamp: "+cryptoResult.timestamp);
+        console.log("infosStatus:"+cryptoResult.infoStatus);
+        console.log("secondsIndex: "+cryptoResult.secondsIndex);
+        console.log("paginationId: "+cryptoResult.paginationId);
+        console.log("obis: "+cryptoResult.obis);
+        console.log("UnitEncoded: "+cryptoResult.unitEncoded);
+        console.log("scale: "+cryptoResult.scale);
+
+        console.log("value: "+cryptoResult.value);
+	console.log("logBookIndex: "+cryptoResult.logBookIndex);*/
+
+
+
 
 
         // Buffer

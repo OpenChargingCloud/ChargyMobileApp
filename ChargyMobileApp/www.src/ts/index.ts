@@ -46,7 +46,7 @@ export default class App {
     _chargy: chargy;
 
     start() {
-
+	console.log("Meter ID:");
         document.addEventListener('deviceready', () => this.onDeviceReady(),  false);
         document.addEventListener('resume',      () => this.onDeviceResume(), false);
         document.addEventListener('pause',       () => this.onPause(),        false);
@@ -346,7 +346,15 @@ export default class App {
     this.map = L.map('map').setView([49.7325504,10.1424442], 13);
 
     //@ts-ignore
-    L.tileLayer('https://{s}.tiles.mapbox.com/v4/ahzf.nc811hb2/{z}/{x}/{y}.png?' +
+    
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 18,
+            attribution: '<a href="http://openstreetmap.org">OSM</a> contr., ' +
+                '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
+                'Imagery © <a href="http://mapbox.com">Mapbox</a>'
+        }).addTo(this.map);
+    
+    /*L.tileLayer('https://{s}.tiles.mapbox.com/v4/ahzf.nc811hb2/{z}/{x}/{y}.png?' +
                 'access_token=pk.eyJ1IjoiYWh6ZiIsImEiOiJOdEQtTkcwIn0.Cn0iGqUYyA6KPS8iVjN68w',
                 {
                   maxZoom:      18,
@@ -354,7 +362,7 @@ export default class App {
                                 '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
                                 'Imagery © <a href="http://mapbox.com">Mapbox</a>'
                 }).addTo(this.map);
-
+*/
     //#endregion
 
     this._chargy = new chargy(this);
@@ -402,14 +410,19 @@ export default class App {
 
     var me = this;
     var reader = new FileReader();
+    console.log("ReadAndParseFile:"+file);
 
     reader.onload = function(event) {
         try
         {
+          //GG: Check if file format is .xml.
+          if(file){
+            
             me._chargy.detectContentFormat(JSON.parse((event.target as any).result)).
                        catch((exception) => {
                          me.doGlobalError("Fehlerhafter Transparenzdatensatz!", exception);
                        });
+            }
         }
         catch (exception) {
             me.doGlobalError("Fehlerhafter Transparenzdatensatz!", exception);

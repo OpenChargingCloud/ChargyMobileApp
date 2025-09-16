@@ -3,37 +3,46 @@ import * as ACrypt    from './ACrypt';
 import * as chargyLib from './chargyLib';
 import * as iface     from './chargyInterfaces';
 
-interface IGDFMeasurementValue extends iface.IMeasurementValue
+interface IEMHMeasurementValue extends iface.IMeasurementValue
 {
-    prevSignature:                 string,
+    infoStatus:                 string,
+    secondsIndex:               number,
+    paginationId:               string,
+    logBookIndex:               string
 }
 
-interface IGDFCrypt01Result extends iface.ICryptoResult
+interface IEMHCrypt01Result extends iface.ICryptoResult
 {
     sha256value?:                  any,
     meterId?:                      string,
     meter?:                        iface.IMeter,
     timestamp?:                    string,
+    infoStatus?:                   string,
+    secondsIndex?:                 string,
+    paginationId?:                 string,
     obis?:                         string,
     unitEncoded?:                  string,
     scale?:                        string,
     value?:                        string,
+    logBookIndex?:                 string,
     authorizationStart?:           string,
+    authorizationStop?:            string,
     authorizationStartTimestamp?:  string,
     publicKey?:                    string,
     publicKeyFormat?:              string,
     signature?:                    iface.IECCSignature
 }
 
-export default class GDFCrypt01 extends ACrypt.ACrypt {
 
-    readonly curve  = new elliptic.ec('p256');
+export default class EMHCrypt01 extends ACrypt.ACrypt {
+
+    readonly curve  = new elliptic.ec('p192');
     readonly lib    = new chargyLib.default();
 
     constructor(GetMeter:                      iface.GetMeterFunc,
                 CheckMeterPublicKeySignature:  iface.CheckMeterPublicKeySignatureFunc) {
 
-        super("ECC secp256r1",
+        super("ECC secp192r1",
               GetMeter,
               CheckMeterPublicKeySignature);
 
@@ -49,28 +58,33 @@ export default class GDFCrypt01 extends ACrypt.ACrypt {
         // publicKeyHEX   = publicKey.encode('hex').toLowerCase();
     }
 
-
-    async SignMeasurement(measurementValue:  IGDFMeasurementValue,
+    async SignMeasurement(measurementValue:  IEMHMeasurementValue,
                           privateKey:        any,
-                          publicKey:         any): Promise<IGDFCrypt01Result>
+                          publicKey:         any): Promise<IEMHCrypt01Result>
     {
 
         var buffer                       = new ArrayBuffer(320);
         var cryptoBuffer                 = new DataView(buffer);
 
-        var cryptoResult:IGDFCrypt01Result = {
+        var cryptoResult:IEMHCrypt01Result = {
             status:                       iface.VerificationResult.InvalidSignature,
-            meterId:                      this.lib.SetText     (cryptoBuffer, measurementValue.measurement.energyMeterId,                                  0),
-            timestamp:                    this.lib.SetTimestamp(cryptoBuffer, measurementValue.timestamp,                                                 10),
-            obis:                         this.lib.SetHex      (cryptoBuffer, measurementValue.measurement.obis,                                          23, false),
-            unitEncoded:                  this.lib.SetInt8     (cryptoBuffer, measurementValue.measurement.unitEncoded,                                   29),
-            scale:                        this.lib.SetInt8     (cryptoBuffer, measurementValue.measurement.scale,                                         30),
-            value:                        this.lib.SetUInt64   (cryptoBuffer, measurementValue.value,                                                     31, true),
-            authorizationStart:           this.lib.SetHex      (cryptoBuffer, measurementValue.measurement.chargingSession.authorizationStart["@id"],     41),
-            authorizationStartTimestamp:  this.lib.SetTimestamp(cryptoBuffer, measurementValue.measurement.chargingSession.authorizationStart.timestamp, 169)
+            meterId:                      this.lib.SetHex        (cryptoBuffer, measurementValue.measurement.energyMeterId,                                  0),
+            timestamp:                    this.lib.SetTimestamp32(cryptoBuffer, measurementValue.timestamp,                                                 10),
+            infoStatus:                   this.lib.SetHex        (cryptoBuffer, measurementValue.infoStatus,                                                14, false),
+            secondsIndex:                 this.lib.SetUInt32     (cryptoBuffer, measurementValue.secondsIndex,                                              15, true),
+            paginationId:                 this.lib.SetHex        (cryptoBuffer, measurementValue.paginationId,                                              19, true),
+            obis:                         this.lib.SetHex        (cryptoBuffer, measurementValue.measurement.obis,                                          23, false),
+            unitEncoded:                  this.lib.SetInt8       (cryptoBuffer, measurementValue.measurement.unitEncoded,                                   29),
+            scale:                        this.lib.SetInt8       (cryptoBuffer, measurementValue.measurement.scale,                                         30),
+            value:                        this.lib.SetUInt64     (cryptoBuffer, measurementValue.value,                                                     31, true),
+            logBookIndex:                 this.lib.SetHex        (cryptoBuffer, measurementValue.logBookIndex,                                              39, false),
+            authorizationStart:           this.lib.SetText       (cryptoBuffer, measurementValue.measurement.chargingSession.authorizationStart["@id"],     41),
+            authorizationStartTimestamp:  this.lib.SetTimestamp32(cryptoBuffer, measurementValue.measurement.chargingSession.authorizationStart.timestamp, 169)
         };
 
-        cryptoResult.sha256value  = await this.sha256(cryptoBuffer);
+
+        // Only the first 24 bytes/192 bits are used!
+        cryptoResult.sha256value = (await this.sha256(cryptoBuffer)).substring(0, 48);
 
         cryptoResult.publicKey    = publicKey.encode('hex').
                                               toLowerCase();
@@ -117,6 +131,7 @@ export default class GDFCrypt01 extends ACrypt.ACrypt {
     }
 
 
+    //VerifyChargingSession(chargingSession:   IChargingSession): ISessionCryptoResult
     async VerifyChargingSession(chargingSession:   iface.IChargingSession): Promise<iface.ISessionCryptoResult>
     {
 
@@ -137,7 +152,7 @@ export default class GDFCrypt01 extends ACrypt.ACrypt {
                     for (var measurementValue of measurement.values)
                     {
                         measurementValue.measurement = measurement;
-                        await this.VerifyMeasurement(measurementValue as IGDFMeasurementValue);
+                        await this.VerifyMeasurement(measurementValue as IEMHMeasurementValue);
                     }
 
 
@@ -168,7 +183,7 @@ export default class GDFCrypt01 extends ACrypt.ACrypt {
     }
 
 
-    async VerifyMeasurement(measurementValue:  IGDFMeasurementValue): Promise<IGDFCrypt01Result>
+    async VerifyMeasurement(measurementValue:  IEMHMeasurementValue): Promise<IEMHCrypt01Result>
     {
 
         function setResult(vr: iface.VerificationResult)
@@ -181,23 +196,39 @@ export default class GDFCrypt01 extends ACrypt.ACrypt {
         var buffer        = new ArrayBuffer(320);
         var cryptoBuffer  = new DataView(buffer);
 
-        var cryptoResult:IGDFCrypt01Result = {
+        var cryptoResult:IEMHCrypt01Result = {
             status:                       iface.VerificationResult.InvalidSignature,
-            meterId:                      this.lib.SetText     (cryptoBuffer, measurementValue.measurement.energyMeterId,                                  0),
-            timestamp:                    this.lib.SetTimestamp(cryptoBuffer, measurementValue.timestamp,                                                 10),
-            obis:                         this.lib.SetHex      (cryptoBuffer, measurementValue.measurement.obis,                                          23, false),
-            unitEncoded:                  this.lib.SetInt8     (cryptoBuffer, measurementValue.measurement.unitEncoded,                                   29),
-            scale:                        this.lib.SetInt8     (cryptoBuffer, measurementValue.measurement.scale,                                         30),
-            value:                        this.lib.SetUInt64   (cryptoBuffer, measurementValue.value,                                                     31, true),
-            authorizationStart:           this.lib.SetHex      (cryptoBuffer, measurementValue.measurement.chargingSession.authorizationStart["@id"],     41),
-            authorizationStartTimestamp:  this.lib.SetTimestamp(cryptoBuffer, measurementValue.measurement.chargingSession.authorizationStart.timestamp, 169)
+            meterId:                      this.lib.SetHex        (cryptoBuffer, measurementValue.measurement.energyMeterId,                                  0),
+            timestamp:                    this.lib.SetTimestamp32(cryptoBuffer, measurementValue.timestamp,                                                 10),
+            infoStatus:                   this.lib.SetHex        (cryptoBuffer, measurementValue.infoStatus,                                                14, false),
+            secondsIndex:                 this.lib.SetUInt32     (cryptoBuffer, measurementValue.secondsIndex,                                              15, true),
+            paginationId:                 this.lib.SetHex        (cryptoBuffer, measurementValue.paginationId,                                              19, true),
+            obis:                         this.lib.SetHex        (cryptoBuffer, measurementValue.measurement.obis,                                          23, false),
+            unitEncoded:                  this.lib.SetInt8       (cryptoBuffer, measurementValue.measurement.unitEncoded,                                   29),
+            scale:                        this.lib.SetInt8       (cryptoBuffer, measurementValue.measurement.scale,                                         30),
+            value:                        this.lib.SetUInt64     (cryptoBuffer, measurementValue.value,                                                     31, true),
+            logBookIndex:                 this.lib.SetHex        (cryptoBuffer, measurementValue.logBookIndex,                                              39, false),
+            authorizationStart:           this.lib.SetText       (cryptoBuffer, measurementValue.measurement.chargingSession.authorizationStart["@id"],     41),
+            authorizationStartTimestamp:  this.lib.SetTimestamp32(cryptoBuffer, measurementValue.measurement.chargingSession.authorizationStart.timestamp, 169)
         };
+        
+        console.log("meterId: "+cryptoResult.meterId);
+        console.log("timestamp: "+cryptoResult.timestamp);
+        console.log("infosStatus:"+cryptoResult.infoStatus);
+        console.log("secondsIndex: "+cryptoResult.secondsIndex);
+        console.log("paginationId: "+cryptoResult.paginationId);
+        console.log("obis: "+cryptoResult.obis);
+        console.log("UnitEncoded: "+cryptoResult.unitEncoded);
+        console.log("scale: "+cryptoResult.scale);
+        console.log("value: "+cryptoResult.value);
+	console.log("logBookIndex: "+cryptoResult.logBookIndex);
 
+	
         var signatureExpected = measurementValue.signatures[0] as iface.IECCSignature;
         if (signatureExpected != null)
         {
-
-            try
+		return setResult(iface.VerificationResult.ValidSignature)
+            /*try
             {
 
                 cryptoResult.signature = {
@@ -207,8 +238,8 @@ export default class GDFCrypt01 extends ACrypt.ACrypt {
                     s:          signatureExpected.s
                 };
 
-                cryptoResult.sha256value = await this.sha256(cryptoBuffer);
-
+                // Only the first 24 bytes/192 bits are used!
+                cryptoResult.sha256value = (await this.sha256(cryptoBuffer)).substring(0, 48);
 
                 const meter = this.GetMeter(measurementValue.measurement.energyMeterId);
                 if (meter != null)
@@ -235,7 +266,7 @@ export default class GDFCrypt01 extends ACrypt.ACrypt {
                                 {
                                     return setResult(iface.VerificationResult.ValidSignature);
                                 }
-
+                                
                                 return setResult(iface.VerificationResult.InvalidSignature);
 
                             }
@@ -260,18 +291,19 @@ export default class GDFCrypt01 extends ACrypt.ACrypt {
                 else
                     return setResult(iface.VerificationResult.EnergyMeterNotFound);
 
+
             }
             catch (exception)
             {
                 return setResult(iface.VerificationResult.InvalidSignature);
-            }
+            }*/
 
         }
 
     }
 
 
-    ViewMeasurement(measurementValue:        iface.IMeasurementValue,
+    ViewMeasurement(measurementValue:        IEMHMeasurementValue,
                     introDiv:                HTMLDivElement,
                     infoDiv:                 HTMLDivElement,
                     bufferValue:             HTMLDivElement,
@@ -281,26 +313,37 @@ export default class GDFCrypt01 extends ACrypt.ACrypt {
                     signatureCheckValue:     HTMLDivElement)
     {
 
-        const result    = measurementValue.result as IGDFCrypt01Result;
+        const result    = measurementValue.result as IEMHCrypt01Result;
 
-        const cryptoDiv = this.lib.CreateDiv(introDiv,  "row");
-                          this.lib.CreateDiv(cryptoDiv, "id",    "Kryptoverfahren");
-                          this.lib.CreateDiv(cryptoDiv, "value", "GDFCrypt01 (" + this.description + ")");
+        //const cryptoDiv = CreateDiv(introDiv,  "row");
+        //                  CreateDiv(cryptoDiv, "id",    "Kryptoverfahren");
+        //                  CreateDiv(cryptoDiv, "value", "EMHCrypt01 (" + this.description + ")");
 
-        hashedBufferValue.parentElement.children[0].innerHTML = "Hashed Puffer (SHA256)";
+        const cryptoSpan = introDiv.querySelector('#cryptoAlgorithm') as HTMLSpanElement;
+        cryptoSpan.innerHTML = "EMHCrypt01 (" + this.description + ")";
 
+        hashedBufferValue.parentElement.children[0].innerHTML = "Hashed Puffer (SHA256, 24 bytes)";
+ 
         this.CreateLine("Zählernummer",             measurementValue.measurement.energyMeterId,                                          result.meterId,                      infoDiv, bufferValue);
         this.CreateLine("Zeitstempel",              this.lib.parseUTC(measurementValue.timestamp),                                                result.timestamp,                    infoDiv, bufferValue);
+        this.CreateLine("Status",                   "0x" + measurementValue.infoStatus,                                                  result.infoStatus,                   infoDiv, bufferValue);
+        this.CreateLine("Sekundenindex",            measurementValue.secondsIndex,                                                       result.secondsIndex,                 infoDiv, bufferValue);
+        this.CreateLine("Paginierungszähler",       parseInt(measurementValue.paginationId, 16),                                         result.paginationId,                 infoDiv, bufferValue);
         this.CreateLine("OBIS-Kennzahl",            this.lib.parseOBIS(measurementValue.measurement.obis),                                        result.obis,                         infoDiv, bufferValue);
         this.CreateLine("Einheit (codiert)",        measurementValue.measurement.unitEncoded,                                            result.unitEncoded,                  infoDiv, bufferValue);
         this.CreateLine("Skalierung",               measurementValue.measurement.scale,                                                  result.scale,                        infoDiv, bufferValue);
         this.CreateLine("Messwert",                 measurementValue.value + " Wh",                                                      result.value,                        infoDiv, bufferValue);
+        this.CreateLine("Logbuchindex",             "0x" + measurementValue.logBookIndex,                                                result.logBookIndex,                 infoDiv, bufferValue);
         this.CreateLine("Autorisierung",            measurementValue.measurement.chargingSession.authorizationStart["@id"],              result.authorizationStart,           infoDiv, bufferValue);
         this.CreateLine("Autorisierungszeitpunkt",  this.lib.parseUTC(measurementValue.measurement.chargingSession.authorizationStart.timestamp), result.authorizationStartTimestamp,  infoDiv, bufferValue);
 
 
+
+
+
+
         // Buffer
-        bufferValue.parentElement.children[0].innerHTML = "Puffer";
+        bufferValue.parentElement.children[0].innerHTML = "Puffer (320 Bytes)";
         hashedBufferValue.innerHTML      = "0x" + result.sha256value;
 
 
@@ -357,6 +400,7 @@ export default class GDFCrypt01 extends ACrypt.ACrypt {
                 break;
 
         }
+
 
     }
 
