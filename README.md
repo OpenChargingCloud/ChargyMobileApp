@@ -1,5 +1,5 @@
 
-# Chargy Mobile App
+# Chargy Mobile App with additional installing notes
 
 Chargy is a transparency software for secure and transparent e-mobility charging processes, as defined by the German "Eichrecht". The software allows you to verify the cryptographic signatures of energy measurements within charge detail records and comes with a couple of useful extentions to simplify the entire process for endusers and operators.
 
@@ -41,20 +41,19 @@ sudo curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
 sudo apt install nodejs
 ```
 
-Afterwards you can install the remaining software using the node packet manager
+Afterwards you can install the remaining software using the node packet manager. Important: use the mentioned Versions, ohterwise an error may occur. Additionally its not very easy to get rid of the newest versions and install the older ones.
+Therefore it is recommended to stick to the mentioned Version.
+
 ```
-$ npm install -g cordova@latest
-+ cordova@9.0.0
+$ npm install -g cordova@9.0.0
 ```
 
 ```
-$ npm install -g typescript@latest
-+ typescript@3.4.5
+$ npm install -g typescript@3.4.5
 ```
 
 ```
-$ npm install -g sass@latest
-+ sass@1.20.1
+$ npm install -g sass@1.20.1
 ```
 
 
@@ -91,3 +90,50 @@ To test Chargy on your Android smart phone please install [Android Studio](https
 $ cordova run android
 ```
 
+
+## Rebuild the project from scratch
+
+In case the cloned project does not work, you can find the REBUILD.md in the documentation. Follow these steps to build the project.
+
+Afterwards you need to do some additional steps:
+- Get __*Android Studio*__ to get the SDK.
+- Create the environment variable __*ANDROID_SDK_ROOT*__ and __*ANDROID_SDK*__ (both get the same path C:/Users/HereIsYourActualUser/AppData/Local/Android/Sdk)
+- install browserify with:
+```
+$ npm install browserify
+```
+- Establish __*JAVA_HOME*__ (Note: JDK8 should be installed, every other version should be deleted for no mix-up in the building process)
+
+
+## File Editing
+
+The final steps include some additions and alterations in some Files.
+
+The file __*build.gradle.*__ (in .../ChargyMobileApp/platforms/android/CordovaLib) needs an alteration on:
+
+buildscript{
+
+repositories{
+
+__*maven { url ’https://repo.grails.org/grails/core/’} }}*__
+
+The file __*check_reqs.js*__ (in .../ChargyMobileApp/platforms/android/cordova/lib) needs an addition in line 91
+__*{shell:true}*__
+
+To start the Chargy-Application directly on the smartphone use
+```
+$ cordova run android -device
+```
+
+## Final execution notes
+
+1. The chosen Smartphone needs the developermode switched __*on*__
+2. USB debugging needs to be switchen __*on*__
+3. A direct installation for Chargy on your smartphone is possible with the __*app-debug.apk-file*__ 
+
+Finally we are at the end of our adventure. Thank you for staying with us. We are working on a more confinient way to get things rolling. Recommendations for improvement are welcome!
+
+Special thanks for the original authors to make this fork possible and the strong support from my colleague Manuel.
+Take care folks!
+
+Your Greg
