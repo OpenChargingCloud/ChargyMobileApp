@@ -54,6 +54,16 @@ export interface IChargeTransparencyRecord
     chargingSessions:           Array<IChargingSession>;
     eMobilityProviders:         Array<IEMobilityProvider>;
     mediationServices:          Array<IMediationService>;
+
+    //--CB--Übergabe der Unveränderten OCMFs und der PuplicKey für die Prüfung
+
+    ocmfRaw?: {
+            S: string;
+            E: string;
+            P: string;
+        };
+
+    //______
 }
 
 export interface IContract
@@ -173,6 +183,16 @@ export interface IChargingSession
     product:                    IChargingProduct;
     measurements:               Array<IMeasurement>;
     method:                     ACrypt.ACrypt;
+
+    //--CB--Übergabe der Unveränderten OCMFs und der PuplicKey für die Prüfung
+
+    ocmfRaw?: {
+            S: string;
+            E: string;
+            P: string;
+        };
+
+    //______
 }
 
 export interface IChargingProduct

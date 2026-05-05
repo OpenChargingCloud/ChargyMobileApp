@@ -5,6 +5,10 @@ import EMHCrypt01     from './EMHCrypt01';
 import * as chargyLib from './chargyLib';
 import * as iface     from './chargyInterfaces';
 
+//--CB--Import der OCMF Klasse
+import OCMF     from './OCMF';
+//______
+
 // import { debug } from "util";
 // import * as crypto from "crypto";
 // import { readSync } from "fs";
@@ -123,7 +127,7 @@ export default class chargy {
                     }
 
                 }
- 
+
             };
 
             //ToDo: Checking the timestamp might be usefull!
@@ -154,7 +158,7 @@ export default class chargy {
 
     //#region GetMethods...
 
-    public GetChargingPool: iface.GetChargingPoolFunc = (Id: String) => 
+    public GetChargingPool: iface.GetChargingPoolFunc = (Id: String) =>
     {
 
         for (var chargingPool of this.chargingPools)
@@ -195,16 +199,16 @@ export default class chargy {
 
     public GetMeter: iface.GetMeterFunc = (Id: string) =>
     {
-    
+
         for (var meter of this.meters)
         {
             if (meter["@id"] == Id)
                 return meter;
         }
-    
+
         return null;
-    
-    }    
+
+    }
 
     //#endregion
 
@@ -237,7 +241,7 @@ export default class chargy {
 
         async function processChargeTransparencyRecord(CTR: iface.IChargeTransparencyRecord)
         {
-            console.log("processChargeTransparencyRecord");
+
             //#region Data
 
             var me2: chargy = me;
@@ -261,9 +265,9 @@ export default class chargy {
 
             async function checkSessionCrypto(chargingSession: iface.IChargingSession)
             {
-                console.log("checkSessionCrypto");
+
                 var result = await me2.verifySessionCryptoDetails(chargingSession);
-                console.log("Cryptodetails available");
+
                 //#region Add marker to map
 
                 var redMarker                 = leaflet.AwesomeMarkers.icon({
@@ -284,7 +288,7 @@ export default class chargy {
 
                 switch (result.status)
                 {
-    
+
                     case iface.SessionVerificationResult.UnknownSessionFormat:
                     case iface.SessionVerificationResult.PublicKeyNotFound:
                     case iface.SessionVerificationResult.InvalidPublicKey:
@@ -303,7 +307,7 @@ export default class chargy {
                 }
 
                 var geoLocation  = null;
-                
+
                 if (chargingSession.chargingPool                != null &&
                     chargingSession.chargingPool.geoLocation    != null)
                 {
@@ -315,56 +319,52 @@ export default class chargy {
                 {
                     geoLocation = chargingSession.chargingStation.geoLocation;
                 }
-                console.log("geoLocation map:"+geoLocation.lat+", "+geoLocation.lng);
+
                 if (geoLocation != null)
                 {
 
                     var marker = leaflet.marker([geoLocation.lat, geoLocation.lng], { icon: markerIcon }).addTo(me2.app.map);
                     markers.push(marker);
-                    markerIcon = greenMarker; //GG:Ort stimmt immer!
 
                     if (minlat > geoLocation.lat)
                         minlat = geoLocation.lat;
-                    markerIcon = greenMarker; //GG:Ort stimmt immer!
 
                     if (maxlat < geoLocation.lat)
                         maxlat = geoLocation.lat;
-                    markerIcon = greenMarker; //GG:Ort stimmt immer!
 
                     if (minlng > geoLocation.lng)
                         minlng = geoLocation.lng;
-                    markerIcon = greenMarker; //GG:Ort stimmt immer!
 
                     if (maxlng < geoLocation.lng)
                         maxlng = geoLocation.lng;
-                    markerIcon = greenMarker; //GG:Ort stimmt immer!    
-                    /*switch (result.status)
+
+                    switch (result.status)
                     {
-        
+
                         case iface.SessionVerificationResult.UnknownSessionFormat:
                         case iface.SessionVerificationResult.PublicKeyNotFound:
                         case iface.SessionVerificationResult.InvalidPublicKey:
                         case iface.SessionVerificationResult.InvalidSignature:
                             marker.bindPopup("Ungültiger Ladevorgang!");
                             break;
-    
+
                         case iface.SessionVerificationResult.ValidSignature:
                             marker.bindPopup("Gültiger Ladevorgang!");
                             break;
-    
-    
+
+
                         default:
                             markerIcon = redMarker;
-    
-                    }*/
+
+                    }
 
                 }
 
                 //#endregion
 
-                /*switch (result.status)
+                switch (result.status)
                 {
-    
+
                     case iface.SessionVerificationResult.UnknownSessionFormat:
                     case iface.SessionVerificationResult.PublicKeyNotFound:
                     case iface.SessionVerificationResult.InvalidPublicKey:
@@ -378,9 +378,8 @@ export default class chargy {
                     default:
                         return '<i class="fas fa-times-circle"></i> Ungültig';
 
-                }*/
-                return '<i class="fas fa-check-circle"></i> Gültig';//GG: result ist immer gültig
-    
+                }
+
             }
 
             //#region Show CTR infos
@@ -488,29 +487,29 @@ export default class chargy {
 
                                 for (var EVSE of chargingStation.EVSEs)
                                 {
-        
+
                                     EVSE.chargingStation    = chargingStation;
                                     EVSE.chargingStationId  = chargingStation["@id"];
-        
+
                                     me.EVSEs.push(EVSE);
-        
+
                                     if (EVSE.meters) {
-        
+
                                         for (var meter of EVSE.meters)
                                         {
-        
+
                                             meter.EVSE               = EVSE;
                                             meter.EVSEId             = EVSE["@id"];
-        
+
                                             meter.chargingStation    = chargingStation;
                                             meter.chargingStationId  = chargingStation["@id"];
-        
+
                                             me.meters.push(meter);
-        
+
                                         }
-        
+
                                     }
-        
+
                                 }
 
                             }
@@ -660,7 +659,11 @@ export default class chargy {
                 for (var chargingSession of CTR.chargingSessions)
                 {
 
-                    let chargingSessionDiv      = me.lib.CreateDiv(chargingSessionsDiv, "chargingSession");               
+
+
+
+
+                    let chargingSessionDiv      = me.lib.CreateDiv(chargingSessionsDiv, "chargingSession");
                     chargingSession.GUI         = chargingSessionDiv;
                     chargingSessionDiv.onclick  = me.captureChargingSession(chargingSession);
 
@@ -697,7 +700,7 @@ export default class chargy {
 
                     }
                     catch (exception)
-                    { 
+                    {
                         console.log("Could not show session time infos of charging session '" + chargingSession["@id"] + "':" + exception);
                     }
 
@@ -762,7 +765,7 @@ export default class chargy {
 
                     }
                     catch (exception)
-                    { 
+                    {
                         console.log("Could not show energy infos of charging session '" + chargingSession["@id"] + "':" + exception);
                     }
 
@@ -774,7 +777,7 @@ export default class chargy {
 
                         if (chargingSession.authorizationStart != null)
                         {
-    
+
                             var authorizationStartDiv            = tableDiv.appendChild(document.createElement('div'));
                                 authorizationStartDiv.className  = "authorizationStart";
 
@@ -806,7 +809,7 @@ export default class chargy {
 
                         if (chargingSession.authorizationStop != null)
                         {
-    
+
                             var authorizationStopDiv            = tableDiv.appendChild(document.createElement('div'));
                                 authorizationStopDiv.className  = "authorizationStop";
 
@@ -829,12 +832,12 @@ export default class chargy {
                                     break;
 
                             }
-    
+
                             var authorizationStopIdDiv                     = authorizationStopDiv.appendChild(document.createElement('div'));
                             authorizationStopIdDiv.className               = "id";
                             authorizationStopIdDiv.innerHTML = chargingSession.authorizationStop["@id"];
 
-                        }                        
+                        }
 
                     } catch (exception)
                     {
@@ -939,7 +942,7 @@ export default class chargy {
                             }
 
                             if (address != null)
-                                locationDiv.innerHTML += "<br />" + 
+                                locationDiv.innerHTML += "<br />" +
                                                             (address.street      != null ? " " + address.street        : "") +
                                                             (address.houseNumber != null ? " " + address.houseNumber   : "") +
 
@@ -953,7 +956,7 @@ export default class chargy {
                     {
                         console.log("Could not show location infos of charging session '" + chargingSession["@id"] + "':" + exception);
                     }
-
+                    chargingSession.ocmfRaw = CTR.ocmfRaw;
                     //#endregion
 
                     //#region Show verification status
@@ -963,6 +966,8 @@ export default class chargy {
                     verificationStatusDiv.innerHTML = await checkSessionCrypto(chargingSession);
 
                     //#endregion
+
+
 
 
                     me.chargingSessions.push(chargingSession);
@@ -985,28 +990,17 @@ export default class chargy {
         }
 
         // e.g. the current chargeIT mobility does not provide any format identifiers
-        async function tryToParseAnonymousFormat(SomeJSONcomplete: any): Promise<boolean>
+        async function tryToParseAnonymousFormat(SomeJSON: any): Promise<boolean>
         {
-	console.log("print in function tryToParseAnonymousFormat"); // MM GG
-	console.log("print SomeJSON start"+SomeJSONcomplete);
-	console.log("print SomeJSON end");
-	
+
             var me2: chargy = me;
-            //GG: parse "outer" JSON for OCMF
-            console.log(SomeJSONcomplete.transactionId);
-            console.log(SomeJSONcomplete.publicKey);
-            let ocmfarray = SomeJSONcomplete.ocmf.split("|");//OCMF-String an Trennzeichen aufteilen.
-            console.log(ocmfarray[0]);
-            console.log(ocmfarray[1]);
-            console.log(ocmfarray[2]);
-            var  SomeJSON = JSON.parse(ocmfarray[1]);
-            //GG: Parse ocmf-string
+
             if (!Array.isArray(SomeJSON))
             {
-		/*
+
                 var signedMeterValues = SomeJSON.signedMeterValues as Array<any>;
                 var placeInfo         = SomeJSON.placeInfo;
-		*/
+
                 // {
                 //     "signedMeterValues":[{
                 //         "timestamp": 1550533285,
@@ -1060,7 +1054,7 @@ export default class chargy {
                 //         "address": {
                 //             "street": "Musterstraße 12",
                 //             "zipCode": "74789",
-                //             "town": "Stadt" 
+                //             "town": "Stadt"
                 //         },
                 //         "geoLocation": {
                 //             "lat": 12.3774,
@@ -1070,118 +1064,18 @@ export default class chargy {
                 // }
 
                 try {
-                    var _formatVersion = SomeJSON.FV;
-                    console.log("FormatVersion: "+ _formatVersion);
-                    
-                    var _gatewayIdentification = SomeJSON.GI;
-                    console.log("GatewayIdentification: "+ _gatewayIdentification);
 
-                    var _gatewaySerialNumber = SomeJSON.GS;
-                    console.log("GatewaySernialNumber: "+ _gatewaySerialNumber);
+                    var CTRArray = [];
 
-                    var _gatewayVersion = SomeJSON.GV;
-                    console.log("GatewayVersion: "+ _gatewayVersion);
+                    for (var i = 0; i < signedMeterValues.length; i++) {
 
-                    var _paginationField = SomeJSON.PG;
-                    var _transactionReference = _paginationField;
-                    /*if(Array.from(_paginationField)[0]=="T"){
-                        _transactionReference = _paginationField.replace(/^\D+/g, '');
-                    }*/
-                    console.log("_transactionReference"+_transactionReference);
-                    console.log("PaginationField: "+ _paginationField);
+                        var signedMeterValue = signedMeterValues[i];
 
-                    var _meterVendor = SomeJSON.MV;
-                    console.log("MeterVendor: "+ _meterVendor);
-
-                    var _meterModel = SomeJSON.MM;
-                    console.log("MeterModel: "+ _meterModel);
-
-                    var _meterSerial = SomeJSON.MS;
-                    console.log("MeterSerial: "+ _meterSerial);
-
-                    var _meterFirmware = SomeJSON.MF;
-                    console.log("MeterFrimware: "+ _meterFirmware);
-
-                    var _identificationStatus = SomeJSON.IS;
-                    console.log("IdentificationStatus: "+ _identificationStatus);
-
-                    var _identificationType = SomeJSON.IT;
-                    console.log("IdentificationType: "+ _identificationType);
-
-                    var _identificationData = SomeJSON.ID;
-                    console.log("IdendificationData: "+ _identificationData);
-
-                    var _readings = SomeJSON.RD as Array<any>;
-                                        var CTRArray = [];
-
-                    //for (var i = 0; i < signedMeterValues.length; i++) {
-                    for (var i = 0; i < _readings.length; i++) {    //GG
-                        //var signedMeterValue = signedMeterValues[i];
-                        var signedMeterValue = _readings[i];
-
-                        var _timeSAFE = signedMeterValue["TM"] as string;
-                        console.log("_timeSAFE: "+ _timeSAFE);
-                        var subsafetime = _timeSAFE.substring(0,19);
-                        console.log("subsafetime: "+ subsafetime);
-
-                        var _timestamp = Date.parse(subsafetime);
-                        _timestamp = Math.floor(_timestamp/1000);
-                        console.log("_timestamp: " + _timestamp);
-
+                        var _timestamp = signedMeterValue["timestamp"] as number;
                         if (_timestamp == null || typeof _timestamp !== 'number')
                             throw "Missing or invalid timestamp[" + i + "]!"
                         var timestamp = me2.lib.parseUTC(_timestamp);
-                        
-                        
-                        var _transaction = signedMeterValue["TX"] as string;
-                        console.log("TX: "+ _transaction);
 
-                        //var _transactionId = signedMeterValue["PG"] as string;
-                        var _transactionId = _paginationField;
-                        console.log("transactionId: "+ _transactionId);
-                        if (_transactionId == null || typeof _transactionId !== 'string')
-                            throw "Missing or invalid transactionId[" + i + "]!"
-                        
-                        var _transaction = _transaction;
-                        console.log("transaction: " + _transaction);
-
-                        var _readingValue = signedMeterValue["RV"] as number;
-                        if (_readingValue == null || typeof _readingValue !== 'number')
-                            throw "Missing or invalid Number[" + i + "]!"
-                        var _readingValue = _readingValue*10.0; //GG: Messwerte von Mennekes werden in Zehntel kWh angegeben.
-                        console.log("readingValue: " + _readingValue);
-
-                        var _readingIdentification = signedMeterValue["RI"] as string;
-                        if (_readingIdentification == null || typeof _readingIdentification !== 'string')
-                            throw "Missing or invalid String[" + i + "]!"
-                        var _readingIdentification = _readingIdentification;
-                        console.log("readingIdentification: " + _readingIdentification);
-
-                        var _readingUnit = signedMeterValue["RU"] as string;
-                        if (_readingUnit == null || typeof _readingUnit !== 'string')
-                            throw "Missing or invalid String[" + i + "]!"
-                        var _readingUnit = _readingUnit;
-                        console.log("readingUnit: " + _readingUnit);
-
-                        var _readingCurrentType = signedMeterValue["RT"] as string;
-                        if (_readingCurrentType == null || typeof _readingCurrentType !== 'string')
-                            throw "Missing or invalid String[" + i + "]!"
-                        var _readingCurrentType = _readingCurrentType;
-                        console.log("readingCurrentType: " + _readingCurrentType);
-
-                        var _errorFlags = signedMeterValue["EF"] as string;
-                        if (_errorFlags == null || typeof _errorFlags!== 'string')
-                            throw "Missing or invalid String[" + i + "]!"
-                        var _errorFlags = _errorFlags;
-                        console.log("errorFlags: " + _errorFlags);
-
-                        var _status = signedMeterValue["ST"] as string;
-                        if (_status == null || typeof _status!== 'string')
-                            throw "Missing or invalid String[" + i + "]!"
-                        var _status = _status;
-                        console.log("status: " + _status);
-
-/*
                         var _meterInfo = signedMeterValue["meterInfo"] as string;
                         if (_meterInfo == null || typeof _meterInfo !== 'object')
                             throw "Missing or invalid meterInfo[" + i + "]!"
@@ -1226,15 +1120,15 @@ export default class chargy {
 
                         var _contract_timestampLocal_timestamp = _contract_timestampLocal["timestamp"] as number;
                         if (_contract_timestampLocal_timestamp == null || typeof _contract_timestampLocal_timestamp !== 'number')
-                            throw "Missing or invalid contract timestampLocal timestamp[" + i + "]!"                            
+                            throw "Missing or invalid contract timestampLocal timestamp[" + i + "]!"
 
                         var _contract_timestampLocal_localOffset = _contract_timestampLocal["localOffset"] as number;
                         if (_contract_timestampLocal_localOffset == null || typeof _contract_timestampLocal_localOffset !== 'number')
-                            throw "Missing or invalid contract timestampLocal localOffset[" + i + "]!"                            
-                            
+                            throw "Missing or invalid contract timestampLocal localOffset[" + i + "]!"
+
                         var _contract_timestampLocal_seasonOffset = _contract_timestampLocal["seasonOffset"] as number;
                         if (_contract_timestampLocal_seasonOffset == null || typeof _contract_timestampLocal_seasonOffset !== 'number')
-                            throw "Missing or invalid contract timestampLocal seasonOffset[" + i + "]!"  
+                            throw "Missing or invalid contract timestampLocal seasonOffset[" + i + "]!"
 
                         var _contract_timestamp = _contract["timestamp"] as number;
                         if (_contract_timestamp == null || typeof _contract_timestamp !== 'number')
@@ -1260,125 +1154,15 @@ export default class chargy {
 
                         var _measuredValue_timestampLocal_timestamp = _measuredValue_timestampLocal["timestamp"] as number;
                         if (_measuredValue_timestampLocal_timestamp == null || typeof _measuredValue_timestampLocal_timestamp !== 'number')
-                            throw "Missing or invalid measuredValue timestampLocal timestamp[" + i + "]!"                            
+                            throw "Missing or invalid measuredValue timestampLocal timestamp[" + i + "]!"
 
                         var _measuredValue_timestampLocal_localOffset = _measuredValue_timestampLocal["localOffset"] as number;
                         if (_measuredValue_timestampLocal_localOffset == null || typeof _measuredValue_timestampLocal_localOffset !== 'number')
-                            throw "Missing or invalid measuredValue timestampLocal localOffset[" + i + "]!"                            
-                            
+                            throw "Missing or invalid measuredValue timestampLocal localOffset[" + i + "]!"
+
                         var _measuredValue_timestampLocal_seasonOffset = _measuredValue_timestampLocal["seasonOffset"] as number;
                         if (_measuredValue_timestampLocal_seasonOffset == null || typeof _measuredValue_timestampLocal_seasonOffset !== 'number')
-                            throw "Missing or invalid measuredValue timestampLocal seasonOffset[" + i + "]!"                            
-
-                        var _measuredValue_value = _measuredValue["value"] as string;
-                        if (_measuredValue_value == null || typeof _measuredValue_value !== 'string')
-                            throw "Missing or invalid measuredValue value[" + i + "]!"
-
-                        var _measuredValue_unit = _measuredValue["unit"] as string;
-                        if (_measuredValue_unit == null || typeof _measuredValue_unit !== 'string')
-                            throw "Missing or invalid measuredValue unit[" + i + "]!"
-
-                        var _measuredValue_scale = _measuredValue["scale"] as number;
-                        if (_measuredValue_scale == null || typeof _measuredValue_scale !== 'number')
-                            throw "Missing or invalid measuredValue scale[" + i + "]!"
-
-                        var _measuredValue_valueType = _measuredValue["valueType"] as string;
-                        if (_measuredValue_valueType == null || typeof _measuredValue_valueType !== 'string')
-                            throw "Missing or invalid measuredValue valueType[" + i + "]!"
-
-                        var _measuredValue_unitEncoded = _measuredValue["unitEncoded"] as number;
-                        if (_measuredValue_unitEncoded == null || typeof _measuredValue_unitEncoded !== 'number')
-                            throw "Missing or invalid measuredValue unitEncoded[" + i + "]!"
-
-
-                        var _measurand = signedMeterValue["measurand"];
-                            if (_var _meterInfo = signedMeterValue["meterInfo"] as string;
-                        if (_meterInfo == null || typeof _meterInfo !== 'object')
-                            throw "Missing or invalid meterInfo[" + i + "]!"
-
-                        var _meterInfo_firmwareVersion = _meterInfo["firmwareVersion"] as string;
-                        if (_meterInfo_firmwareVersion == null || typeof _meterInfo_firmwareVersion !== 'string')
-                            throw "Missing or invalid meterInfo firmwareVersion[" + i + "]!"
-
-                        var _meterInfo_publicKey = _meterInfo["publicKey"] as string;
-                        if (_meterInfo_publicKey == null || typeof _meterInfo_publicKey !== 'string')
-                            throw "Missing or invalid meterInfo publicKey[" + i + "]!"
-
-                        var _meterInfo_meterId = _meterInfo["meterId"] as string;
-                        if (_meterInfo_meterId == null || typeof _meterInfo_meterId !== 'string')
-                            throw "Missing or invalid meterInfo meterId[" + i + "]!"
-
-                        var _meterInfo_type = _meterInfo["type"] as string;
-                        if (_meterInfo_type == null || typeof _meterInfo_type !== 'string')
-                            throw "Missing or invalid meterInfo type[" + i + "]!"
-
-                        var _meterInfo_manufacturer = _meterInfo["manufacturer"] as string;
-                        if (_meterInfo_manufacturer == null || typeof _meterInfo_manufacturer !== 'string')
-                            throw "Missing or invalid meterInfo manufacturer[" + i + "]!"
-
-
-                        var _transactionId = signedMeterValue["transactionId"] as string;
-                        if (_transactionId == null || typeof _transactionId !== 'string')
-                            throw "Missing or invalid transactionId[" + i + "]!"
-
-
-                        var _contract = signedMeterValue["contract"];
-                        if (_contract == null || typeof _contract !== 'object')
-                            throw "Missing or invalid contract[" + i + "]!"
-
-                        var _contract_type = _contract["type"] as string;
-                        if (_contract_type == null || typeof _contract_type !== 'string')
-                            throw "Missing or invalid contract type[" + i + "]!"
-
-                        var _contract_timestampLocal = _contract["timestampLocal"];
-                        if (_contract_timestampLocal == null || typeof _contract_timestampLocal !== 'object')
-                            throw "Missing or invalid contract timestampLocal[" + i + "]!"
-
-                        var _contract_timestampLocal_timestamp = _contract_timestampLocal["timestamp"] as number;
-                        if (_contract_timestampLocal_timestamp == null || typeof _contract_timestampLocal_timestamp !== 'number')
-                            throw "Missing or invalid contract timestampLocal timestamp[" + i + "]!"                            
-
-                        var _contract_timestampLocal_localOffset = _contract_timestampLocal["localOffset"] as number;
-                        if (_contract_timestampLocal_localOffset == null || typeof _contract_timestampLocal_localOffset !== 'number')
-                            throw "Missing or invalid contract timestampLocal localOffset[" + i + "]!"                            
-                            
-                        var _contract_timestampLocal_seasonOffset = _contract_timestampLocal["seasonOffset"] as number;
-                        if (_contract_timestampLocal_seasonOffset == null || typeof _contract_timestampLocal_seasonOffset !== 'number')
-                            throw "Missing or invalid contract timestampLocal seasonOffset[" + i + "]!"  
-
-                        var _contract_timestamp = _contract["timestamp"] as number;
-                        if (_contract_timestamp == null || typeof _contract_timestamp !== 'number')
-                            throw "Missing or invalid contract timestamp[" + i + "]!"
-
-                        var _contract_id = _contract["id"] as string;
-                        if (_contract_id == null || typeof _contract_id !== 'string')
-                            throw "Missing or invalid contract type[" + i + "]!"
-
-
-                        var _measurementId = signedMeterValue["measurementId"] as string;
-                        if (_measurementId == null || typeof _measurementId !== 'string')
-                            throw "Missing or invalid measurementId[" + i + "]!"
-
-
-                        var _measuredValue = signedMeterValue["measuredValue"];
-                        if (_measuredValue == null || typeof _measuredValue !== 'object')
-                            throw "Missing or invalid measuredValue[" + i + "]!"
-
-                        var _measuredValue_timestampLocal = _measuredValue["timestampLocal"];
-                        if (_measuredValue_timestampLocal == null || typeof _measuredValue_timestampLocal !== 'object')
-                            throw "Missing or invalid measuredValue timestampLocal[" + i + "]!"
-
-                        var _measuredValue_timestampLocal_timestamp = _measuredValue_timestampLocal["timestamp"] as number;
-                        if (_measuredValue_timestampLocal_timestamp == null || typeof _measuredValue_timestampLocal_timestamp !== 'number')
-                            throw "Missing or invalid measuredValue timestampLocal timestamp[" + i + "]!"                            
-
-                        var _measuredValue_timestampLocal_localOffset = _measuredValue_timestampLocal["localOffset"] as number;
-                        if (_measuredValue_timestampLocal_localOffset == null || typeof _measuredValue_timestampLocal_localOffset !== 'number')
-                            throw "Missing or invalid measuredValue timestampLocal localOffset[" + i + "]!"                            
-                            
-                        var _measuredValue_timestampLocal_seasonOffset = _measuredValue_timestampLocal["seasonOffset"] as number;
-                        if (_measuredValue_timestampLocal_seasonOffset == null || typeof _measuredValue_timestampLocal_seasonOffset !== 'number')
-                            throw "Missing or invalid measuredValue timestampLocal seasonOffset[" + i + "]!"                            
+                            throw "Missing or invalid measuredValue timestampLocal seasonOffset[" + i + "]!"
 
                         var _measuredValue_value = _measuredValue["value"] as string;
                         if (_measuredValue_value == null || typeof _measuredValue_value !== 'string')
@@ -1429,39 +1213,7 @@ export default class chargy {
                         var _additionalInfo_indexes_logBook = _additionalInfo_indexes["logBook"] as string;
                         if (_additionalInfo_indexes_logBook == null || typeof _additionalInfo_indexes_logBook !== 'string')
                             throw "Missing or invalid additionalInfo indexes logBook[" + i + "]!"
-                            
-                        var _additionalInfo_status = _additionalInfo["status"] as string;
-                        if (_additionalInfo_status == null || typeof _additionalInfo_status !== 'string')
-                            throw "Missing or invalid additionalInfo status[" + i + "]!"
 
-measurand == null || typeof _measurand !== 'object')
-                                throw "Missing or invalid measurand[" + i + "]!"
-
-                        var _measurand_id = _measurand["id"] as string;
-                        if (_measurand_id == null || typeof _measurand_id !== 'string')
-                            throw "Missing or invalid measurand id[" + i + "]!"
-
-                        var _measurand_name = _measurand["name"] as string;
-                        if (_measurand_name == null || typeof _measurand_name !== 'string')
-                            throw "Missing or invalid measurand name[" + i + "]!"
-
-
-                        var _additionalInfo = signedMeterValue["additionalInfo"];
-                            if (_additionalInfo == null || typeof _additionalInfo !== 'object')
-                                throw "Missing or invalid additionalInfo[" + i + "]!"
-
-                        var _additionalInfo_indexes = _additionalInfo["indexes"];
-                        if (_additionalInfo_indexes == null || typeof _additionalInfo_indexes !== 'object')
-                            throw "Missing or invalid additionalInfo indexes[" + i + "]!"
-
-                        var _additionalInfo_indexes_timer = _additionalInfo_indexes["timer"] as number;
-                        if (_additionalInfo_indexes_timer == null || typeof _additionalInfo_indexes_timer !== 'number')
-                            throw "Missing or invalid additionalInfo indexes timer[" + i + "]!"
-
-                        var _additionalInfo_indexes_logBook = _additionalInfo_indexes["logBook"] as string;
-                        if (_additionalInfo_indexes_logBook == null || typeof _additionalInfo_indexes_logBook !== 'string')
-                            throw "Missing or invalid additionalInfo indexes logBook[" + i + "]!"
-                            
                         var _additionalInfo_status = _additionalInfo["status"] as string;
                         if (_additionalInfo_status == null || typeof _additionalInfo_status !== 'string')
                             throw "Missing or invalid additionalInfo status[" + i + "]!"
@@ -1471,67 +1223,65 @@ measurand == null || typeof _measurand !== 'object')
                         if (_signature == null || typeof _signature !== 'string')
                             throw "Missing or invalid signature[" + i + "]!"
 
-*/
-                        //var aaa = moment.unix(_contract_timestampLocal_timestamp).utc();
-                        console.log("_timestamp_before_push: "+ _timestamp);
+
+                        var aaa = moment.unix(_contract_timestampLocal_timestamp).utc();
+
                         CTRArray.push({
                                     "timestamp": _timestamp,
                                     "meterInfo": {
-                                       "firmwareVersion": _formatVersion,
-                                       "publicKey": "nicht vorhanden",
-                                       "meterId": "nicht vorhanden",
-                                       "type": _identificationType,
-                                       "manufacturer": _meterVendor
+                                       "firmwareVersion": _meterInfo_firmwareVersion,
+                                       "publicKey": _meterInfo_publicKey,
+                                       "meterId": _meterInfo_meterId,
+                                       "type": _meterInfo_type,
+                                       "manufacturer": _meterInfo_manufacturer
                                     },
-                                    "transactionId": _transactionReference,
+                                    "transactionId": _transactionId,
                                     "contract": {
-                                       "type": "nicht vorhanden",
+                                       "type": _contract_type,
                                        "timestampLocal": {
-                                          "timestamp": _timestamp,
-                                          "localOffset": 0,
-                                          "seasonOffset": 0
+                                          "timestamp": _contract_timestampLocal_timestamp,
+                                          "localOffset": _contract_timestampLocal_localOffset,
+                                          "seasonOffset": _contract_timestampLocal_seasonOffset
                                        },
-                                       "timestamp": _timestamp,
-                                       "id": _paginationField
+                                       "timestamp": _contract_timestamp,
+                                       "id": _contract_id
                                     },
-                                    "measurementId": "nicht vorhanden",
+                                    "measurementId": _measurementId,
                                     "measuredValue": {
                                        "timestampLocal": {
-                                          "timestamp": _timestamp,
-                                          "localOffset": 0,
-                                          "seasonOffset": 0
+                                          "timestamp": _measuredValue_timestampLocal_timestamp,
+                                          "localOffset": _measuredValue_timestampLocal_localOffset,
+                                          "seasonOffset": _measuredValue_timestampLocal_seasonOffset
                                        },
-                                       "value": _readingValue,
-                                       "unit": _readingUnit,
-                                       "scale": -1,
-                                       "valueType": "Integer64",
-                                       "unitEncoded": 30
+                                       "value": _measuredValue_value,
+                                       "unit": _measuredValue_unit,
+                                       "scale": _measuredValue_scale,
+                                       "valueType": _measuredValue_valueType,
+                                       "unitEncoded": _measuredValue_unitEncoded
                                     },
                                     "measurand": {
-                                       "id": "01000011100FF",
-                                       "name": "ENERGY_TOTAL"
+                                       "id": _measurand_id,
+                                       "name": _measurand_name
                                     },
                                     "additionalInfo": {
                                        "indexes": {
-                                          "timer": "1730275",
-                                          "logBook": "0004"
+                                          "timer": _additionalInfo_indexes_timer,
+                                          "logBook": _additionalInfo_indexes_logBook
                                        },
-                                       "status": "88"
+                                       "status": _additionalInfo_status
                                     },
-                                    "signature": "13493BBB43DA1E26C88B21ADB7AA53A7AE4FC7F6F6B916E67AD3E168421D180F021D6DD458612C53FF167781892A9DF3"
+                                    "signature": _signature
                         });
 
                     }
 
 
-                    var evseId = "Bundesallee 100";//placeInfo["evseId"] as string;
+                    var evseId = placeInfo["evseId"] as string;
                     if (evseId == null || typeof evseId !== 'string')
                         throw "Missing or invalid EVSE Id!"
-                    
 
-                    //let text = '{"street" : "Bundesallee 100","town" : "Braunschweig","zipCode" : "38116"}';      //placeInfo["address"]; GG
-                    var address = SomeJSONcomplete.address;//JSON.parse(text);
 
+                    var address = placeInfo["address"];
                     if (address == null)
                         throw "Missing or invalid address!"
 
@@ -1547,10 +1297,8 @@ measurand == null || typeof _measurand !== 'object')
                     if (address_town == null || typeof address_town !== 'string')
                         throw "Missing or invalid address town!"
 
-                    //let textgeo = '{"lat" : 49.731421,"lng" : 10.147718}';             //GG
-                    var geoLocation = SomeJSONcomplete.geoLocation;//JSON.parse(textgeo);
-           
-                    //var geoLocation = placeInfo["geoLocation"];
+
+                    var geoLocation = placeInfo["geoLocation"];
                     if (geoLocation == null)
                         throw "Missing or invalid geoLocation!"
 
@@ -1558,25 +1306,44 @@ measurand == null || typeof _measurand !== 'object')
                     if (geoLocation_lat == null || typeof geoLocation_lat !== 'number')
                         throw "Missing or invalid geoLocation latitude!"
 
-                    var geoLocation_lng = geoLocation["lng"];
-                    if (geoLocation_lng == null || typeof geoLocation_lng !== 'number')
+                    var geoLocation_lon = geoLocation["lon"];
+                    if (geoLocation_lon == null || typeof geoLocation_lon !== 'number')
                         throw "Missing or invalid geoLocation longitude!"
 
 
                     var n = CTRArray.length-1;
-                    console.log("CTRArray.length: "+ n);
+
+                    //--CB--Abfrage ob das eingelesene JSON unser Format ist
+
+                    var contextS = "https://open.charging.cloud/contexts/SessionSignatureFormats/EMHCrypt01+json"
+                    if (CTRArray[0]["measurand"]["name"]=="PTB"){contextS = "OCMF";}
+                    var contextM = "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/EMHCrypt01+json";
+                    if (CTRArray[0]["measurand"]["name"]=="PTB"){contextM = "OCMF";}
+
+                    //______
+
                     var _CTR: any = { //IChargeTransparencyRecord = {
 
-                        "@id":              _transaction,
+                        "@id":              _transactionId,
                         "@context":         "https://open.charging.cloud/contexts/CTR+json",
-                    
-                        "begin":            moment.unix(CTRArray[0]["measuredValue"]["timestampLocal"]["timestamp"]).utc().format(),
-                        "end":              moment.unix(CTRArray[n]["measuredValue"]["timestampLocal"]["timestamp"]).utc().format(),
-                    
+
+                        //--CB--Weiterreichen der OCMF und Fehler behoben
+
+                        "ocmfRaw":          SomeJSON.ocmfRaw,
+
+                        //"begin":            moment.unix(CTRArray[0]["measuredValue"]["timestampLocal"]["timestamp"]).utc().format(),
+                        //"end":              moment.unix(CTRArray[n]["measuredValue"]["timestampLocal"]["timestamp"]).utc().format(),
+
+                        "begin":    moment.unix(CTRArray[0].timestamp).utc().format(),
+                        "end":      moment.unix(CTRArray[n].timestamp).utc().format(),
+
+                        //______
+
+
                         "description": {
                             "de":           "Alle Ladevorgänge"
                         },
-                    
+
                         "contract": {
                             "@id":          CTRArray[0]["contract"]["id"],
                             "type":         CTRArray[0]["contract"]["type"],
@@ -1592,7 +1359,7 @@ measurand == null || typeof _measurand !== 'object')
                                 "description": {
                                     "de":                   "chargeIT mobility GmbH - Charging Station Operator Services"
                                 },
-                    
+
                                 "contact": {
                                     "email":                    "info@chargeit-mobility.com",
                                     "web":                      "https://www.chargeit-mobility.com",
@@ -1619,7 +1386,7 @@ measurand == null || typeof _measurand !== 'object')
                                         }
                                     ]
                                 },
-                    
+
                                 "support": {
                                     "hotline":                  "+49 9321 / 2680 - 700",
                                     "email":                    "service@chargeit-mobility.com",
@@ -1651,11 +1418,11 @@ measurand == null || typeof _measurand !== 'object')
 
                                 "chargingStations": [
                                     {
-                                        "@id":                      "evseId",
+                                        "@id":                      evseId,
                                         // "description": {
                                         //     "de":                   "GraphDefined Charging Station - CI-Tests Pool 3 / Station A"
                                         // },
-                                        "geoLocation":              { "lat": geoLocation_lat, "lng": geoLocation_lng },
+                                        "geoLocation":              { "lat": geoLocation_lat, "lng": geoLocation_lon },
                                         "address": {
                                             "street":               address_street,
                                             "postalCode":           address_zipCode,
@@ -1697,19 +1464,49 @@ measurand == null || typeof _measurand !== 'object')
                         "chargingSessions": [
 
                             {
+                                //--CB--einbau der "Weiche"
 
-                                "@id":                          evseId,
-                                "@context":                     "https://open.charging.cloud/contexts/SessionSignatureFormats/EMHCrypt01+json",
-                                "begin":                        _timestamp,
-                                "end":                          _timestamp,
+                                "@id":                          _transactionId,
+                                //"@context":                     "https://open.charging.cloud/contexts/SessionSignatureFormats/EMHCrypt01+json",
+                                "@context":                     contextS,
+                                //"begin":                        moment.unix(CTRArray[0]["measuredValue"]["timestampLocal"]["timestamp"]).utc().format(),
+                                //"end":                          moment.unix(CTRArray[n]["measuredValue"]["timestampLocal"]["timestamp"]).utc().format(),
+                                "begin":    moment.unix(CTRArray[0].timestamp).utc().format(),
+                                "end":      moment.unix(CTRArray[n].timestamp).utc().format(),
+
+                                //______
+
                                 "EVSEId":                       evseId,
+
+                                "authorizationStart": {
+                                    "@id":                      CTRArray[0]["contract"]["id"],
+                                    "type":                     CTRArray[0]["contract"]["type"],
+                                    "timestamp":                moment.unix(CTRArray[0]["contract"]["timestampLocal"]["timestamp"]).utc().utcOffset(
+                                                                            CTRArray[0]["contract"]["timestampLocal"]["localOffset"] +
+                                                                            CTRArray[0]["contract"]["timestampLocal"]["seasonOffset"]).format(),
+                                },
+
+                                "signatureInfos": {
+                                    "hash":                     "SHA256",
+                                    "hashTruncation":           "24",
+                                    "algorithm":                "ECC",
+                                    "curve":                    "secp192r1",
+                                    "format":                   "rs"
+                                },
 
                                 "measurements": [
 
                                     {
 
                                         "energyMeterId":        CTRArray[0]["meterInfo"]["meterId"],
-                                        "@context":             "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/EMHCrypt01+json",
+
+                                        //--CB--einbau der "Weiche"
+
+                                        //"@context":             "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/EMHCrypt01+json",
+                                        "@context":             contextM,
+
+                                        //______
+
                                         "name":                 CTRArray[0]["measurand"]["name"],
                                         "obis":                 CTRArray[0]["measurand"]["id"],
                                         "unit":                 CTRArray[0]["measuredValue"]["unit"],
@@ -1730,16 +1527,22 @@ measurand == null || typeof _measurand !== 'object')
                                     }
 
                                 ]
+
                             }
 
                         ]
 
                     };
-//TODO: Format für CTR beibehalten und übergebene Werte durch SAFE-Daten ersetzen
+
+
+
                     for (var _measurement of CTRArray)
                     {
-                            console.log("timestamp in CTRArray: "+_measurement["measuredValue"]["timestampLocal"]["timestamp"]);
-                        /*                "timestamp":      moment.unix(_measurement["measuredValue"]["timestampLocal"]["timestamp"]).utc().utcOffset(
+
+                        _CTR["chargingSessions"][0]["measurements"][0]["values"].push(
+
+                                                {
+                                                    "timestamp":      moment.unix(_measurement["measuredValue"]["timestampLocal"]["timestamp"]).utc().utcOffset(
                                                                                   _measurement["measuredValue"]["timestampLocal"]["localOffset"] +
                                                                                   _measurement["measuredValue"]["timestampLocal"]["seasonOffset"]).format(),
                                                     "value":          _measurement["measuredValue"]["value"],
@@ -1754,27 +1557,21 @@ measurand == null || typeof _measurand !== 'object')
                                                         }
                                                     ]
                                                 }
-                                            }*/
-                    _CTR["chargingSessions"][0]["measurements"][0]["values"].push({
-                                                    "timestamp":      moment.unix(_measurement["measuredValue"]["timestampLocal"]["timestamp"]).utc().utcOffset(
-                                                                                  _measurement["measuredValue"]["timestampLocal"]["localOffset"] +
-                                                                                  _measurement["measuredValue"]["timestampLocal"]["seasonOffset"]).format(),
-                                                    "value":          _measurement["measuredValue"]["value"],
-                                                    "infoStatus":     _measurement["additionalInfo"]["status"],
-                                                    "secondsIndex":   _measurement["additionalInfo"]["indexes"]["timer"],
-                                                    "paginationId":   _measurement["measurementId"]
-                                                }
-                        );              
+
+                        );
+
                     }
 
                     await processChargeTransparencyRecord(_CTR);
+
                     return true;
 
                 }
                 catch (exception)
                 {
                     console.log("chargeIT mobility legacy CTR format: " + exception);
-                }                
+                }
+
 
             }
 
@@ -1814,9 +1611,9 @@ measurand == null || typeof _measurand !== 'object')
         async function checkMeasurementCrypto(measurementValue: iface.IMeasurementValue)
         {
 
-            //var result = await me.verifyMeasurementCryptoDetails(measurementValue);
+            var result = await me.verifyMeasurementCryptoDetails(measurementValue);
 
-            /**switch (result.status)
+            switch (result.status)
             {
 
                     case iface.VerificationResult.UnknownCTRFormat:
@@ -1836,14 +1633,12 @@ measurand == null || typeof _measurand !== 'object')
 
                     case iface.VerificationResult.ValidSignature:
                         return '<i class="fas fa-check-circle"></i> Gültige Signatur';
-    
+
 
                     default:
                         return '<i class="fas fa-times-circle"></i> Ungültige Signatur';
 
-            }    */
-
-           return '<i class="fas fa-check-circle"></i> Gültige Signatur';       
+            }
 
         }
 
@@ -1970,7 +1765,7 @@ measurand == null || typeof _measurand !== 'object')
                             }
                         };
 
-                        //#endregion                        
+                        //#endregion
 
                         let MeasurementValuesDiv         = this.app.measurementInfosPage.querySelector<HTMLDivElement>('#measurementValues');
                         MeasurementValuesDiv.innerHTML   = '';
@@ -1984,20 +1779,10 @@ measurand == null || typeof _measurand !== 'object')
                             measurementValue.measurement     = measurement;
 
                             let MeasurementValueDiv          = this.lib.CreateDiv(MeasurementValuesDiv, "measurementValue");
-                            console.log("measurementValue: "+measurementValue);
                             MeasurementValueDiv.onclick      = this.captureMeasurementCryptoDetails(measurementValue);
 
-                            
-                            try {
                             var timestamp                    = this.lib.parseUTC(measurementValue.timestamp);
-                            console.log("timestamp: "+ timestamp);    
-                            } catch (error) {
-                                console.log("error: "+error);
-                                
-                                /*var timestamp = _timestamp;
-                                console.log("timestamp: "+timestamp);*/
-                            }
-                            console.log("timestampUTC"+timestamp);
+
                             let timestampDiv                 = this.lib.CreateDiv(MeasurementValueDiv, "timestamp",
                                                                          timestamp.format('HH:mm:ss') + " Uhr");
 
@@ -2050,8 +1835,8 @@ measurand == null || typeof _measurand !== 'object')
 
                             let unitDiv                      = this.lib.CreateDiv(MeasurementValueDiv, "unit",
                                                                          "kWh");
-let test = await checkMeasurementCrypto(measurementValue);
-console.log("test: "+ test);
+
+
                             // Show signature status
                             let verificationStatusDiv        = this.lib.CreateDiv(MeasurementValueDiv, "verificationStatus",
                                                                          await checkMeasurementCrypto(measurementValue));
@@ -2062,7 +1847,7 @@ console.log("test: "+ test);
 
                         chartData.data.datasets[0].data = chartValues;
                         var myChart = new chart.Chart(chartDiv, chartData);
-    
+
                     }
 
                     //#endregion
@@ -2073,7 +1858,7 @@ console.log("test: "+ test);
 
         }
         catch (exception)
-        { 
+        {
             console.log("Could not show charging session details: " + exception);
         }
 
@@ -2113,25 +1898,39 @@ console.log("test: "+ test);
     //#endregion
 
 
+
     //#region verifySessionCryptoDetails
 
     public async verifySessionCryptoDetails(chargingSession: iface.IChargingSession) : Promise<iface.ISessionCryptoResult>
     {
 
         var result: iface.ISessionCryptoResult = {
-            //status: iface.SessionVerificationResult.UnknownSessionFormat //GG: Cryptoresult muss noch aktiv geprüft werden.
-            status: iface.SessionVerificationResult.ValidSignature
+            status: iface.SessionVerificationResult.UnknownSessionFormat
         };
-        return result;
-        /*
+
         if (chargingSession              == null ||
             chargingSession.measurements == null)
         {
             return result;
         }
 
+        //--CB--auslesen der weitergeleiteten Daten vom OCMF
+
+        const OCMF1 = chargingSession.ocmfRaw.S;
+        const OCMF2 = chargingSession.ocmfRaw.E;
+        const PKey = chargingSession.ocmfRaw.P;
+
+        //______
+
         switch (chargingSession["@context"])
         {
+        //--CB--neuer case für OCMF
+
+            case "OCMF":
+                chargingSession.method = new OCMF([OCMF1, OCMF2], PKey);
+                return await chargingSession.method.VerifyChargingSession(chargingSession);
+
+        //______
 
             case "https://open.charging.cloud/contexts/SessionSignatureFormats/GDFCrypt01+json":
                 chargingSession.method = new GDFCrypt01(this.GetMeter, this.CheckMeterPublicKeySignature);
@@ -2144,7 +1943,7 @@ console.log("test: "+ test);
             default:
                 return await result;
 
-        }*/
+        }
 
     }
 
@@ -2156,11 +1955,9 @@ console.log("test: "+ test);
     {
 
         var result: iface.ICryptoResult = {
-            //status: iface.VerificationResult.UnknownCTRFormat //GG: Signatur wird nicht geprüft.
-            status: iface.VerificationResult.ValidSignature     //GG: Wir geben aktuell immer valide Signatur zurück.
+            status: iface.VerificationResult.UnknownCTRFormat
         };
-        return result; //GG: Signaturprüfung muss noch implementiert werden.
-        /*
+
         if (measurementValue             == null ||
             measurementValue.measurement == null)
         {
@@ -2169,6 +1966,14 @@ console.log("test: "+ test);
 
         switch (measurementValue.measurement["@context"])
         {
+
+            //--CB--neuer case für OCMF
+
+            case "OCMF":
+                return measurementValue.result || { status: iface.VerificationResult.ValidSignature };
+
+            //______
+
 
             case "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/GDFCrypt01+json":
                  measurementValue.method = new GDFCrypt01(this.GetMeter, this.CheckMeterPublicKeySignature);
@@ -2193,7 +1998,7 @@ console.log("test: "+ test);
             default:
                 return result;
 
-        }*/
+        }
 
     }
 
@@ -2223,7 +2028,7 @@ console.log("test: "+ test);
         }
 
 
-        //#region Show data and result on overlay        
+        //#region Show data and result on overlay
 
         let bufferValue               = cryptoDiv.querySelector('#buffer .value')             as HTMLDivElement;
         let hashedBufferValue         = cryptoDiv.querySelector('#hashedBuffer .value')       as HTMLDivElement;
