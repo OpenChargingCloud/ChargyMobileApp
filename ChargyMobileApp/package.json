@@ -15,7 +15,7 @@
     "audit": "npm audit"
   },
   "engines": {
-    "node": ">=20 <26",
+    "node": ">=20 <27",
     "npm": ">=10"
   },
   "keywords": [

@@ -2,24 +2,22 @@ const fs    = require('fs');
 const path  = require('path');
 const { spawnSync } = require('child_process');
 
-function runBin(projectRoot, command, args) {
+function runNodeScript(projectRoot, script, args) {
 
 	const executable = path.join(projectRoot,
 								 'node_modules',
-								 '.bin',
-								 command + (process.platform === 'win32' ? '.cmd' : ''));
+								 ...script);
 
-	const result = spawnSync(executable, args, {
+	const result = spawnSync(process.execPath, [executable, ...args], {
 		cwd:   projectRoot,
-		stdio: 'inherit',
-		shell: process.platform === 'win32'
+		stdio: 'inherit'
 	});
 
 	if (result.error)
 		throw result.error;
 
 	if (result.status !== 0)
-		throw new Error(command + ' failed with exit code ' + result.status);
+		throw new Error(script.join(path.sep) + ' failed with exit code ' + result.status);
 
 }
 
@@ -218,7 +216,7 @@ module.exports = function(ctx) {
 
 		}); */
 
-		runBin(ctx.opts.projectRoot, 'tsc', []);
+		runNodeScript(ctx.opts.projectRoot, ['typescript', 'bin', 'tsc'], []);
 
 
 // SASS
@@ -274,7 +272,7 @@ module.exports = function(ctx) {
 		});	
 		 */
 
-		runBin(ctx.opts.projectRoot, 'sass', [
+		runNodeScript(ctx.opts.projectRoot, ['sass', 'sass.js'], [
 			'www.src/scss/styles.scss',
 			'www/css/styles.css'
 		]);
@@ -282,7 +280,7 @@ module.exports = function(ctx) {
 
 // Bundle
 
-		runBin(ctx.opts.projectRoot, 'browserify', [
+		runNodeScript(ctx.opts.projectRoot, ['browserify', 'bin', 'cmd.js'], [
 			'www/js/index.js',
 			'-o',
 			'www/js/bundle.js'
