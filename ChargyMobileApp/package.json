@@ -14,7 +14,9 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "verify": "npm run typecheck && npm run compile:ts && npm run compile:sass && npm run bundle && npm run test",
-    "audit": "npm audit"
+    "audit": "npm audit",
+    "sbom": "cyclonedx-npm --package-lock-only --omit dev --output-reproducible --validate --output-file sbom.cdx.json",
+    "sbom:all": "cyclonedx-npm --package-lock-only --ignore-npm-errors --output-reproducible --validate --output-file sbom.all.cdx.json"
   },
   "engines": {
     "node": ">=20 <27",
@@ -43,10 +45,14 @@
     "moment": "^2.30.1"
   },
   "devDependencies": {
+    "@cyclonedx/cyclonedx-npm": "^4.2.1",
     "@types/elliptic": "^6.4.18",
     "@types/leaflet": "^1.9.21",
     "@types/leaflet.awesome-markers": "^2.0.29",
     "@types/node": "^25.9.1",
+    "ajv": "^8.20.0",
+    "ajv-formats": "^3.0.1",
+    "ajv-formats-draft2019": "^1.6.1",
     "browserify": "^17.0.1",
     "cordova": "^13.0.0",
     "cordova-android": "^15.0.0",

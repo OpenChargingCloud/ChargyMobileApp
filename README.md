@@ -62,6 +62,20 @@ To check production dependency advisories:
 $ npm run audit -- --omit=dev
 ```
 
+To generate a CycloneDX Software Bill of Materials (SBOM) for the production npm dependency tree:
+
+```
+$ npm run sbom
+```
+
+For an extended SBOM including development dependencies:
+
+```
+$ npm run sbom:all
+```
+
+Both commands write reproducible JSON files into the `ChargyMobileApp` directory. These files are ignored by git and can be attached to releases or CI artifacts when needed. The extended SBOM ignores npm tree warnings because optional platform-specific development dependencies can be absent on a local machine.
+
 ## Run automated tests
 
 The project uses [Vitest](https://vitest.dev/) for fast TypeScript unit tests. Run the current test suite with:
