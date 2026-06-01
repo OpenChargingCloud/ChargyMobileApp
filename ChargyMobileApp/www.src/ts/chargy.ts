@@ -1,5 +1,5 @@
 import * as moment    from 'moment';
-import * as chart     from 'chart.js'
+import Chart, { ChartConfiguration } from 'chart.js/auto';
 import GDFCrypt01     from './GDFCrypt01';
 import EMHCrypt01     from './EMHCrypt01';
 import * as chargyLib from './chargyLib';
@@ -22,6 +22,7 @@ export default class chargy {
 
     private elliptic: any;
     private moment:   any;
+    private measurementChart: Chart;
 
     chargingStationOperators  = new Array<iface.IChargingStationOperator>();
     chargingPools             = new Array<iface.IChargingPool>();
@@ -1717,47 +1718,35 @@ export default class chargy {
 
                         //#region Configure chart
 
-                        let chartDiv           = this.app.measurementInfosPage.querySelector<HTMLCanvasElement>('#chart');
+                        let chartDiv = this.app.measurementInfosPage.querySelector<HTMLCanvasElement>('#chart');
 
-                        let chartData:chart.ChartConfiguration = {
+                        let chartData: ChartConfiguration<'bar', number[], string> = {
                             type: 'bar',
                             data: {
-                                labels: ['Red', 'Blue'], //, 'Yellow', 'Green', 'Purple', 'Orange'],
+                                labels: [],
                                 datasets: [{
                                     label: 'kWh',
                                     data: [],
-                                    backgroundColor: [
-                                         'rgba(255, 99, 132, 0.2)',
-                                         'rgba(54, 162, 235, 0.2)'
-                                    //     'rgba(255, 206, 86, 0.2)',
-                                    //     'rgba(75, 192, 192, 0.2)',
-                                    //     'rgba(153, 102, 255, 0.2)',
-                                    //     'rgba(255, 159, 64, 0.2)'
-                                    ],
-                                    // borderColor: [
-                                    //     'rgba(255, 99, 132, 1)',
-                                    //     'rgba(54, 162, 235, 1)',
-                                    //     'rgba(255, 206, 86, 1)',
-                                    //     'rgba(75, 192, 192, 1)',
-                                    //     'rgba(153, 102, 255, 1)',
-                                    //     'rgba(255, 159, 64, 1)'
-                                    // ],
+                                    backgroundColor: 'rgba(255, 159, 64, 0.35)',
+                                    borderColor: 'rgba(255, 159, 64, 1)',
                                     borderWidth: 1
                                 }]
                             },
                             options: {
-                                title: {
-                                    display: false
-                                },
-                                legend: {
-                                    display: false
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: {
+                                    legend: {
+                                        display: false
+                                    },
+                                    title: {
+                                        display: false
+                                    }
                                 },
                                 scales: {
-                                    yAxes: [{
-                                        ticks: {
-                                            beginAtZero: true
-                                        }
-                                    }]
+                                    y: {
+                                        beginAtZero: true
+                                    }
                                 }
                             }
                         };
@@ -1767,6 +1756,7 @@ export default class chargy {
                         let MeasurementValuesDiv         = this.app.measurementInfosPage.querySelector<HTMLDivElement>('#measurementValues');
                         MeasurementValuesDiv.innerHTML   = '';
 
+                        let chartLabels                  = [];
                         let chartValues                  = [];
                         let previousValue                = 0;
 
@@ -1779,6 +1769,7 @@ export default class chargy {
                             MeasurementValueDiv.onclick      = this.captureMeasurementCryptoDetails(measurementValue);
 
                             var timestamp                    = this.lib.parseUTC(measurementValue.timestamp);
+                            chartLabels.push(timestamp.format('HH:mm:ss'));
 
                             let timestampDiv                 = this.lib.CreateDiv(MeasurementValueDiv, "timestamp",
                                                                          timestamp.format('HH:mm:ss') + " Uhr");
@@ -1842,8 +1833,13 @@ export default class chargy {
 
                         }
 
+                        chartData.data.labels           = chartLabels;
                         chartData.data.datasets[0].data = chartValues;
-                        var myChart = new chart.Chart(chartDiv, chartData);
+
+                        if (this.measurementChart)
+                            this.measurementChart.destroy();
+
+                        this.measurementChart = new Chart(chartDiv, chartData);
 
                     }
 

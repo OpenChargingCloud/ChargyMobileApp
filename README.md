@@ -71,6 +71,8 @@ In order to test Chargy within the local browser just type the following command
 $ npm run browser
 ```
 
+When testing mobile-style navigation in the browser, click and drag with the mouse to simulate a swipe gesture.
+
 In order to test it using the Electron framework
 ```
 $ npx cordova run cordova-electron
