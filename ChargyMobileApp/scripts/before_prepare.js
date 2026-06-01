@@ -1,9 +1,27 @@
 const fs    = require('fs');
 const path  = require('path');
-const sass  = require('sass');
-const ts    = require("typescript");
-const util  = require('util');
-const shell = require('shelljs');
+const { spawnSync } = require('child_process');
+
+function runBin(projectRoot, command, args) {
+
+	const executable = path.join(projectRoot,
+								 'node_modules',
+								 '.bin',
+								 command + (process.platform === 'win32' ? '.cmd' : ''));
+
+	const result = spawnSync(executable, args, {
+		cwd:   projectRoot,
+		stdio: 'inherit',
+		shell: process.platform === 'win32'
+	});
+
+	if (result.error)
+		throw result.error;
+
+	if (result.status !== 0)
+		throw new Error(command + ' failed with exit code ' + result.status);
+
+}
 
 module.exports = function(ctx) {
 
@@ -138,10 +156,7 @@ module.exports = function(ctx) {
 
 		}); */
 
-		if (shell.exec('tsc').code !== 0) {
-			shell.echo('Error: typescript compile failed');
-			shell.exit(1);
-		}
+		runBin(ctx.opts.projectRoot, 'tsc', []);
 
 
 // SASS
@@ -197,18 +212,19 @@ module.exports = function(ctx) {
 		});	
 		 */
 
-		if (shell.exec('sass www.src/scss/styles.scss www/css/styles.css').code !== 0) {
-			shell.echo('Error: sass compile failed');
-			shell.exit(1);
-		}
+		runBin(ctx.opts.projectRoot, 'sass', [
+			'www.src/scss/styles.scss',
+			'www/css/styles.css'
+		]);
 
 
 // Bundle
 
-		if (shell.exec('browserify www/js/index.js -o www/js/bundle.js').code !== 0) {
-			shell.echo('Error: browserify failed');
-			shell.exit(1);
-		}
+		runBin(ctx.opts.projectRoot, 'browserify', [
+			'www/js/index.js',
+			'-o',
+			'www/js/bundle.js'
+		]);
 
 		console.log('App is ready!');
 

@@ -978,10 +978,7 @@ export default class chargy {
                 // if (me.chargingSessions.length == 1)
                 //     me.chargingSessions[0].GUI.click();
 
-                me2.app.map.invalidateSize();
-
-                me2.app.map.fitBounds([[minlat, minlng], [maxlat, maxlng]],
-                                      { padding: [40, 40] });
+                me2.app.refreshMap([[minlat, minlng], [maxlat, maxlng]]);
 
             }
 
@@ -1076,7 +1073,7 @@ export default class chargy {
                             throw "Missing or invalid timestamp[" + i + "]!"
                         var timestamp = me2.lib.parseUTC(_timestamp);
 
-                        var _meterInfo = signedMeterValue["meterInfo"] as string;
+                        var _meterInfo = signedMeterValue["meterInfo"] as Record<string, unknown>;
                         if (_meterInfo == null || typeof _meterInfo !== 'object')
                             throw "Missing or invalid meterInfo[" + i + "]!"
 

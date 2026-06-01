@@ -85,6 +85,24 @@ export default class App {
 
         page.style.display = 'block';
 
+        if (page == this.chargingSessionsPage)
+            this.refreshMap();
+
+    }
+
+    refreshMap(fitBounds?: any) {
+
+        if (this.map == null)
+            return;
+
+        window.requestAnimationFrame(() => {
+            this.map.invalidateSize();
+
+            if (fitBounds != null)
+                this.map.fitBounds(fitBounds,
+                                   { padding: [40, 40] });
+        });
+
     }
 
     hidePage(page: HTMLDivElement) {

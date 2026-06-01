@@ -79,7 +79,7 @@ export abstract class ACrypt {
     }
 
     async sha256(message: DataView) {
-        const hashBuffer = await crypto.subtle.digest('SHA-256', message);// new TextEncoder().encode(message));
+        const hashBuffer = await crypto.subtle.digest('SHA-256', message as unknown as BufferSource);// new TextEncoder().encode(message));
         const hashArray  = Array.from(new Uint8Array(hashBuffer));                                       // convert hash to byte array
         const hashHex    = hashArray.map(b => ('00' + b.toString(16)).slice(-2)).join('').toLowerCase(); // convert bytes to hex string
         return hashHex;

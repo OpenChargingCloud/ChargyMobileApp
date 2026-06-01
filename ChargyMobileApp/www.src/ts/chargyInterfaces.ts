@@ -12,6 +12,7 @@ export interface IApp {
 
     map: any;
     showPage(page: HTMLDivElement): void;
+    refreshMap(fitBounds?: any): void;
     hidePage(page: HTMLDivElement): void;
     
 }

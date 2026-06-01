@@ -34,27 +34,9 @@ The Chargy Mobile project has a sister project called [Chargy Desktop](https://g
 
 ## Install dependencies
 
-Using node.js 12.1.0 (includes npm 6.9.0) for Microsoft Windows: https://nodejs.org/en/download/current/    
-Or install nodejs on your Linux / Mac OS X system via
-```
-sudo curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
-sudo apt install nodejs
-```
+Use a current Node.js runtime. The project is tested with Node.js 20+ and npm 10+.
 
-Afterwards you can install the remaining software using the node packet manager. Important: use the mentioned Versions, ohterwise an error may occur. Additionally its not very easy to get rid of the newest versions and install the older ones.
-Therefore it is recommended to stick to the mentioned Version.
-
-```
-$ npm install -g cordova@9.0.0
-```
-
-```
-$ npm install -g typescript@3.4.5
-```
-
-```
-$ npm install -g sass@1.20.1
-```
+The Cordova CLI, TypeScript, Sass, Browserify, platform packages, and Cordova plugins are installed locally through npm. A global Cordova/TypeScript/Sass installation is no longer required.
 
 
 ## Clone and build this Apache Cordova project
@@ -67,7 +49,17 @@ $ git clone https://github.com/OpenChargingCloud/ChargyMobileApp.git
 Afterwards all node.js dependencies and additional Open Source Software libraries have to be downloaded.
 ```
 $ npm install
-$ cordova prepare
+$ npm run build
+```
+
+For a quick local verification without preparing Cordova platforms:
+```
+$ npm run verify
+```
+
+To check production dependency advisories:
+```
+$ npm run audit -- --omit=dev
 ```
 
 
@@ -76,18 +68,18 @@ $ cordova prepare
 In order to test Chargy within the local browser just type the following command and Cordova will open the application within your default web browser automatically.
 
 ```
-$ cordova run browser
+$ npm run browser
 ```
 
 In order to test it using the Electron framework
 ```
-$ cordova run cordova-electron
+$ npx cordova run cordova-electron
 ```
 
 To test Chargy on your Android smart phone please install [Android Studio](https://developer.android.com/studio), attach your smart phone via USB to your computer and run the following command. If you have installed the Android simulators and did not attach your smart phone Chary will be started within the default simulator profile.
 
 ```
-$ cordova run android
+$ npx cordova run android
 ```
 
 
@@ -98,11 +90,7 @@ In case the cloned project does not work, you can find the REBUILD.md in the doc
 Afterwards you need to do some additional steps:
 - Get __*Android Studio*__ to get the SDK.
 - Create the environment variable __*ANDROID_SDK_ROOT*__ and __*ANDROID_SDK*__ (both get the same path C:/Users/HereIsYourActualUser/AppData/Local/Android/Sdk)
-- install browserify with:
-```
-$ npm install browserify
-```
-- Establish __*JAVA_HOME*__ (Note: JDK8 should be installed, every other version should be deleted for no mix-up in the building process)
+- Establish __*JAVA_HOME*__ according to the requirements of the installed `cordova-android` version.
 
 
 ## File Editing
