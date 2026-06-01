@@ -11,7 +11,9 @@
     "bundle": "browserify www/js/index.js -o www/js/bundle.js",
     "build": "cordova prepare browser",
     "browser": "cordova run browser",
-    "verify": "npm run typecheck && npm run compile:ts && npm run compile:sass && npm run bundle",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "verify": "npm run typecheck && npm run compile:ts && npm run compile:sass && npm run bundle && npm run test",
     "audit": "npm audit"
   },
   "engines": {
@@ -59,7 +61,8 @@
     "cordova-plugin-geolocation": "^5.0.0",
     "cordova-plugin-network-information": "^3.0.0",
     "sass": "^1.100.0",
-    "typescript": "^6.0.3"
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.8"
   },
   "cordova": {
     "plugins": {

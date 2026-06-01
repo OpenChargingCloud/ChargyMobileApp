@@ -62,6 +62,22 @@ To check production dependency advisories:
 $ npm run audit -- --omit=dev
 ```
 
+## Run automated tests
+
+The project uses [Vitest](https://vitest.dev/) for fast TypeScript unit tests. Run the current test suite with:
+
+```
+$ npm test
+```
+
+During development you can keep Vitest running in watch mode:
+
+```
+$ npm run test:watch
+```
+
+The first tests live in `ChargyMobileApp/tests` and use fixture files from `ChargyMobileApp/tests/fixtures`. To add another text-in/text-out parser test, add an input file and an `.expected.txt` file to the fixtures folder, then add a matching case in `ChargyMobileApp/tests/chargeDataParser.test.ts`.
+
 
 ## Test the mobile application
 

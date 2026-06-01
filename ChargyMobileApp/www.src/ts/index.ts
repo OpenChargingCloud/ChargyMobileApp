@@ -18,6 +18,7 @@
  */
 //import 'core-js';
 import chargy from './chargy';
+import { transformToExpectedFormat } from './chargeDataParser';
 
 declare let cordova: any;
 
@@ -422,110 +423,7 @@ export default class App {
 //--CB--Prüfung ob das eingelesene JSON vom PTB ist, daraufhin dann umbauen auf das Format was Chargy möchte
 
 transformToExpectedFormat(raw: any): any {
-
-    if (!raw || raw.format !== "ptb") {
-        return raw;
-    }
-
-    function parseOCMF(ocmfString: string) {
-        const parts = ocmfString.split("|");
-        const data = JSON.parse(parts[1]);
-        const signature = JSON.parse(parts[2]).SD;
-
-        const rd = data.RD[0];
-
-        function parseTimestamp(ts: string): number {
-            // Beispiel: "2026-04-16T11:16:49,000+0200 I"
-
-            // 1. Komma ersetzen
-            ts = ts.replace(",", ".");
-
-            // 2. Alles nach dem Offset entfernen (z.B. " I")
-            ts = ts.replace(/ [A-Z]$/, "");
-
-            // 3. ISO-konform machen: "+0200" → "+02:00"
-            ts = ts.replace(/(\+|-)(\d{2})(\d{2})$/, "$1$2:$3");
-
-            // Jetzt ist es gültig für Date.parse()
-            return Date.parse(ts) / 1000;
-        }
-
-        const ts = parseTimestamp(rd.TM);
-
-        return {
-            timestamp: ts,
-            meterInfo: {
-                firmwareVersion: data.MF,
-                publicKey: raw.publicKey,
-                meterId: data.ID,
-                type: data.MM,
-                manufacturer: data.MV
-            },
-            transactionId: data.PG,
-            contract: {
-                type: "RFID_TAG_ID",
-                timestampLocal: {
-                    timestamp: ts,
-                    localOffset: 60,
-                    seasonOffset: 0
-                },
-                timestamp: ts,
-                id: data.ID.substring(0, 8)
-            },
-            measurementId: "00000001",
-            measuredValue: {
-                timestampLocal: {
-                    timestamp: ts,
-                    localOffset: 60,
-                    seasonOffset: 0
-                },
-                value: rd.RV.toString(),
-                unit: "WATT_HOUR",
-                scale: 0,
-                valueType: "Integer64",
-                unitEncoded: 30
-            },
-            measurand: {
-                id: rd.RI,
-                name: "PTB"
-            },
-            additionalInfo: {
-                indexes: {
-                    timer: 0,
-                    logBook: ""
-                },
-                status: rd.ST
-            },
-            signature: signature
-        };
-    }
-
-    const OCMF1 = raw.ocmfBegin;
-    const OCMF2 = raw.ocmfEnd;
-    const PKey  = raw.publicKey;
-
-    const begin = parseOCMF(raw.ocmfBegin);
-    const end = parseOCMF(raw.ocmfEnd);
-
-    return {
-        signedMeterValues: [begin, end],
-
-        // Rohdaten für die OCMF-Klasse
-        ocmfRaw: {
-            S: OCMF1,
-            E: OCMF2,
-            P: PKey
-        },
-
-        placeInfo: {
-            evseId: raw.chargeboxIdentifier,
-            address: raw.address,
-            geoLocation: {
-                lat: raw.geoLocation.lat,
-                lon: raw.geoLocation.lng
-            }
-        }
-    };
+    return transformToExpectedFormat(raw);
 }
 
 

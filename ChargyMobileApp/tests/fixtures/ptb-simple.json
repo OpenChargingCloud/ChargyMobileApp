@@ -1,0 +1,15 @@
+{
+  "format": "ptb",
+  "publicKey": "ABCDEF0123456789",
+  "chargeboxIdentifier": "DE*ABC*E1234567",
+  "address": {
+    "street": "Teststrasse 1",
+    "city": "Berlin"
+  },
+  "geoLocation": {
+    "lat": 52.5,
+    "lng": 13.4
+  },
+  "ocmfBegin": "OCMF|{\"MF\":\"1.2.3\",\"ID\":\"METER12345678\",\"MM\":\"DemoMeter\",\"MV\":\"DemoVendor\",\"PG\":\"TRANSACTION-1\",\"RD\":[{\"TM\":\"2026-04-16T11:16:49,000+0200 I\",\"RV\":1000,\"RI\":\"0100010800FF\",\"ST\":\"G\"}]}|{\"SD\":\"BEGIN_SIGNATURE\"}",
+  "ocmfEnd": "OCMF|{\"MF\":\"1.2.3\",\"ID\":\"METER12345678\",\"MM\":\"DemoMeter\",\"MV\":\"DemoVendor\",\"PG\":\"TRANSACTION-1\",\"RD\":[{\"TM\":\"2026-04-16T12:16:49,000+0200 I\",\"RV\":3500,\"RI\":\"0100010800FF\",\"ST\":\"G\"}]}|{\"SD\":\"END_SIGNATURE\"}"
+}
