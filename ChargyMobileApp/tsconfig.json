@@ -40,6 +40,5 @@
         "www.src/ts/**/*",
     ],
     "exclude": [
-        "www.src/ts/*_Sicherheitskopie.ts",
     ]
 }
