@@ -90,6 +90,8 @@ During development you can keep Vitest running in watch mode:
 $ npm run test:watch
 ```
 
+In *Visual Studio Code* you can install the official `Vitest` extension by the verified publisher `Vitest` to run tests from the Testing sidebar.
+
 The first tests live in `ChargyMobileApp/tests` and use fixture files from `ChargyMobileApp/tests/fixtures`. To add another text-in/text-out parser test, add an input file and an `.expected.txt` file to the fixtures folder, then add a matching case in `ChargyMobileApp/tests/chargeDataParser.test.ts`.
 
 
