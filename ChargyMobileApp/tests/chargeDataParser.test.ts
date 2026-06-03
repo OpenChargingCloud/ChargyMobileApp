@@ -120,7 +120,8 @@ function toArrayBuffer(data: Uint8Array): ArrayBuffer {
 async function readPdfText(pdfData: Uint8Array): Promise<string> {
     const loadingTask = (pdfjs as any).getDocument({
         data: toArrayBuffer(pdfData),
-        disableWorker: true
+        disableWorker: true,
+        useSystemFonts: true
     });
     const pdf = await loadingTask.promise;
     const texts: string[] = [];
