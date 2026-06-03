@@ -137,6 +137,19 @@ module.exports = function(ctx) {
 
 	}
 
+	function copyPdfJsAssets() {
+
+		const pdfJsTarget = path.join(wwwTarget, 'lib', 'pdfjs');
+
+		fs.rmSync(pdfJsTarget, { recursive: true, force: true });
+		ensureDirectory(pdfJsTarget);
+
+		const pdfJsBuild = path.join(ctx.opts.projectRoot, 'node_modules', 'pdfjs-dist', 'build');
+		copyFile(path.join(pdfJsBuild, 'pdf.mjs'),         path.join(pdfJsTarget, 'pdf.mjs'));
+		copyFile(path.join(pdfJsBuild, 'pdf.worker.mjs'),  path.join(pdfJsTarget, 'pdf.worker.mjs'));
+
+	}
+
 	const wwwSource = path.join(ctx.opts.projectRoot, 'www.src');
 	const wwwTarget = path.join(ctx.opts.projectRoot, 'www');
 	
@@ -162,6 +175,7 @@ module.exports = function(ctx) {
 		copyDirectory('images', true);
 		copyDirectory('webfonts');
 		copyLeafletAssets();
+		copyPdfJsAssets();
 
 
 // TypeScript

@@ -19,6 +19,7 @@
 //import 'core-js';
 import chargy from './chargy';
 import { transformToExpectedFormat } from './chargeDataParser';
+import { extractTransparencyRecordsFromPdf } from './pdfAttachmentExtractor';
 
 declare let cordova: any;
 
@@ -426,15 +427,48 @@ transformToExpectedFormat(raw: any): any {
     return transformToExpectedFormat(raw);
 }
 
+  async processTransparencyRecord(raw: any) {
+    const fixed = this.transformToExpectedFormat(raw);
+    await this._chargy.detectContentFormat(fixed);
+  }
+
+  async processPdfFile(file: File) {
+    const records = await extractTransparencyRecordsFromPdf(await file.arrayBuffer());
+
+    for (const record of records)
+      await this.processTransparencyRecord(record.content);
+  }
+
+  async processPdfBlob(blob: Blob) {
+    const records = await extractTransparencyRecordsFromPdf(await blob.arrayBuffer());
+
+    for (const record of records)
+      await this.processTransparencyRecord(record.content);
+  }
+
+  isPdfFile(file: File): boolean {
+    return file.type === "application/pdf" || /\.pdf$/i.test(file.name);
+  }
+
 
 //______
 
   //#region Read and parse CTR file
 
-  readAndParseFile(file: File) {
+  async readAndParseFile(file: File) {
 
     if (!file)
         return;
+
+    if (this.isPdfFile(file)) {
+        try {
+            await this.processPdfFile(file);
+        }
+        catch (exception) {
+            this.doGlobalError("Fehlerhafter PDF/A-3 Transparenzdatensatz!", exception);
+        }
+        return;
+    }
 
     var me = this;
     var reader = new FileReader();
@@ -448,17 +482,10 @@ transformToExpectedFormat(raw: any): any {
             //--CB--Aufruf der Prüfstrucktur ob OCMF
 
             const raw = JSON.parse((event.target as any).result);
-            const fixed = me.transformToExpectedFormat(raw);
-
-            //me._chargy.detectContentFormat(JSON.parse((event.target as any).result)).
-                        //catch((exception) => {
-                            //me.doGlobalError("Fehlerhafter Transparenzdatensatz!", exception);
-                                   //});
-
-            me._chargy.detectContentFormat(fixed).
-                        catch((exception) => {
-                         me.doGlobalError("Fehlerhafter Transparenzdatensatz!", exception);
-                       });
+            me.processTransparencyRecord(raw).
+               catch((exception) => {
+                   me.doGlobalError("Fehlerhafter Transparenzdatensatz!", exception);
+               });
 
             //______
 
@@ -483,21 +510,38 @@ transformToExpectedFormat(raw: any): any {
 
   async PasteFile() {
 
-    //@ts-ignore
-    var clipText = await navigator.clipboard.readText();
-
     this.importantInfo.style.display  = 'none';
     this.importantInfo.innerHTML      = '';
 
     try {
 
+      if ((navigator.clipboard as any).read) {
+        try {
+          const clipboardItems = await (navigator.clipboard as any).read();
+
+          for (const clipboardItem of clipboardItems) {
+            if (clipboardItem.types && clipboardItem.types.indexOf("application/pdf") >= 0) {
+              const pdfBlob = await clipboardItem.getType("application/pdf");
+              await this.processPdfBlob(pdfBlob);
+              return;
+            }
+          }
+        }
+        catch (exception) {
+          console.log("Clipboard PDF read failed, falling back to text clipboard.");
+          console.log(exception);
+        }
+      }
+
+      //@ts-ignore
+      var clipText = await navigator.clipboard.readText();
+
       //--CB--Aufruf der Prüfstrucktur ob OCMF
 
       //await this._chargy.detectContentFormat(JSON.parse(clipText));
         const raw = JSON.parse(clipText);
-        const fixed = this.transformToExpectedFormat(raw);
 
-        await this._chargy.detectContentFormat(fixed);
+        await this.processTransparencyRecord(raw);
       //______
 
     }
