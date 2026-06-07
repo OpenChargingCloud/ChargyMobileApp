@@ -159,3 +159,14 @@ Special thanks for the original authors to make this fork possible and the stron
 Take care folks!
 
 Your Greg
+
+
+## Funding
+
+This Open Source project is partially funded by the [NGI Zero Commons Fund](https://nlnet.nl/commonsfund/) as part of our [EVQI project](https://nlnet.nl/project/EVQI/).
+
+We also appreciate any additional funding and long-term support for the Chargy family, for example via [GitHub Sponsors](https://github.com/sponsors/GraphDefined), as it helps us keep the project sustainable, independent and useful for the entire e-mobility community.
+
+<center>
+  <img src="static/images/NGI0_tag.svg" height="30">
+</center>
