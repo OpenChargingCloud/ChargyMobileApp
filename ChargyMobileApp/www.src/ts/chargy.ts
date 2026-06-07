@@ -1,9 +1,13 @@
 import * as moment    from 'moment';
-import * as chart     from 'chart.js'
+import Chart, { ChartConfiguration } from 'chart.js/auto';
 import GDFCrypt01     from './GDFCrypt01';
 import EMHCrypt01     from './EMHCrypt01';
 import * as chargyLib from './chargyLib';
 import * as iface     from './chargyInterfaces';
+
+//--CB--Import der OCMF Klasse
+import OCMF     from './OCMF';
+//______
 
 // import { debug } from "util";
 // import * as crypto from "crypto";
@@ -18,6 +22,7 @@ export default class chargy {
 
     private elliptic: any;
     private moment:   any;
+    private measurementChart: Chart;
 
     chargingStationOperators  = new Array<iface.IChargingStationOperator>();
     chargingPools             = new Array<iface.IChargingPool>();
@@ -123,7 +128,7 @@ export default class chargy {
                     }
 
                 }
- 
+
             };
 
             //ToDo: Checking the timestamp might be usefull!
@@ -154,7 +159,7 @@ export default class chargy {
 
     //#region GetMethods...
 
-    public GetChargingPool: iface.GetChargingPoolFunc = (Id: String) => 
+    public GetChargingPool: iface.GetChargingPoolFunc = (Id: String) =>
     {
 
         for (var chargingPool of this.chargingPools)
@@ -195,16 +200,16 @@ export default class chargy {
 
     public GetMeter: iface.GetMeterFunc = (Id: string) =>
     {
-    
+
         for (var meter of this.meters)
         {
             if (meter["@id"] == Id)
                 return meter;
         }
-    
+
         return null;
-    
-    }    
+
+    }
 
     //#endregion
 
@@ -261,7 +266,7 @@ export default class chargy {
 
             async function checkSessionCrypto(chargingSession: iface.IChargingSession)
             {
-    
+
                 var result = await me2.verifySessionCryptoDetails(chargingSession);
 
                 //#region Add marker to map
@@ -284,7 +289,7 @@ export default class chargy {
 
                 switch (result.status)
                 {
-    
+
                     case iface.SessionVerificationResult.UnknownSessionFormat:
                     case iface.SessionVerificationResult.PublicKeyNotFound:
                     case iface.SessionVerificationResult.InvalidPublicKey:
@@ -303,7 +308,7 @@ export default class chargy {
                 }
 
                 var geoLocation  = null;
-                
+
                 if (chargingSession.chargingPool                != null &&
                     chargingSession.chargingPool.geoLocation    != null)
                 {
@@ -336,22 +341,22 @@ export default class chargy {
 
                     switch (result.status)
                     {
-        
+
                         case iface.SessionVerificationResult.UnknownSessionFormat:
                         case iface.SessionVerificationResult.PublicKeyNotFound:
                         case iface.SessionVerificationResult.InvalidPublicKey:
                         case iface.SessionVerificationResult.InvalidSignature:
                             marker.bindPopup("Ungültiger Ladevorgang!");
                             break;
-    
+
                         case iface.SessionVerificationResult.ValidSignature:
                             marker.bindPopup("Gültiger Ladevorgang!");
                             break;
-    
-    
+
+
                         default:
                             markerIcon = redMarker;
-    
+
                     }
 
                 }
@@ -360,7 +365,7 @@ export default class chargy {
 
                 switch (result.status)
                 {
-    
+
                     case iface.SessionVerificationResult.UnknownSessionFormat:
                     case iface.SessionVerificationResult.PublicKeyNotFound:
                     case iface.SessionVerificationResult.InvalidPublicKey:
@@ -375,7 +380,7 @@ export default class chargy {
                         return '<i class="fas fa-times-circle"></i> Ungültig';
 
                 }
-    
+
             }
 
             //#region Show CTR infos
@@ -483,29 +488,29 @@ export default class chargy {
 
                                 for (var EVSE of chargingStation.EVSEs)
                                 {
-        
+
                                     EVSE.chargingStation    = chargingStation;
                                     EVSE.chargingStationId  = chargingStation["@id"];
-        
+
                                     me.EVSEs.push(EVSE);
-        
+
                                     if (EVSE.meters) {
-        
+
                                         for (var meter of EVSE.meters)
                                         {
-        
+
                                             meter.EVSE               = EVSE;
                                             meter.EVSEId             = EVSE["@id"];
-        
+
                                             meter.chargingStation    = chargingStation;
                                             meter.chargingStationId  = chargingStation["@id"];
-        
+
                                             me.meters.push(meter);
-        
+
                                         }
-        
+
                                     }
-        
+
                                 }
 
                             }
@@ -655,7 +660,11 @@ export default class chargy {
                 for (var chargingSession of CTR.chargingSessions)
                 {
 
-                    let chargingSessionDiv      = me.lib.CreateDiv(chargingSessionsDiv, "chargingSession");               
+
+
+
+
+                    let chargingSessionDiv      = me.lib.CreateDiv(chargingSessionsDiv, "chargingSession");
                     chargingSession.GUI         = chargingSessionDiv;
                     chargingSessionDiv.onclick  = me.captureChargingSession(chargingSession);
 
@@ -692,7 +701,7 @@ export default class chargy {
 
                     }
                     catch (exception)
-                    { 
+                    {
                         console.log("Could not show session time infos of charging session '" + chargingSession["@id"] + "':" + exception);
                     }
 
@@ -757,7 +766,7 @@ export default class chargy {
 
                     }
                     catch (exception)
-                    { 
+                    {
                         console.log("Could not show energy infos of charging session '" + chargingSession["@id"] + "':" + exception);
                     }
 
@@ -769,7 +778,7 @@ export default class chargy {
 
                         if (chargingSession.authorizationStart != null)
                         {
-    
+
                             var authorizationStartDiv            = tableDiv.appendChild(document.createElement('div'));
                                 authorizationStartDiv.className  = "authorizationStart";
 
@@ -801,7 +810,7 @@ export default class chargy {
 
                         if (chargingSession.authorizationStop != null)
                         {
-    
+
                             var authorizationStopDiv            = tableDiv.appendChild(document.createElement('div'));
                                 authorizationStopDiv.className  = "authorizationStop";
 
@@ -824,12 +833,12 @@ export default class chargy {
                                     break;
 
                             }
-    
+
                             var authorizationStopIdDiv                     = authorizationStopDiv.appendChild(document.createElement('div'));
                             authorizationStopIdDiv.className               = "id";
                             authorizationStopIdDiv.innerHTML = chargingSession.authorizationStop["@id"];
 
-                        }                        
+                        }
 
                     } catch (exception)
                     {
@@ -934,7 +943,7 @@ export default class chargy {
                             }
 
                             if (address != null)
-                                locationDiv.innerHTML += "<br />" + 
+                                locationDiv.innerHTML += "<br />" +
                                                             (address.street      != null ? " " + address.street        : "") +
                                                             (address.houseNumber != null ? " " + address.houseNumber   : "") +
 
@@ -948,7 +957,7 @@ export default class chargy {
                     {
                         console.log("Could not show location infos of charging session '" + chargingSession["@id"] + "':" + exception);
                     }
-
+                    chargingSession.ocmfRaw = CTR.ocmfRaw;
                     //#endregion
 
                     //#region Show verification status
@@ -960,6 +969,8 @@ export default class chargy {
                     //#endregion
 
 
+
+
                     me.chargingSessions.push(chargingSession);
 
                 }
@@ -968,10 +979,7 @@ export default class chargy {
                 // if (me.chargingSessions.length == 1)
                 //     me.chargingSessions[0].GUI.click();
 
-                me2.app.map.invalidateSize();
-
-                me2.app.map.fitBounds([[minlat, minlng], [maxlat, maxlng]],
-                                      { padding: [40, 40] });
+                me2.app.refreshMap([[minlat, minlng], [maxlat, maxlng]]);
 
             }
 
@@ -1044,7 +1052,7 @@ export default class chargy {
                 //         "address": {
                 //             "street": "Musterstraße 12",
                 //             "zipCode": "74789",
-                //             "town": "Stadt" 
+                //             "town": "Stadt"
                 //         },
                 //         "geoLocation": {
                 //             "lat": 12.3774,
@@ -1066,7 +1074,7 @@ export default class chargy {
                             throw "Missing or invalid timestamp[" + i + "]!"
                         var timestamp = me2.lib.parseUTC(_timestamp);
 
-                        var _meterInfo = signedMeterValue["meterInfo"] as string;
+                        var _meterInfo = signedMeterValue["meterInfo"] as Record<string, unknown>;
                         if (_meterInfo == null || typeof _meterInfo !== 'object')
                             throw "Missing or invalid meterInfo[" + i + "]!"
 
@@ -1110,15 +1118,15 @@ export default class chargy {
 
                         var _contract_timestampLocal_timestamp = _contract_timestampLocal["timestamp"] as number;
                         if (_contract_timestampLocal_timestamp == null || typeof _contract_timestampLocal_timestamp !== 'number')
-                            throw "Missing or invalid contract timestampLocal timestamp[" + i + "]!"                            
+                            throw "Missing or invalid contract timestampLocal timestamp[" + i + "]!"
 
                         var _contract_timestampLocal_localOffset = _contract_timestampLocal["localOffset"] as number;
                         if (_contract_timestampLocal_localOffset == null || typeof _contract_timestampLocal_localOffset !== 'number')
-                            throw "Missing or invalid contract timestampLocal localOffset[" + i + "]!"                            
-                            
+                            throw "Missing or invalid contract timestampLocal localOffset[" + i + "]!"
+
                         var _contract_timestampLocal_seasonOffset = _contract_timestampLocal["seasonOffset"] as number;
                         if (_contract_timestampLocal_seasonOffset == null || typeof _contract_timestampLocal_seasonOffset !== 'number')
-                            throw "Missing or invalid contract timestampLocal seasonOffset[" + i + "]!"  
+                            throw "Missing or invalid contract timestampLocal seasonOffset[" + i + "]!"
 
                         var _contract_timestamp = _contract["timestamp"] as number;
                         if (_contract_timestamp == null || typeof _contract_timestamp !== 'number')
@@ -1144,15 +1152,15 @@ export default class chargy {
 
                         var _measuredValue_timestampLocal_timestamp = _measuredValue_timestampLocal["timestamp"] as number;
                         if (_measuredValue_timestampLocal_timestamp == null || typeof _measuredValue_timestampLocal_timestamp !== 'number')
-                            throw "Missing or invalid measuredValue timestampLocal timestamp[" + i + "]!"                            
+                            throw "Missing or invalid measuredValue timestampLocal timestamp[" + i + "]!"
 
                         var _measuredValue_timestampLocal_localOffset = _measuredValue_timestampLocal["localOffset"] as number;
                         if (_measuredValue_timestampLocal_localOffset == null || typeof _measuredValue_timestampLocal_localOffset !== 'number')
-                            throw "Missing or invalid measuredValue timestampLocal localOffset[" + i + "]!"                            
-                            
+                            throw "Missing or invalid measuredValue timestampLocal localOffset[" + i + "]!"
+
                         var _measuredValue_timestampLocal_seasonOffset = _measuredValue_timestampLocal["seasonOffset"] as number;
                         if (_measuredValue_timestampLocal_seasonOffset == null || typeof _measuredValue_timestampLocal_seasonOffset !== 'number')
-                            throw "Missing or invalid measuredValue timestampLocal seasonOffset[" + i + "]!"                            
+                            throw "Missing or invalid measuredValue timestampLocal seasonOffset[" + i + "]!"
 
                         var _measuredValue_value = _measuredValue["value"] as string;
                         if (_measuredValue_value == null || typeof _measuredValue_value !== 'string')
@@ -1203,7 +1211,7 @@ export default class chargy {
                         var _additionalInfo_indexes_logBook = _additionalInfo_indexes["logBook"] as string;
                         if (_additionalInfo_indexes_logBook == null || typeof _additionalInfo_indexes_logBook !== 'string')
                             throw "Missing or invalid additionalInfo indexes logBook[" + i + "]!"
-                            
+
                         var _additionalInfo_status = _additionalInfo["status"] as string;
                         if (_additionalInfo_status == null || typeof _additionalInfo_status !== 'string')
                             throw "Missing or invalid additionalInfo status[" + i + "]!"
@@ -1287,7 +1295,7 @@ export default class chargy {
                     if (address_town == null || typeof address_town !== 'string')
                         throw "Missing or invalid address town!"
 
-           
+
                     var geoLocation = placeInfo["geoLocation"];
                     if (geoLocation == null)
                         throw "Missing or invalid geoLocation!"
@@ -1302,18 +1310,38 @@ export default class chargy {
 
 
                     var n = CTRArray.length-1;
+
+                    //--CB--Abfrage ob das eingelesene JSON unser Format ist
+
+                    var contextS = "https://open.charging.cloud/contexts/SessionSignatureFormats/EMHCrypt01+json"
+                    if (CTRArray[0]["measurand"]["name"]=="PTB"){contextS = "OCMF";}
+                    var contextM = "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/EMHCrypt01+json";
+                    if (CTRArray[0]["measurand"]["name"]=="PTB"){contextM = "OCMF";}
+
+                    //______
+
                     var _CTR: any = { //IChargeTransparencyRecord = {
 
                         "@id":              _transactionId,
                         "@context":         "https://open.charging.cloud/contexts/CTR+json",
-                    
-                        "begin":            moment.unix(CTRArray[0]["measuredValue"]["timestampLocal"]["timestamp"]).utc().format(),
-                        "end":              moment.unix(CTRArray[n]["measuredValue"]["timestampLocal"]["timestamp"]).utc().format(),
-                    
+
+                        //--CB--Weiterreichen der OCMF und Fehler behoben
+
+                        "ocmfRaw":          SomeJSON.ocmfRaw,
+
+                        //"begin":            moment.unix(CTRArray[0]["measuredValue"]["timestampLocal"]["timestamp"]).utc().format(),
+                        //"end":              moment.unix(CTRArray[n]["measuredValue"]["timestampLocal"]["timestamp"]).utc().format(),
+
+                        "begin":    moment.unix(CTRArray[0].timestamp).utc().format(),
+                        "end":      moment.unix(CTRArray[n].timestamp).utc().format(),
+
+                        //______
+
+
                         "description": {
                             "de":           "Alle Ladevorgänge"
                         },
-                    
+
                         "contract": {
                             "@id":          CTRArray[0]["contract"]["id"],
                             "type":         CTRArray[0]["contract"]["type"],
@@ -1329,7 +1357,7 @@ export default class chargy {
                                 "description": {
                                     "de":                   "chargeIT mobility GmbH - Charging Station Operator Services"
                                 },
-                    
+
                                 "contact": {
                                     "email":                    "info@chargeit-mobility.com",
                                     "web":                      "https://www.chargeit-mobility.com",
@@ -1356,7 +1384,7 @@ export default class chargy {
                                         }
                                     ]
                                 },
-                    
+
                                 "support": {
                                     "hotline":                  "+49 9321 / 2680 - 700",
                                     "email":                    "service@chargeit-mobility.com",
@@ -1434,13 +1462,20 @@ export default class chargy {
                         "chargingSessions": [
 
                             {
+                                //--CB--einbau der "Weiche"
 
                                 "@id":                          _transactionId,
-                                "@context":                     "https://open.charging.cloud/contexts/SessionSignatureFormats/EMHCrypt01+json",
-                                "begin":                        moment.unix(CTRArray[0]["measuredValue"]["timestampLocal"]["timestamp"]).utc().format(),
-                                "end":                          moment.unix(CTRArray[n]["measuredValue"]["timestampLocal"]["timestamp"]).utc().format(),
+                                //"@context":                     "https://open.charging.cloud/contexts/SessionSignatureFormats/EMHCrypt01+json",
+                                "@context":                     contextS,
+                                //"begin":                        moment.unix(CTRArray[0]["measuredValue"]["timestampLocal"]["timestamp"]).utc().format(),
+                                //"end":                          moment.unix(CTRArray[n]["measuredValue"]["timestampLocal"]["timestamp"]).utc().format(),
+                                "begin":    moment.unix(CTRArray[0].timestamp).utc().format(),
+                                "end":      moment.unix(CTRArray[n].timestamp).utc().format(),
+
+                                //______
+
                                 "EVSEId":                       evseId,
-                    
+
                                 "authorizationStart": {
                                     "@id":                      CTRArray[0]["contract"]["id"],
                                     "type":                     CTRArray[0]["contract"]["type"],
@@ -1462,7 +1497,14 @@ export default class chargy {
                                     {
 
                                         "energyMeterId":        CTRArray[0]["meterInfo"]["meterId"],
-                                        "@context":             "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/EMHCrypt01+json",
+
+                                        //--CB--einbau der "Weiche"
+
+                                        //"@context":             "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/EMHCrypt01+json",
+                                        "@context":             contextM,
+
+                                        //______
+
                                         "name":                 CTRArray[0]["measurand"]["name"],
                                         "obis":                 CTRArray[0]["measurand"]["id"],
                                         "unit":                 CTRArray[0]["measuredValue"]["unit"],
@@ -1489,6 +1531,8 @@ export default class chargy {
                         ]
 
                     };
+
+
 
                     for (var _measurement of CTRArray)
                     {
@@ -1517,13 +1561,15 @@ export default class chargy {
                     }
 
                     await processChargeTransparencyRecord(_CTR);
+
                     return true;
 
                 }
                 catch (exception)
                 {
                     console.log("chargeIT mobility legacy CTR format: " + exception);
-                }                
+                }
+
 
             }
 
@@ -1585,12 +1631,12 @@ export default class chargy {
 
                     case iface.VerificationResult.ValidSignature:
                         return '<i class="fas fa-check-circle"></i> Gültige Signatur';
-    
+
 
                     default:
                         return '<i class="fas fa-times-circle"></i> Ungültige Signatur';
 
-            }            
+            }
 
         }
 
@@ -1672,56 +1718,45 @@ export default class chargy {
 
                         //#region Configure chart
 
-                        let chartDiv           = this.app.measurementInfosPage.querySelector<HTMLCanvasElement>('#chart');
+                        let chartDiv = this.app.measurementInfosPage.querySelector<HTMLCanvasElement>('#chart');
 
-                        let chartData:chart.ChartConfiguration = {
+                        let chartData: ChartConfiguration<'bar', number[], string> = {
                             type: 'bar',
                             data: {
-                                labels: ['Red', 'Blue'], //, 'Yellow', 'Green', 'Purple', 'Orange'],
+                                labels: [],
                                 datasets: [{
                                     label: 'kWh',
                                     data: [],
-                                    backgroundColor: [
-                                         'rgba(255, 99, 132, 0.2)',
-                                         'rgba(54, 162, 235, 0.2)'
-                                    //     'rgba(255, 206, 86, 0.2)',
-                                    //     'rgba(75, 192, 192, 0.2)',
-                                    //     'rgba(153, 102, 255, 0.2)',
-                                    //     'rgba(255, 159, 64, 0.2)'
-                                    ],
-                                    // borderColor: [
-                                    //     'rgba(255, 99, 132, 1)',
-                                    //     'rgba(54, 162, 235, 1)',
-                                    //     'rgba(255, 206, 86, 1)',
-                                    //     'rgba(75, 192, 192, 1)',
-                                    //     'rgba(153, 102, 255, 1)',
-                                    //     'rgba(255, 159, 64, 1)'
-                                    // ],
+                                    backgroundColor: 'rgba(255, 159, 64, 0.35)',
+                                    borderColor: 'rgba(255, 159, 64, 1)',
                                     borderWidth: 1
                                 }]
                             },
                             options: {
-                                title: {
-                                    display: false
-                                },
-                                legend: {
-                                    display: false
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: {
+                                    legend: {
+                                        display: false
+                                    },
+                                    title: {
+                                        display: false
+                                    }
                                 },
                                 scales: {
-                                    yAxes: [{
-                                        ticks: {
-                                            beginAtZero: true
-                                        }
-                                    }]
+                                    y: {
+                                        beginAtZero: true
+                                    }
                                 }
                             }
                         };
 
-                        //#endregion                        
+                        //#endregion
 
                         let MeasurementValuesDiv         = this.app.measurementInfosPage.querySelector<HTMLDivElement>('#measurementValues');
                         MeasurementValuesDiv.innerHTML   = '';
 
+                        let chartLabels                  = [];
                         let chartValues                  = [];
                         let previousValue                = 0;
 
@@ -1734,6 +1769,7 @@ export default class chargy {
                             MeasurementValueDiv.onclick      = this.captureMeasurementCryptoDetails(measurementValue);
 
                             var timestamp                    = this.lib.parseUTC(measurementValue.timestamp);
+                            chartLabels.push(timestamp.format('HH:mm:ss'));
 
                             let timestampDiv                 = this.lib.CreateDiv(MeasurementValueDiv, "timestamp",
                                                                          timestamp.format('HH:mm:ss') + " Uhr");
@@ -1797,9 +1833,14 @@ export default class chargy {
 
                         }
 
+                        chartData.data.labels           = chartLabels;
                         chartData.data.datasets[0].data = chartValues;
-                        var myChart = new chart.Chart(chartDiv, chartData);
-    
+
+                        if (this.measurementChart)
+                            this.measurementChart.destroy();
+
+                        this.measurementChart = new Chart(chartDiv, chartData);
+
                     }
 
                     //#endregion
@@ -1810,7 +1851,7 @@ export default class chargy {
 
         }
         catch (exception)
-        { 
+        {
             console.log("Could not show charging session details: " + exception);
         }
 
@@ -1850,6 +1891,7 @@ export default class chargy {
     //#endregion
 
 
+
     //#region verifySessionCryptoDetails
 
     public async verifySessionCryptoDetails(chargingSession: iface.IChargingSession) : Promise<iface.ISessionCryptoResult>
@@ -1865,8 +1907,23 @@ export default class chargy {
             return result;
         }
 
+        //--CB--auslesen der weitergeleiteten Daten vom OCMF
+
+        const OCMF1 = chargingSession.ocmfRaw.S;
+        const OCMF2 = chargingSession.ocmfRaw.E;
+        const PKey = chargingSession.ocmfRaw.P;
+
+        //______
+
         switch (chargingSession["@context"])
         {
+        //--CB--neuer case für OCMF
+
+            case "OCMF":
+                chargingSession.method = new OCMF([OCMF1, OCMF2], PKey);
+                return await chargingSession.method.VerifyChargingSession(chargingSession);
+
+        //______
 
             case "https://open.charging.cloud/contexts/SessionSignatureFormats/GDFCrypt01+json":
                 chargingSession.method = new GDFCrypt01(this.GetMeter, this.CheckMeterPublicKeySignature);
@@ -1902,6 +1959,14 @@ export default class chargy {
 
         switch (measurementValue.measurement["@context"])
         {
+
+            //--CB--neuer case für OCMF
+
+            case "OCMF":
+                return measurementValue.result || { status: iface.VerificationResult.ValidSignature };
+
+            //______
+
 
             case "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/GDFCrypt01+json":
                  measurementValue.method = new GDFCrypt01(this.GetMeter, this.CheckMeterPublicKeySignature);
@@ -1956,7 +2021,7 @@ export default class chargy {
         }
 
 
-        //#region Show data and result on overlay        
+        //#region Show data and result on overlay
 
         let bufferValue               = cryptoDiv.querySelector('#buffer .value')             as HTMLDivElement;
         let hashedBufferValue         = cryptoDiv.querySelector('#hashedBuffer .value')       as HTMLDivElement;

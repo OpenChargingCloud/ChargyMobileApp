@@ -1,5 +1,5 @@
 
-# Chargy Mobile App
+# Chargy Mobile App with additional installing notes
 
 Chargy is a transparency software for secure and transparent e-mobility charging processes, as defined by the German "Eichrecht". The software allows you to verify the cryptographic signatures of energy measurements within charge detail records and comes with a couple of useful extentions to simplify the entire process for endusers and operators.
 
@@ -34,28 +34,9 @@ The Chargy Mobile project has a sister project called [Chargy Desktop](https://g
 
 ## Install dependencies
 
-Using node.js 12.1.0 (includes npm 6.9.0) for Microsoft Windows: https://nodejs.org/en/download/current/    
-Or install nodejs on your Linux / Mac OS X system via
-```
-sudo curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
-sudo apt install nodejs
-```
+Use a current Node.js runtime. The project is tested with Node.js 20+ and npm 10+.
 
-Afterwards you can install the remaining software using the node packet manager
-```
-$ npm install -g cordova@latest
-+ cordova@9.0.0
-```
-
-```
-$ npm install -g typescript@latest
-+ typescript@3.4.5
-```
-
-```
-$ npm install -g sass@latest
-+ sass@1.20.1
-```
+The Cordova CLI, TypeScript, Sass, Browserify, platform packages, and Cordova plugins are installed locally through npm. A global Cordova/TypeScript/Sass installation is no longer required.
 
 
 ## Clone and build this Apache Cordova project
@@ -68,8 +49,50 @@ $ git clone https://github.com/OpenChargingCloud/ChargyMobileApp.git
 Afterwards all node.js dependencies and additional Open Source Software libraries have to be downloaded.
 ```
 $ npm install
-$ cordova prepare
+$ npm run build
 ```
+
+For a quick local verification without preparing Cordova platforms:
+```
+$ npm run verify
+```
+
+To check production dependency advisories:
+```
+$ npm run audit -- --omit=dev
+```
+
+To generate a CycloneDX Software Bill of Materials (SBOM) for the production npm dependency tree:
+
+```
+$ npm run sbom
+```
+
+For an extended SBOM including development dependencies:
+
+```
+$ npm run sbom:all
+```
+
+Both commands write reproducible JSON files into the `ChargyMobileApp` directory. These files are ignored by git and can be attached to releases or CI artifacts when needed. The extended SBOM ignores npm tree warnings because optional platform-specific development dependencies can be absent on a local machine.
+
+## Run automated tests
+
+The project uses [Vitest](https://vitest.dev/) for fast TypeScript unit tests. Run the current test suite with:
+
+```
+$ npm test
+```
+
+During development you can keep Vitest running in watch mode:
+
+```
+$ npm run test:watch
+```
+
+In *Visual Studio Code* you can install the official `Vitest` extension by the verified publisher `Vitest` to run tests from the Testing sidebar.
+
+The first tests live in `ChargyMobileApp/tests` and use fixture files from `ChargyMobileApp/tests/fixtures`. To add another text-in/text-out parser test, add an input file and an `.expected.txt` file to the fixtures folder, then add a matching case in `ChargyMobileApp/tests/chargeDataParser.test.ts`.
 
 
 ## Test the mobile application
@@ -77,17 +100,73 @@ $ cordova prepare
 In order to test Chargy within the local browser just type the following command and Cordova will open the application within your default web browser automatically.
 
 ```
-$ cordova run browser
+$ npm run browser
 ```
+
+When testing mobile-style navigation in the browser, click and drag with the mouse to simulate a swipe gesture.
 
 In order to test it using the Electron framework
 ```
-$ cordova run cordova-electron
+$ npx cordova run cordova-electron
 ```
 
 To test Chargy on your Android smart phone please install [Android Studio](https://developer.android.com/studio), attach your smart phone via USB to your computer and run the following command. If you have installed the Android simulators and did not attach your smart phone Chary will be started within the default simulator profile.
 
 ```
-$ cordova run android
+$ npx cordova run android
 ```
 
+
+## Rebuild the project from scratch
+
+In case the cloned project does not work, you can find the REBUILD.md in the documentation. Follow these steps to build the project.
+
+Afterwards you need to do some additional steps:
+- Get __*Android Studio*__ to get the SDK.
+- Create the environment variable __*ANDROID_SDK_ROOT*__ and __*ANDROID_SDK*__ (both get the same path C:/Users/HereIsYourActualUser/AppData/Local/Android/Sdk)
+- Establish __*JAVA_HOME*__ according to the requirements of the installed `cordova-android` version.
+
+
+## File Editing
+
+The final steps include some additions and alterations in some Files.
+
+The file __*build.gradle.*__ (in .../ChargyMobileApp/platforms/android/CordovaLib) needs an alteration on:
+
+buildscript{
+
+repositories{
+
+__*maven { url ’https://repo.grails.org/grails/core/’} }}*__
+
+The file __*check_reqs.js*__ (in .../ChargyMobileApp/platforms/android/cordova/lib) needs an addition in line 91
+__*{shell:true}*__
+
+To start the Chargy-Application directly on the smartphone use
+```
+$ cordova run android -device
+```
+
+## Final execution notes
+
+1. The chosen Smartphone needs the developermode switched __*on*__
+2. USB debugging needs to be switchen __*on*__
+3. A direct installation for Chargy on your smartphone is possible with the __*app-debug.apk-file*__ 
+
+Finally we are at the end of our adventure. Thank you for staying with us. We are working on a more confinient way to get things rolling. Recommendations for improvement are welcome!
+
+Special thanks for the original authors to make this fork possible and the strong support from my colleague Manuel.
+Take care folks!
+
+Your Greg
+
+
+## Funding
+
+This Open Source project is partially funded by the [NGI Zero Commons Fund](https://nlnet.nl/commonsfund/) as part of our [EVQI project](https://nlnet.nl/project/EVQI/).
+
+We also appreciate any additional funding and long-term support for the Chargy family, for example via [GitHub Sponsors](https://github.com/sponsors/GraphDefined), as it helps us keep the project sustainable, independent and useful for the entire e-mobility community.
+
+<center>
+  <img src="static/images/NGI0_tag.svg" height="30">
+</center>

@@ -1,3 +1,5 @@
+@use "custom" as custom;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -31,7 +33,7 @@ body {
 
   margin:             0px;
   padding:            0px;
-  background-color: #87cafa;
+  background-color: custom.$body-background-color;
   min-height:         100vh;
   min-width:          90vw;
   overflow-x:         hidden;
@@ -56,8 +58,18 @@ body {
     left:               0px;
     right:              0px;
     height:             8vh;
-    padding-left:       1vw;
+    padding-left:       custom.$logo-padding-left;
     z-index:            1000;
+    background-color:   custom.$logo-background-color;
+    background-image:   custom.$logo-background-image;
+    background-size:    custom.$logo-background-size;
+    background-repeat:  custom.$logo-background-repeat;
+    line-height:        custom.$logo-line-height;
+    font-size:          custom.$logo-font-size;
+  }
+
+  #logo::before {
+    content:            custom.$logo-before-content;
   }
   
   .fa-check-circle {
@@ -75,7 +87,7 @@ body {
     min-height:         92vh;
     min-width:          100vw;
     top:                8vh;
-    background-color: #87cafa;
+    background-color: custom.$page-background-color;
 
     .subpages {
 
@@ -199,20 +211,21 @@ body {
         outline:            0;
         border:             0;
         border-radius:      50%;
-        background-color:   #aeddff;
+        color:              custom.$start-button-color;
+        background:         custom.$start-button-background;
         box-shadow:         none;
         align-self:         center;
 
         i {
-            font-size:          150%;
+            font-size:          custom.$start-button-icon-font-size;
             padding-bottom:     7px;
         }
 
       }
 
       button:hover {
-          color:              #f7f7f7;
-          background-color:   #519ad0;
+          color:              custom.$start-button-hover-color;
+          background:         custom.$start-button-hover-background;
       }
 
     }
@@ -630,7 +643,7 @@ body {
             position:               relative;
             top:                    8px;
             left:                   10px;
-            background-color:     #98c3e2;
+            background-color:     custom.$infoblock-description-background-color;
             display:                inline-block;
             padding:                1px 6px;
             border-radius:          4px;
@@ -706,4 +719,3 @@ body::-webkit-scrollbar {
     }
 }
 
-@import 'custom';

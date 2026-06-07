@@ -20,19 +20,10 @@
 <html>
 
 	<head>
-		<!--
-			Customize this policy to fit your own app's needs. For more guidance, see:
-				https://github.com/apache/cordova-plugin-whitelist/blob/master/README.md#content-security-policy
-			Some notes:
-				* gap: is required only on iOS (when using UIWebView) and is needed for JS->native communication
-				* https://ssl.gstatic.com is required only on Android and is needed for TalkBack to function properly
-				* Disables use of inline scripts in order to mitigate risk of XSS vulnerabilities. To change this:
-					* Enable inline JS: add 'unsafe-inline' to default-src
-			-->
-		<!--<meta
+		<meta
 		  http-equiv="Content-Security-Policy"
-		  content="default-src 'self' data: gap: https://ssl.gstatic.com 'unsafe-eval'; style-src 'self' 'unsafe-inline'; media-src *; img-src 'self' data: content:;"
-		/>-->
+		  content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: content: https://tile.openstreetmap.org; font-src 'self' data:; connect-src 'self' https://tile.openstreetmap.org; media-src 'self'; object-src 'none'; base-uri 'self';"
+		/>
 		<meta name="format-detection" content="telephone=no">
         <meta name="msapplication-tap-highlight" content="no">
         <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width">
@@ -45,7 +36,7 @@
 		<link rel="stylesheet" href="lib/leaflet/L.Control.Locate.min.css" />
 		<script src="lib/leaflet/leaflet.js"></script>
 		<script src="lib/leaflet/L.Control.Locate.min.js"></script>
-		<link rel="stylesheet" href="css/leaflet.awesome-markers.css">
+		<link rel="stylesheet" href="lib/leaflet/leaflet.awesome-markers.css">
         <script src="lib/leaflet/leaflet.awesome-markers.min.js" type="text/javascript"></script>
         
 	</head>
@@ -71,7 +62,7 @@
 
             <div id="buttonsDiv">
                 <button id="fileInputButton"><i class="far fa-folder-open"></i><br />Datensatz<br />laden</button>
-                <input id="fileInput" type="file" style="display: none"/>
+                <input id="fileInput" type="file" accept=".json,.chargy,.pdf,application/json,application/pdf" style="display: none"/>
                 <button id="pasteButton"><i class="fas fa-paste"></i><br />Datensatz<br />einfügen</button>
             </div>
 

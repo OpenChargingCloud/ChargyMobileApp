@@ -6,8 +6,10 @@ Desktop.ini
 .DS_Store
 
 # Node
+package-lock.json
 ChargyMobileApp/npm-debug.log
 ChargyMobileApp/node_modules
+ChargyMobileApp/sbom*.cdx.json
 
 # Cordova
 ChargyMobileApp/platforms

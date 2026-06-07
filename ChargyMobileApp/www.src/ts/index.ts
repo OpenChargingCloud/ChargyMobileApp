@@ -18,6 +18,8 @@
  */
 //import 'core-js';
 import chargy from './chargy';
+import { transformToExpectedFormat } from './chargeDataParser';
+import { extractTransparencyRecordsFromPdf } from './pdfAttachmentExtractor';
 
 declare let cordova: any;
 
@@ -46,7 +48,7 @@ export default class App {
     _chargy: chargy;
 
     start() {
-
+	console.log("Meter ID:");
         document.addEventListener('deviceready', () => this.onDeviceReady(),  false);
         document.addEventListener('resume',      () => this.onDeviceResume(), false);
         document.addEventListener('pause',       () => this.onPause(),        false);
@@ -84,6 +86,24 @@ export default class App {
         // }
 
         page.style.display = 'block';
+
+        if (page == this.chargingSessionsPage)
+            this.refreshMap();
+
+    }
+
+    refreshMap(fitBounds?: any) {
+
+        if (this.map == null)
+            return;
+
+        window.requestAnimationFrame(() => {
+            this.map.invalidateSize();
+
+            if (fitBounds != null)
+                this.map.fitBounds(fitBounds,
+                                   { padding: [40, 40] });
+        });
 
     }
 
@@ -346,7 +366,15 @@ export default class App {
     this.map = L.map('map').setView([49.7325504,10.1424442], 13);
 
     //@ts-ignore
-    L.tileLayer('https://{s}.tiles.mapbox.com/v4/ahzf.nc811hb2/{z}/{x}/{y}.png?' +
+    
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 18,
+            attribution: '<a href="http://openstreetmap.org">OSM</a> contr., ' +
+                '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
+                'Imagery © <a href="http://mapbox.com">Mapbox</a>'
+        }).addTo(this.map);
+    
+    /*L.tileLayer('https://{s}.tiles.mapbox.com/v4/ahzf.nc811hb2/{z}/{x}/{y}.png?' +
                 'access_token=pk.eyJ1IjoiYWh6ZiIsImEiOiJOdEQtTkcwIn0.Cn0iGqUYyA6KPS8iVjN68w',
                 {
                   maxZoom:      18,
@@ -354,7 +382,7 @@ export default class App {
                                 '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
                                 'Imagery © <a href="http://mapbox.com">Mapbox</a>'
                 }).addTo(this.map);
-
+*/
     //#endregion
 
     this._chargy = new chargy(this);
@@ -393,23 +421,75 @@ export default class App {
 
   //#endregion
 
+//--CB--Prüfung ob das eingelesene JSON vom PTB ist, daraufhin dann umbauen auf das Format was Chargy möchte
+
+transformToExpectedFormat(raw: any): any {
+    return transformToExpectedFormat(raw);
+}
+
+  async processTransparencyRecord(raw: any) {
+    const fixed = this.transformToExpectedFormat(raw);
+    await this._chargy.detectContentFormat(fixed);
+  }
+
+  async processPdfFile(file: File) {
+    const records = await extractTransparencyRecordsFromPdf(await file.arrayBuffer());
+
+    for (const record of records)
+      await this.processTransparencyRecord(record.content);
+  }
+
+  async processPdfBlob(blob: Blob) {
+    const records = await extractTransparencyRecordsFromPdf(await blob.arrayBuffer());
+
+    for (const record of records)
+      await this.processTransparencyRecord(record.content);
+  }
+
+  isPdfFile(file: File): boolean {
+    return file.type === "application/pdf" || /\.pdf$/i.test(file.name);
+  }
+
+
+//______
+
   //#region Read and parse CTR file
 
-  readAndParseFile(file: File) {
+  async readAndParseFile(file: File) {
 
     if (!file)
         return;
 
+    if (this.isPdfFile(file)) {
+        try {
+            await this.processPdfFile(file);
+        }
+        catch (exception) {
+            this.doGlobalError("Fehlerhafter PDF/A-3 Transparenzdatensatz!", exception);
+        }
+        return;
+    }
+
     var me = this;
     var reader = new FileReader();
+    console.log("ReadAndParseFile:"+file);
 
     reader.onload = function(event) {
         try
         {
-            me._chargy.detectContentFormat(JSON.parse((event.target as any).result)).
-                       catch((exception) => {
-                         me.doGlobalError("Fehlerhafter Transparenzdatensatz!", exception);
-                       });
+          if(file){
+
+            //--CB--Aufruf der Prüfstrucktur ob OCMF
+
+            const raw = JSON.parse((event.target as any).result);
+            me.processTransparencyRecord(raw).
+               catch((exception) => {
+                   me.doGlobalError("Fehlerhafter Transparenzdatensatz!", exception);
+               });
+
+            //______
+
+            }
         }
         catch (exception) {
             me.doGlobalError("Fehlerhafter Transparenzdatensatz!", exception);
@@ -430,15 +510,39 @@ export default class App {
 
   async PasteFile() {
 
-    //@ts-ignore
-    var clipText = await navigator.clipboard.readText();
-
     this.importantInfo.style.display  = 'none';
     this.importantInfo.innerHTML      = '';
 
     try {
 
-      await this._chargy.detectContentFormat(JSON.parse(clipText));
+      if ((navigator.clipboard as any).read) {
+        try {
+          const clipboardItems = await (navigator.clipboard as any).read();
+
+          for (const clipboardItem of clipboardItems) {
+            if (clipboardItem.types && clipboardItem.types.indexOf("application/pdf") >= 0) {
+              const pdfBlob = await clipboardItem.getType("application/pdf");
+              await this.processPdfBlob(pdfBlob);
+              return;
+            }
+          }
+        }
+        catch (exception) {
+          console.log("Clipboard PDF read failed, falling back to text clipboard.");
+          console.log(exception);
+        }
+      }
+
+      //@ts-ignore
+      var clipText = await navigator.clipboard.readText();
+
+      //--CB--Aufruf der Prüfstrucktur ob OCMF
+
+      //await this._chargy.detectContentFormat(JSON.parse(clipText));
+        const raw = JSON.parse(clipText);
+
+        await this.processTransparencyRecord(raw);
+      //______
 
     }
     catch(exception) {

@@ -1,9 +1,25 @@
 const fs    = require('fs');
 const path  = require('path');
-const sass  = require('sass');
-const ts    = require("typescript");
-const util  = require('util');
-const shell = require('shelljs');
+const { spawnSync } = require('child_process');
+
+function runNodeScript(projectRoot, script, args) {
+
+	const executable = path.join(projectRoot,
+								 'node_modules',
+								 ...script);
+
+	const result = spawnSync(process.execPath, [executable, ...args], {
+		cwd:   projectRoot,
+		stdio: 'inherit'
+	});
+
+	if (result.error)
+		throw result.error;
+
+	if (result.status !== 0)
+		throw new Error(script.join(path.sep) + ' failed with exit code ' + result.status);
+
+}
 
 module.exports = function(ctx) {
 
@@ -60,6 +76,80 @@ module.exports = function(ctx) {
 
 	}
 
+	function ensureDirectory(directoryName) {
+
+		if (!fs.existsSync(directoryName))
+			fs.mkdirSync(directoryName, { recursive: true });
+
+	}
+
+	function copyFile(sourceFile, targetFile) {
+
+		ensureDirectory(path.dirname(targetFile));
+
+		console.log("Copying " + sourceFile.replace(ctx.opts.projectRoot, "") + " => " + targetFile.replace(ctx.opts.projectRoot, ""));
+
+		fs.copyFileSync(sourceFile,
+						targetFile);
+
+	}
+
+	function copyDirectoryContents(sourceDirectory, targetDirectory) {
+
+		ensureDirectory(targetDirectory);
+
+		fs.readdirSync(sourceDirectory).forEach(sourceFile => {
+			copyFile(path.join(sourceDirectory, sourceFile),
+					 path.join(targetDirectory, sourceFile));
+		});
+
+	}
+
+	function copyLeafletAssets() {
+
+		const leafletTarget = path.join(wwwTarget, 'lib', 'leaflet');
+
+		fs.rmSync(leafletTarget, { recursive: true, force: true });
+		ensureDirectory(leafletTarget);
+
+		const leafletDist = path.join(ctx.opts.projectRoot, 'node_modules', 'leaflet', 'dist');
+		copyFile(path.join(leafletDist, 'leaflet.css'),         path.join(leafletTarget, 'leaflet.css'));
+		copyFile(path.join(leafletDist, 'leaflet.js'),          path.join(leafletTarget, 'leaflet.js'));
+		copyFile(path.join(leafletDist, 'leaflet.js.map'),      path.join(leafletTarget, 'leaflet.js.map'));
+		copyFile(path.join(leafletDist, 'leaflet-src.js'),      path.join(leafletTarget, 'leaflet-src.js'));
+		copyFile(path.join(leafletDist, 'leaflet-src.js.map'),  path.join(leafletTarget, 'leaflet-src.js.map'));
+		copyDirectoryContents(path.join(leafletDist, 'images'),
+							  path.join(leafletTarget, 'images'));
+
+		const locateDist = path.join(ctx.opts.projectRoot, 'node_modules', 'leaflet.locatecontrol', 'dist');
+		copyFile(path.join(locateDist, 'L.Control.Locate.umd.js'),       path.join(leafletTarget, 'L.Control.Locate.js'));
+		copyFile(path.join(locateDist, 'L.Control.Locate.min.js'),       path.join(leafletTarget, 'L.Control.Locate.min.js'));
+		copyFile(path.join(locateDist, 'L.Control.Locate.min.js.map'),   path.join(leafletTarget, 'L.Control.Locate.min.js.map'));
+		copyFile(path.join(locateDist, 'L.Control.Locate.min.css'),      path.join(leafletTarget, 'L.Control.Locate.min.css'));
+		copyFile(path.join(locateDist, 'L.Control.Locate.min.css.map'),  path.join(leafletTarget, 'L.Control.Locate.min.css.map'));
+
+		const awesomeMarkersDist = path.join(ctx.opts.projectRoot, 'node_modules', 'leaflet.awesome-markers', 'dist');
+		copyFile(path.join(awesomeMarkersDist, 'leaflet.awesome-markers.css'),     path.join(leafletTarget, 'leaflet.awesome-markers.css'));
+		copyFile(path.join(awesomeMarkersDist, 'leaflet.awesome-markers.js'),      path.join(leafletTarget, 'leaflet.awesome-markers.js'));
+		copyFile(path.join(awesomeMarkersDist, 'leaflet.awesome-markers.min.js'),  path.join(leafletTarget, 'leaflet.awesome-markers.min.js'));
+		copyDirectoryContents(path.join(awesomeMarkersDist, 'images'),
+							  path.join(leafletTarget, 'images'));
+
+	}
+
+	function copyPdfJsAssets() {
+
+		const pdfJsTarget = path.join(wwwTarget, 'lib', 'pdfjs');
+
+		fs.rmSync(pdfJsTarget, { recursive: true, force: true });
+		ensureDirectory(pdfJsTarget);
+
+		const pdfJsBuild = path.join(ctx.opts.projectRoot, 'node_modules', 'pdfjs-dist', 'build');
+		copyFile(path.join(pdfJsBuild, 'pdf.mjs'),         path.join(pdfJsTarget, 'pdf.mjs'));
+		copyFile(path.join(pdfJsBuild, 'pdf.worker.mjs'),  path.join(pdfJsTarget, 'pdf.worker.mjs'));
+
+	}
+
 	const wwwSource = path.join(ctx.opts.projectRoot, 'www.src');
 	const wwwTarget = path.join(ctx.opts.projectRoot, 'www');
 	
@@ -84,6 +174,8 @@ module.exports = function(ctx) {
 		copyDirectory('lib',    true);
 		copyDirectory('images', true);
 		copyDirectory('webfonts');
+		copyLeafletAssets();
+		copyPdfJsAssets();
 
 
 // TypeScript
@@ -138,10 +230,7 @@ module.exports = function(ctx) {
 
 		}); */
 
-		if (shell.exec('tsc').code !== 0) {
-			shell.echo('Error: typescript compile failed');
-			shell.exit(1);
-		}
+		runNodeScript(ctx.opts.projectRoot, ['typescript', 'bin', 'tsc'], []);
 
 
 // SASS
@@ -197,18 +286,19 @@ module.exports = function(ctx) {
 		});	
 		 */
 
-		if (shell.exec('sass www.src/scss/styles.scss www/css/styles.css').code !== 0) {
-			shell.echo('Error: sass compile failed');
-			shell.exit(1);
-		}
+		runNodeScript(ctx.opts.projectRoot, ['sass', 'sass.js'], [
+			'www.src/scss/styles.scss',
+			'www/css/styles.css'
+		]);
 
 
 // Bundle
 
-		if (shell.exec('browserify www/js/index.js -o www/js/bundle.js').code !== 0) {
-			shell.echo('Error: browserify failed');
-			shell.exit(1);
-		}
+		runNodeScript(ctx.opts.projectRoot, ['browserify', 'bin', 'cmd.js'], [
+			'www/js/index.js',
+			'-o',
+			'www/js/bundle.js'
+		]);
 
 		console.log('App is ready!');
 

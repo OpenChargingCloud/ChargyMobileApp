@@ -9,8 +9,8 @@
     </author>
 	<hook type="before_prepare" src="scripts/before_prepare.js" />
     <content src="index.html" />
-    <plugin name="cordova-plugin-whitelist" spec="1" />
     <access origin="*" />
+    <allow-navigation href="https://tile.openstreetmap.org/*" />
     <allow-intent href="http://*/*" />
     <allow-intent href="https://*/*" />
     <allow-intent href="tel:*" />
