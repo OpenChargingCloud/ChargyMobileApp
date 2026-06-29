@@ -64,6 +64,7 @@
             <div id="buttonsDiv">
                 <button id="fileInputButton"><i class="far fa-folder-open"></i><br />Datensatz<br />laden</button>
                 <input id="fileInput" type="file" accept=".json,.chargy,.pdf,application/json,application/pdf" style="display: none"/>
+                <button id="qrScanButton" disabled title="Keine Kamera verfügbar"><i class="fas fa-qrcode"></i><br />QR-Code<br />scannen</button>
                 <button id="pasteButton"><i class="fas fa-paste"></i><br />Datensatz<br />einfügen</button>
             </div>
 
@@ -166,6 +167,36 @@
         </div>
 
         <div id="aboutPage" class="pages">
+        </div>
+
+        <div id="qrCodeScanner" role="dialog" aria-modal="true" aria-labelledby="qrCodeScannerTitle">
+            <div class="scannerDialog">
+                <div class="scannerHeadline">
+                    <div id="qrCodeScannerError"></div>
+                    <div id="qrCodeScannerTitle">QR-Code scannen</div>
+                </div>
+
+                <div id="scannerViewport">
+                    <video id="qrCodeScannerVideo" autoplay muted playsinline></video>
+                    <canvas id="qrCodeScannerCanvas"></canvas>
+                    <div id="scannerFrame"></div>
+                </div>
+
+                <div id="qrCodeScannerStatus" aria-live="polite">Kamera wird gestartet...</div>
+
+                <div id="qrCodeScannerResult">
+                    <div id="qrCodeScannerResultLabel">Erkannter Inhalt</div>
+                    <pre id="qrCodeScannerResultText"></pre>
+                    <div id="qrCodeScannerURLActions">
+                        <button id="qrCodeScannerOpenURLButton"><i class="fas fa-external-link-alt"></i> URL öffnen</button>
+                    </div>
+                    <button id="qrCodeScannerRescanButton"><i class="fas fa-redo"></i> Erneut scannen</button>
+                </div>
+
+                <div class="scannerFooter">
+                    <button id="qrCodeScannerCancelButton" aria-label="QR-Code-Scanner schließen"><i class="fas fa-arrow-alt-circle-left"></i></button>
+                </div>
+            </div>
         </div>
 
         <script type="text/javascript" src="cordova.js"></script>

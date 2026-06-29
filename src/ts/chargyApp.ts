@@ -89,7 +89,8 @@ export default class ChargyApp {
 
     //#region detectContentFormat
 
-    public async detectContentFormat(fileInfos: iface.IFileInfo[] | iface.IFileInfo | string): Promise<boolean> {
+    public async detectContentFormat(fileInfos:  iface.IFileInfo[] | iface.IFileInfo | string,
+                                     onError?:   (message: string) => void): Promise<boolean> {
 
         const me = this;
 
@@ -114,18 +115,22 @@ export default class ChargyApp {
             }
 
             const errorResult = result as iface.ISessionCryptoResult;
-            this.doGlobalError(
-                this.chargy.GetLocalizedText(errorResult.message) ??
-                this.chargy.GetLocalizedMessage("UnknownOrInvalidChargeTransparencyRecord"),
-                errorResult.exception
-            );
+            const errorMessage = this.chargy.GetLocalizedText(errorResult.message) ??
+                                 this.chargy.GetLocalizedMessage("UnknownOrInvalidChargeTransparencyRecord");
+
+            if (onError != null)
+                onError(errorMessage);
+            else
+                this.doGlobalError(errorMessage, errorResult.exception);
         }
         catch (exception)
         {
-            this.doGlobalError(
-                this.chargy.GetLocalizedMessage("UnknownOrInvalidChargeTransparencyRecord"),
-                exception
-            );
+            const errorMessage = this.chargy.GetLocalizedMessage("UnknownOrInvalidChargeTransparencyRecord");
+
+            if (onError != null)
+                onError(errorMessage);
+            else
+                this.doGlobalError(errorMessage, exception);
         }
 
         return false;

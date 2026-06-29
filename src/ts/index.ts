@@ -17,7 +17,8 @@
  * under the License.
  */
 //import 'core-js';
-import ChargyApp from './chargyApp';
+import ChargyApp                         from './chargyApp';
+import { readQRCodeTextFromImageData }  from '@open-charging-cloud/chargy-core';
 
 declare let cordova: any;
 
@@ -37,6 +38,24 @@ export default class App {
     public aboutPage:                   HTMLDivElement;
 
     public map: any;
+
+    private qrScanButton:                 HTMLButtonElement;
+    private qrCodeScannerDiv:             HTMLDivElement;
+    private qrCodeScannerVideo:           HTMLVideoElement;
+    private qrCodeScannerCanvas:          HTMLCanvasElement;
+    private qrCodeScannerStatusDiv:       HTMLDivElement;
+    private qrCodeScannerErrorDiv:        HTMLDivElement;
+    private qrCodeScannerResultDiv:       HTMLDivElement;
+    private qrCodeScannerResultText:      HTMLPreElement;
+    private qrCodeScannerURLActionsDiv:   HTMLDivElement;
+    private qrCodeScannerOpenURLButton:   HTMLButtonElement;
+    private qrCodeScannerRescanButton:    HTMLButtonElement;
+    private qrCodeScannerCancelButton:    HTMLButtonElement;
+    private qrCodeScannerStream:          MediaStream|null = null;
+    private qrCodeScannerAnimationFrame:  number|null      = null;
+    private qrCodeScannerIsProcessing:    boolean          = false;
+    private qrCodeScannerLastText:        string|null      = null;
+    private qrCodeScannerLastURL:         URL|null         = null;
 
 
     chargingSessionsPage_MovementStartX  = null;
@@ -147,6 +166,53 @@ export default class App {
 
         var pasteButton                 = <HTMLButtonElement> document.getElementById('pasteButton');
         pasteButton.onclick             = (event) => this.PasteFile();
+
+        this.qrScanButton                        = document.getElementById('qrScanButton')                        as HTMLButtonElement;
+        this.qrCodeScannerDiv                    = document.getElementById('qrCodeScanner')                       as HTMLDivElement;
+        this.qrCodeScannerVideo                  = document.getElementById('qrCodeScannerVideo')                  as HTMLVideoElement;
+        this.qrCodeScannerCanvas                 = document.getElementById('qrCodeScannerCanvas')                 as HTMLCanvasElement;
+        this.qrCodeScannerStatusDiv              = document.getElementById('qrCodeScannerStatus')                 as HTMLDivElement;
+        this.qrCodeScannerErrorDiv               = document.getElementById('qrCodeScannerError')                  as HTMLDivElement;
+        this.qrCodeScannerResultDiv              = document.getElementById('qrCodeScannerResult')                 as HTMLDivElement;
+        this.qrCodeScannerResultText             = document.getElementById('qrCodeScannerResultText')            as HTMLPreElement;
+        this.qrCodeScannerURLActionsDiv          = document.getElementById('qrCodeScannerURLActions')            as HTMLDivElement;
+        this.qrCodeScannerOpenURLButton          = document.getElementById('qrCodeScannerOpenURLButton')         as HTMLButtonElement;
+        this.qrCodeScannerRescanButton           = document.getElementById('qrCodeScannerRescanButton')          as HTMLButtonElement;
+        this.qrCodeScannerCancelButton           = document.getElementById('qrCodeScannerCancelButton')          as HTMLButtonElement;
+
+        this.qrScanButton.onclick = async (event: MouseEvent) => {
+            event.preventDefault();
+            await this.openQRCodeScanner();
+        };
+
+        this.qrCodeScannerCancelButton.onclick = (event: MouseEvent) => {
+            event.preventDefault();
+            this.closeQRCodeScanner();
+        };
+
+        this.qrCodeScannerRescanButton.onclick = (event: MouseEvent) => {
+            event.preventDefault();
+            this.resumeQRCodeScanner();
+        };
+
+        this.qrCodeScannerOpenURLButton.onclick = (event: MouseEvent) => {
+            event.preventDefault();
+
+            if (this.qrCodeScannerLastURL != null)
+            {
+                window.open(this.qrCodeScannerLastURL.href, '_blank', 'noopener');
+                this.setQRCodeScannerStatus('URL wurde geöffnet.');
+            }
+        };
+
+        void this.updateQRCodeScannerAvailability();
+
+        if (typeof navigator.mediaDevices?.addEventListener === 'function')
+        {
+            navigator.mediaDevices.addEventListener('devicechange', () => {
+                void this.updateQRCodeScannerAvailability();
+            });
+        }
 
 
 
@@ -390,12 +456,293 @@ export default class App {
   }
   
   onPause() {
-
+    this.closeQRCodeScanner();
   }
 
   onDeviceResume() {
+    void this.updateQRCodeScannerAvailability();
+  }
+
+
+  //#region QR code scanner
+
+  private async updateQRCodeScannerAvailability(): Promise<void>
+  {
+
+    const mediaDevices = navigator.mediaDevices;
+
+    if (mediaDevices == null || typeof mediaDevices.getUserMedia !== 'function')
+    {
+      this.setQRCodeScannerButtonAvailability(false, 'Kamerazugriff wird auf diesem Gerät nicht unterstützt.');
+      return;
+    }
+
+    if (typeof mediaDevices.enumerateDevices !== 'function')
+    {
+      this.setQRCodeScannerButtonAvailability(true, 'QR-Code mit der Kamera scannen');
+      return;
+    }
+
+    try
+    {
+      const devices   = await mediaDevices.enumerateDevices();
+      const hasCamera = devices.some(device => device.kind === 'videoinput');
+
+      this.setQRCodeScannerButtonAvailability(
+        hasCamera,
+        hasCamera
+          ? 'QR-Code mit der Kamera scannen'
+          : 'Keine Kamera verfügbar'
+      );
+    }
+    catch
+    {
+      // Some WebViews do not expose their devices before the first permission request.
+      this.setQRCodeScannerButtonAvailability(true, 'QR-Code mit der Kamera scannen');
+    }
 
   }
+
+  private setQRCodeScannerButtonAvailability(isAvailable: boolean,
+                                             title:       string): void
+  {
+    this.qrScanButton.disabled = !isAvailable;
+    this.qrScanButton.title    = title;
+  }
+
+  private async requestAndroidCameraPermission(): Promise<boolean>
+  {
+
+    if (typeof cordova === 'undefined' || cordova.platformId !== 'android')
+      return true;
+
+    const permissions = cordova.plugins?.permissions;
+
+    if (permissions == null || typeof permissions.requestPermission !== 'function')
+      return false;
+
+    return await new Promise<boolean>(resolve => {
+      permissions.requestPermission(
+        permissions.CAMERA,
+        (status: { hasPermission?: boolean }) => resolve(status?.hasPermission === true),
+        () => resolve(false)
+      );
+    });
+
+  }
+
+  private async openQRCodeScanner(): Promise<void>
+  {
+
+    if (this.qrScanButton.disabled)
+      return;
+
+    this.resetQRCodeScannerDialog('Kameraberechtigung wird angefragt...');
+    this.qrCodeScannerDiv.style.display = 'flex';
+
+    if (!await this.requestAndroidCameraPermission())
+    {
+      this.closeQRCodeScanner();
+      this.doGlobalError('Der Kamerazugriff wurde nicht erlaubt. Bitte erteilen Sie Chargy die Kameraberechtigung in den App-Einstellungen.');
+      return;
+    }
+
+    this.setQRCodeScannerStatus('Kamera wird gestartet...');
+
+    try
+    {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: false,
+        video: {
+          facingMode: { ideal: 'environment' }
+        }
+      });
+
+      this.qrCodeScannerStream          = stream;
+      this.qrCodeScannerVideo.srcObject = stream;
+
+      await this.qrCodeScannerVideo.play();
+      this.resumeQRCodeScanner();
+    }
+    catch (exception)
+    {
+      const exceptionName = exception instanceof DOMException
+                              ? exception.name
+                              : '';
+
+      this.closeQRCodeScanner();
+      this.doGlobalError(
+        exceptionName === 'NotAllowedError' || exceptionName === 'SecurityError'
+          ? 'Der Kamerazugriff wurde nicht erlaubt. Bitte prüfen Sie die Kameraberechtigung für Chargy.'
+          : 'Die Kamera konnte nicht gestartet werden.',
+        exception
+      );
+    }
+
+  }
+
+  private closeQRCodeScanner(): void
+  {
+
+    if (this.qrCodeScannerAnimationFrame != null)
+    {
+      cancelAnimationFrame(this.qrCodeScannerAnimationFrame);
+      this.qrCodeScannerAnimationFrame = null;
+    }
+
+    if (this.qrCodeScannerVideo != null)
+    {
+      this.qrCodeScannerVideo.pause();
+      this.qrCodeScannerVideo.srcObject = null;
+    }
+
+    if (this.qrCodeScannerStream != null)
+    {
+      for (const track of this.qrCodeScannerStream.getTracks())
+        track.stop();
+
+      this.qrCodeScannerStream = null;
+    }
+
+    if (this.qrCodeScannerDiv != null)
+      this.qrCodeScannerDiv.style.display = 'none';
+
+    this.qrCodeScannerIsProcessing = false;
+    this.qrCodeScannerLastText     = null;
+    this.qrCodeScannerLastURL      = null;
+
+  }
+
+  private resumeQRCodeScanner(): void
+  {
+    this.qrCodeScannerIsProcessing = false;
+    this.qrCodeScannerLastText     = null;
+    this.qrCodeScannerLastURL      = null;
+    this.resetQRCodeScannerDialog('Kamera bereit. QR-Code in den Rahmen halten.');
+
+    if (this.qrCodeScannerAnimationFrame == null)
+      this.scanQRCodeFrame();
+  }
+
+  private resetQRCodeScannerDialog(statusText: string): void
+  {
+    this.qrCodeScannerErrorDiv.textContent             = '';
+    this.qrCodeScannerStatusDiv.textContent            = statusText;
+    this.qrCodeScannerResultDiv.style.display          = 'none';
+    this.qrCodeScannerURLActionsDiv.style.display      = 'none';
+    this.qrCodeScannerResultText.textContent           = '';
+  }
+
+  private setQRCodeScannerStatus(statusText: string): void
+  {
+    this.qrCodeScannerStatusDiv.textContent = statusText;
+  }
+
+  private scanQRCodeFrame(): void
+  {
+
+    if (this.qrCodeScannerDiv.style.display !== 'flex')
+    {
+      this.qrCodeScannerAnimationFrame = null;
+      return;
+    }
+
+    if (!this.qrCodeScannerIsProcessing &&
+         this.qrCodeScannerVideo.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA &&
+         this.qrCodeScannerVideo.videoWidth  > 0 &&
+         this.qrCodeScannerVideo.videoHeight > 0)
+    {
+      const context = this.qrCodeScannerCanvas.getContext('2d', { willReadFrequently: true });
+
+      if (context != null)
+      {
+        this.qrCodeScannerCanvas.width  = this.qrCodeScannerVideo.videoWidth;
+        this.qrCodeScannerCanvas.height = this.qrCodeScannerVideo.videoHeight;
+
+        context.drawImage(
+          this.qrCodeScannerVideo,
+          0,
+          0,
+          this.qrCodeScannerCanvas.width,
+          this.qrCodeScannerCanvas.height
+        );
+
+        const imageData = context.getImageData(
+          0,
+          0,
+          this.qrCodeScannerCanvas.width,
+          this.qrCodeScannerCanvas.height
+        );
+        const qrText = readQRCodeTextFromImageData({
+          data:   imageData.data,
+          width:  imageData.width,
+          height: imageData.height
+        });
+
+        if (qrText != null && qrText !== this.qrCodeScannerLastText)
+        {
+          this.qrCodeScannerLastText = qrText;
+          void this.handleScannedQRCodeText(qrText);
+        }
+      }
+    }
+
+    this.qrCodeScannerAnimationFrame = requestAnimationFrame(() => this.scanQRCodeFrame());
+
+  }
+
+  private async handleScannedQRCodeText(qrText: string): Promise<void>
+  {
+    this.qrCodeScannerIsProcessing = true;
+    this.setQRCodeScannerStatus('QR-Code erkannt. Inhalt wird geprüft...');
+
+    const detected = await this._chargyApp.detectContentFormat(
+      {
+        name: 'qr-code.txt',
+        type: 'text/plain',
+        data: new TextEncoder().encode(qrText)
+      },
+      errorMessage => this.showQRCodeScannerRejectedText(qrText, errorMessage)
+    );
+
+    if (detected)
+      this.closeQRCodeScanner();
+  }
+
+  private showQRCodeScannerRejectedText(qrText:      string,
+                                        errorMessage: string): void
+  {
+    const url = this.tryParseQRCodeURL(qrText);
+
+    this.qrCodeScannerErrorDiv.textContent        = errorMessage;
+    this.qrCodeScannerResultDiv.style.display     = 'flex';
+    this.qrCodeScannerResultText.textContent      = qrText;
+    this.qrCodeScannerURLActionsDiv.style.display = url != null ? 'block' : 'none';
+    this.qrCodeScannerLastURL                     = url;
+
+    this.setQRCodeScannerStatus(
+      url != null
+        ? 'Der QR-Code enthält eine URL, aber keinen Transparenzdatensatz.'
+        : 'Der QR-Code enthält keinen gültigen Transparenzdatensatz.'
+    );
+  }
+
+  private tryParseQRCodeURL(qrText: string): URL|null
+  {
+    try
+    {
+      const url = new URL(qrText.trim());
+      return url.protocol === 'https:' || url.protocol === 'http:'
+               ? url
+               : null;
+    }
+    catch
+    {
+      return null;
+    }
+  }
+
+  //#endregion
 
 
 
