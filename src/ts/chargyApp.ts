@@ -4,12 +4,15 @@ import {
     ChargeTransparencyRecord as chargeTransparencyRecord
 }                                      from '@open-charging-cloud/chargy-core';
 import * as chargyLib                  from '@open-charging-cloud/chargy-core';
-import coreI18n                        from '@open-charging-cloud/chargy-core/i18n.json';
 import * as elliptic                   from 'elliptic';
 import moment                          from 'moment';
 import base32Decode                    from 'base32-decode';
 import * as asn1                       from 'asn1.js';
 import Chart, { ChartConfiguration }   from 'chart.js/auto';
+import {
+    createI18nDictionary,
+    SupportedLanguage
+}                                      from './i18n';
 
 // @ts-ignore
 var leaflet: any = L;
@@ -51,13 +54,14 @@ export default class ChargyApp {
 
     app: MobileApp;
 
-    constructor (app: MobileApp) {
+    constructor (app:      MobileApp,
+                 language: SupportedLanguage) {
 
         this.app                       = app;
         this.chargingSessionReportDiv  = this.app.chargingSessionsPage.querySelector<HTMLDivElement>("#chargingSessionReport");
         this.chargy                    = new Chargy(
-                                             coreI18n,
-                                             [ "de", "en" ],
+                                             createI18nDictionary(),
+                                             [ language ],
                                              elliptic,
                                              moment,
                                              asn1,
@@ -65,6 +69,18 @@ export default class ChargyApp {
                                              () => undefined
                                          );
 
+        this.setUILanguage(language);
+
+    }
+
+    public setUILanguage(language: SupportedLanguage): void {
+        this.chargy.SetUILanguages([ language ]);
+        moment.locale(language);
+        chargyLib.setUILocale(language);
+    }
+
+    public getLocalizedMessage(key: string): string {
+        return this.chargy.GetLocalizedMessage(key);
     }
 
 
@@ -237,11 +253,11 @@ export default class ChargyApp {
                         case iface.SessionVerificationResult.PublicKeyNotFound:
                         case iface.SessionVerificationResult.InvalidPublicKey:
                         case iface.SessionVerificationResult.InvalidSignature:
-                            marker.bindPopup("Ungültiger Ladevorgang!");
+                            marker.bindPopup(me.chargy.GetLocalizedMessage("InvalidChargingSession"));
                             break;
 
                         case iface.SessionVerificationResult.ValidSignature:
-                            marker.bindPopup("Gültiger Ladevorgang!");
+                            marker.bindPopup(me.chargy.GetLocalizedMessage("ValidChargingSession"));
                             break;
 
 
@@ -261,14 +277,14 @@ export default class ChargyApp {
                     case iface.SessionVerificationResult.PublicKeyNotFound:
                     case iface.SessionVerificationResult.InvalidPublicKey:
                     case iface.SessionVerificationResult.InvalidSignature:
-                        return '<i class="fas fa-times-circle"></i> Ungültig';
+                        return '<i class="fas fa-times-circle"></i> ' + me.chargy.GetLocalizedMessage("InvalidChargingSession");
 
                     case iface.SessionVerificationResult.ValidSignature:
-                        return '<i class="fas fa-check-circle"></i> Gültig';
+                        return '<i class="fas fa-check-circle"></i> ' + me.chargy.GetLocalizedMessage("ValidChargingSessionShort");
 
 
                     default:
-                        return '<i class="fas fa-times-circle"></i> Ungültig';
+                        return '<i class="fas fa-times-circle"></i> ' + me.chargy.GetLocalizedMessage("InvalidChargingSession");
 
                 }
 
@@ -280,7 +296,7 @@ export default class ChargyApp {
 
             if (CTR.description) {
                 let descriptionDiv = me.app.chargingSessionsPage.querySelector<HTMLDivElement>('#description');
-                descriptionDiv.innerText = chargyLib.firstValue(CTR.description);
+                descriptionDiv.innerText = me.chargy.GetLocalizedText(CTR.description) ?? chargyLib.firstValue(CTR.description);
             }
 
             if (CTR.begin) {
@@ -337,7 +353,7 @@ export default class ChargyApp {
                             dateDiv.innerHTML = beginUTC.format('dddd, D; MMM YYYY HH:mm:ss').
                                                         replace(".", "").   // Nov. -> Nov
                                                         replace(";", ".") +  // 14;  -> 14.
-                                                        " Uhr";
+                                                        me.chargy.GetLocalizedMessage("timeSuffix");
 
                             if (chargingSession.end)
                             {
@@ -348,7 +364,7 @@ export default class ChargyApp {
                                 dateDiv.innerHTML += " - " +
                                                     (Math.floor(duration.asDays()) > 0 ? endUTC.format("dddd") + " " : "") +
                                                     endUTC.format('HH:mm:ss') +
-                                                    " Uhr";
+                                                    me.chargy.GetLocalizedMessage("timeSuffix");
 
                             }
 
@@ -380,11 +396,11 @@ export default class ChargyApp {
                         productDiv.className                 = "text";
                         productDiv.innerHTML = chargingSession.product != null ? chargingSession.product["@id"] + "<br />" : "";
 
-                        productDiv.innerHTML += "Ladedauer ";
-                        if      (Math.floor(duration.asDays())    > 1) productDiv.innerHTML += duration.days()    + " Tage " + duration.hours()   + " Std. " + duration.minutes() + " Min. " + duration.seconds() + " Sek.";
-                        else if (Math.floor(duration.asDays())    > 0) productDiv.innerHTML += duration.days()    + " Tag "  + duration.hours()   + " Std. " + duration.minutes() + " Min. " + duration.seconds() + " Sek.";
-                        else if (Math.floor(duration.asHours())   > 0) productDiv.innerHTML += duration.hours()   + " Std. " + duration.minutes() + " Min. " + duration.seconds() + " Sek.";
-                        else if (Math.floor(duration.asMinutes()) > 0) productDiv.innerHTML += duration.minutes() + " Min. " + duration.seconds() + " Sek.";
+                        productDiv.innerHTML += me.chargy.GetLocalizedMessage("chargingDurationLabel") + " ";
+                        if      (Math.floor(duration.asDays())    > 1) productDiv.innerHTML += duration.days()    + " " + me.chargy.GetLocalizedMessage("daysLabel")        + " " + duration.hours()   + " " + me.chargy.GetLocalizedMessage("hourShortLabel")   + " " + duration.minutes() + " " + me.chargy.GetLocalizedMessage("minuteShortLabel") + " " + duration.seconds() + " " + me.chargy.GetLocalizedMessage("secondShortLabel");
+                        else if (Math.floor(duration.asDays())    > 0) productDiv.innerHTML += duration.days()    + " " + me.chargy.GetLocalizedMessage("dayLabel")         + " " + duration.hours()   + " " + me.chargy.GetLocalizedMessage("hourShortLabel")   + " " + duration.minutes() + " " + me.chargy.GetLocalizedMessage("minuteShortLabel") + " " + duration.seconds() + " " + me.chargy.GetLocalizedMessage("secondShortLabel");
+                        else if (Math.floor(duration.asHours())   > 0) productDiv.innerHTML += duration.hours()   + " " + me.chargy.GetLocalizedMessage("hourShortLabel")   + " " + duration.minutes() + " " + me.chargy.GetLocalizedMessage("minuteShortLabel") + " " + duration.seconds() + " " + me.chargy.GetLocalizedMessage("secondShortLabel");
+                        else if (Math.floor(duration.asMinutes()) > 0) productDiv.innerHTML += duration.minutes() + " " + me.chargy.GetLocalizedMessage("minuteShortLabel") + " " + duration.seconds() + " " + me.chargy.GetLocalizedMessage("secondShortLabel");
                         else if (Math.floor(duration.asSeconds()) > 0) productDiv.innerHTML += duration.seconds();
 
                         if (chargingSession.measurements)
@@ -412,7 +428,7 @@ export default class ChargyApp {
 
                                     }
 
-                                    productDiv.innerHTML += "<br />" + chargyLib.measurementName2human(measurement.name) + " " + amount.toString() + " kWh (" + measurement.values.length + " Messwerte)";
+                                    productDiv.innerHTML += "<br />" + chargyLib.measurementName2human(measurement.name) + " " + amount.toString() + " kWh (" + measurement.values.length + " " + me.chargy.GetLocalizedMessage("Meter Values") + ")";
 
                                 }
 
@@ -664,29 +680,29 @@ export default class ChargyApp {
             {
 
                     case iface.VerificationResult.UnknownCTRFormat:
-                        return '<i class="fas fa-times-circle"></i> Unbekanntes Transparenzdatenformat';
+                        return '<i class="fas fa-times-circle"></i> ' + me.chargy.GetLocalizedMessage("Unknown charge transparency data format!");
 
                     case iface.VerificationResult.EnergyMeterNotFound:
-                        return '<i class="fas fa-times-circle"></i> Ungültiger Energiezähler';
+                        return '<i class="fas fa-times-circle"></i> ' + me.chargy.GetLocalizedMessage("Invalid energy meter");
 
                     case iface.VerificationResult.PublicKeyNotFound:
-                        return '<i class="fas fa-times-circle"></i> Ungültiger Public Key';
+                        return '<i class="fas fa-times-circle"></i> ' + me.chargy.GetLocalizedMessage("Public key not found");
 
                     case iface.VerificationResult.InvalidPublicKey:
-                        return '<i class="fas fa-times-circle"></i> Ungültiger Public Key';
+                        return '<i class="fas fa-times-circle"></i> ' + me.chargy.GetLocalizedMessage("Invalid public key");
 
                     case iface.VerificationResult.InvalidSignature:
-                        return '<i class="fas fa-times-circle"></i> Ungültige Signatur';
+                        return '<i class="fas fa-times-circle"></i> ' + me.chargy.GetLocalizedMessage("Invalid signature");
 
                     case iface.VerificationResult.ValidStartValue:
                     case iface.VerificationResult.ValidIntermediateValue:
                     case iface.VerificationResult.ValidStopValue:
                     case iface.VerificationResult.ValidSignature:
-                        return '<i class="fas fa-check-circle"></i> Gültige Signatur';
+                        return '<i class="fas fa-check-circle"></i> ' + me.chargy.GetLocalizedMessage("Valid signature");
 
 
                     default:
-                        return '<i class="fas fa-times-circle"></i> Ungültige Signatur';
+                        return '<i class="fas fa-times-circle"></i> ' + me.chargy.GetLocalizedMessage("Invalid signature");
 
             }
 
@@ -721,7 +737,7 @@ export default class ChargyApp {
                         let MeterVendorDiv           = chargyLib.CreateDiv(MeasurementInfoDiv,  "meterVendor");
 
                         let MeterVendorIdDiv         = chargyLib.CreateDiv(MeterVendorDiv,      "meterVendorId",
-                                                                 "Zählerhersteller");
+                                                                 this.chargy.GetLocalizedMessage("Manufacturer"));
 
                         let MeterVendorValueDiv      = chargyLib.CreateDiv(MeterVendorDiv,      "meterVendorIdValue",
                                                                  meter.manufacturer?.name ?? "");
@@ -730,7 +746,7 @@ export default class ChargyApp {
                         let MeterModelDiv            = chargyLib.CreateDiv(MeasurementInfoDiv,  "meterModel");
 
                         let MeterModelIdDiv          = chargyLib.CreateDiv(MeterModelDiv,       "meterModelId",
-                                                                 "Model");
+                                                                 this.chargy.GetLocalizedMessage("Model"));
 
                         let MeterModelValueDiv       = chargyLib.CreateDiv(MeterModelDiv,       "meterModelIdValue",
                                                                  meter.model?.name ?? "");
@@ -744,7 +760,7 @@ export default class ChargyApp {
                     let MeterDiv                    = chargyLib.CreateDiv(MeasurementInfoDiv,       "meter");
 
                     let MeterIdDiv                  = chargyLib.CreateDiv(MeterDiv,                 "meterId",
-                                                                meter != null ? "Seriennummer" : "Zählerseriennummer");
+                                                                this.chargy.GetLocalizedMessage(meter != null ? "Serial Number" : "Meter serial number"));
 
                     let MeterIdValueDiv             = chargyLib.CreateDiv(MeterDiv,                 "meterIdValue",
                                                                 measurement.energyMeterId);
@@ -756,7 +772,7 @@ export default class ChargyApp {
                     let MeasurementDiv               = chargyLib.CreateDiv(MeasurementInfoDiv,      "measurement");
 
                     let MeasurementIdDiv             = chargyLib.CreateDiv(MeasurementDiv,          "measurementId",
-                                                                 "Messung");
+                                                                 this.chargy.GetLocalizedMessage("Measurement"));
 
                     let MeasurementIdValueDiv        = chargyLib.CreateDiv(MeasurementDiv,          "measurementIdValue",
                                                                  measurement.name + " (OBIS: " + chargyLib.parseOBIS(measurement.obis) + ")");
@@ -824,7 +840,7 @@ export default class ChargyApp {
                             chartLabels.push(timestamp.format('HH:mm:ss'));
 
                             let timestampDiv                 = chargyLib.CreateDiv(MeasurementValueDiv, "timestamp",
-                                                                         timestamp.format('HH:mm:ss') + " Uhr");
+                                                                         timestamp.format('HH:mm:ss') + this.chargy.GetLocalizedMessage("timeSuffix"));
 
 
                             // Show energy counter value
@@ -965,7 +981,7 @@ export default class ChargyApp {
         if (measurementValue             == null ||
             measurementValue.measurement == null)
         {
-            doError("Unbekanntes Messdatensatzformat!");
+            doError(this.chargy.GetLocalizedMessage("unknownMeasurementDataFormat"));
         }
 
 
@@ -998,7 +1014,7 @@ export default class ChargyApp {
 
         else
         {
-            doError("Unbekanntes Messdatensatzformat!");
+            doError(this.chargy.GetLocalizedMessage("unknownMeasurementDataFormat"));
         }
 
         //#endregion

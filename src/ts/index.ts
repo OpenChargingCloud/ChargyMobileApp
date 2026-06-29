@@ -19,6 +19,11 @@
 //import 'core-js';
 import ChargyApp                         from './chargyApp';
 import { readQRCodeTextFromImageData }  from '@open-charging-cloud/chargy-core';
+import {
+    isSupportedLanguage,
+    resolveInitialUILanguage,
+    SupportedLanguage
+}                                      from './i18n';
 
 declare let cordova: any;
 
@@ -38,6 +43,11 @@ export default class App {
     public aboutPage:                   HTMLDivElement;
 
     public map: any;
+
+    private UILanguage:                  SupportedLanguage;
+    private languageButton:              HTMLButtonElement;
+    private languageMenuDiv:             HTMLDivElement;
+    private languageFlagImage:           HTMLImageElement;
 
     private qrScanButton:                 HTMLButtonElement;
     private qrCodeScannerDiv:             HTMLDivElement;
@@ -65,7 +75,7 @@ export default class App {
     _chargyApp: ChargyApp;
 
     start() {
-	console.log("Meter ID:");
+        this.UILanguage = this.getInitialUILanguage();
         document.addEventListener('deviceready', () => this.onDeviceReady(),  false);
         document.addEventListener('resume',      () => this.onDeviceResume(), false);
         document.addEventListener('pause',       () => this.onPause(),        false);
@@ -152,6 +162,14 @@ export default class App {
         this.issueTrackerPage           = document.getElementById("issueTrackerPage")           as HTMLDivElement;
         this.aboutPage                  = document.getElementById("aboutPage")                  as HTMLDivElement;
 
+        this._chargyApp                 = new ChargyApp(this, this.UILanguage);
+
+        this.languageButton             = document.getElementById('languageButton')             as HTMLButtonElement;
+        this.languageMenuDiv            = document.getElementById('languageMenu')               as HTMLDivElement;
+        this.languageFlagImage          = document.getElementById('languageFlag')               as HTMLImageElement;
+        this.setupLanguageSelector();
+        void this.setUILanguage(this.UILanguage, false);
+
         var fileInputButton             = <HTMLButtonElement> document.getElementById('fileInputButton');
         var fileInput                   = <HTMLInputElement>  document.getElementById('fileInput');
         fileInputButton.onclick         = (event) => {
@@ -201,7 +219,7 @@ export default class App {
             if (this.qrCodeScannerLastURL != null)
             {
                 window.open(this.qrCodeScannerLastURL.href, '_blank', 'noopener');
-                this.setQRCodeScannerStatus('URL wurde geöffnet.');
+                this.setQRCodeScannerStatus(this.t('urlWasOpened'));
             }
         };
 
@@ -449,11 +467,115 @@ export default class App {
 */
     //#endregion
 
-    this._chargyApp = new ChargyApp(this);
-
 	  app.showPage(this.startPage);
     
   }
+
+  //#region UI language handling
+
+  private getInitialUILanguage(): SupportedLanguage
+  {
+    return resolveInitialUILanguage(
+      localStorage.getItem('ChargyUILanguage'),
+      [ navigator.language, ...(navigator.languages ?? []) ]
+    );
+  }
+
+  private setupLanguageSelector(): void
+  {
+    this.languageButton.onclick = (event: MouseEvent) => {
+      event.preventDefault();
+      event.stopPropagation();
+
+      const isOpen = this.languageMenuDiv.classList.toggle('open');
+      this.languageButton.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    };
+
+    for (const languageMenuButton of Array.from(this.languageMenuDiv.querySelectorAll<HTMLButtonElement>('button[data-language]')))
+    {
+      languageMenuButton.onclick = async (event: MouseEvent) => {
+        event.preventDefault();
+        event.stopPropagation();
+
+        const language = languageMenuButton.dataset['language'];
+        if (isSupportedLanguage(language))
+          await this.setUILanguage(language);
+      };
+    }
+
+    document.addEventListener('click', () => {
+      this.languageMenuDiv.classList.remove('open');
+      this.languageButton.setAttribute('aria-expanded', 'false');
+    });
+  }
+
+  private async setUILanguage(language: SupportedLanguage,
+                              persist:  boolean = true): Promise<void>
+  {
+    this.UILanguage = language;
+    this._chargyApp.setUILanguage(language);
+
+    if (persist)
+      localStorage.setItem('ChargyUILanguage', language);
+
+    this.applyTranslations();
+
+    if (this.qrScanButton != null)
+      await this.updateQRCodeScannerAvailability();
+  }
+
+  private applyTranslations(): void
+  {
+    document.documentElement.lang = this.UILanguage;
+
+    for (const element of Array.from(document.querySelectorAll<HTMLElement>('[data-i18n-key]')))
+    {
+      const key = element.dataset['i18nKey'];
+      if (key != null)
+        element.innerHTML = this.t(key);
+    }
+
+    for (const element of Array.from(document.querySelectorAll<HTMLElement>('[data-i18n-title-key]')))
+    {
+      const key = element.dataset['i18nTitleKey'];
+      if (key != null)
+        element.title = this.t(key);
+    }
+
+    for (const element of Array.from(document.querySelectorAll<HTMLInputElement>('[data-i18n-placeholder-key]')))
+    {
+      const key = element.dataset['i18nPlaceholderKey'];
+      if (key != null)
+        element.placeholder = this.t(key);
+    }
+
+    for (const element of Array.from(document.querySelectorAll<HTMLElement>('[data-i18n-aria-label-key]')))
+    {
+      const key = element.dataset['i18nAriaLabelKey'];
+      if (key != null)
+        element.setAttribute('aria-label', this.t(key));
+    }
+
+    this.languageButton.title = this.t('languageButtonTitle');
+    this.languageButton.setAttribute('aria-label', this.languageButton.title);
+    this.languageMenuDiv.classList.remove('open');
+    this.languageButton.setAttribute('aria-expanded', 'false');
+    this.languageFlagImage.src = 'images/flags/' + this.UILanguage + '.svg';
+
+    for (const languageMenuButton of Array.from(this.languageMenuDiv.querySelectorAll<HTMLButtonElement>('button[data-language]')))
+    {
+      const isActive = languageMenuButton.dataset['language'] === this.UILanguage;
+      languageMenuButton.classList.toggle('active', isActive);
+      languageMenuButton.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+    }
+  }
+
+  private t(key: string): string
+  {
+    return this._chargyApp.getLocalizedMessage(key);
+  }
+
+  //#endregion
   
   onPause() {
     this.closeQRCodeScanner();
@@ -473,13 +595,13 @@ export default class App {
 
     if (mediaDevices == null || typeof mediaDevices.getUserMedia !== 'function')
     {
-      this.setQRCodeScannerButtonAvailability(false, 'Kamerazugriff wird auf diesem Gerät nicht unterstützt.');
+      this.setQRCodeScannerButtonAvailability(false, this.t('cameraAccessUnsupported'));
       return;
     }
 
     if (typeof mediaDevices.enumerateDevices !== 'function')
     {
-      this.setQRCodeScannerButtonAvailability(true, 'QR-Code mit der Kamera scannen');
+      this.setQRCodeScannerButtonAvailability(true, this.t('scanQRCodeWithCamera'));
       return;
     }
 
@@ -491,14 +613,14 @@ export default class App {
       this.setQRCodeScannerButtonAvailability(
         hasCamera,
         hasCamera
-          ? 'QR-Code mit der Kamera scannen'
-          : 'Keine Kamera verfügbar'
+          ? this.t('scanQRCodeWithCamera')
+          : this.t('noCameraAvailable')
       );
     }
     catch
     {
       // Some WebViews do not expose their devices before the first permission request.
-      this.setQRCodeScannerButtonAvailability(true, 'QR-Code mit der Kamera scannen');
+      this.setQRCodeScannerButtonAvailability(true, this.t('scanQRCodeWithCamera'));
     }
 
   }
@@ -537,17 +659,17 @@ export default class App {
     if (this.qrScanButton.disabled)
       return;
 
-    this.resetQRCodeScannerDialog('Kameraberechtigung wird angefragt...');
+    this.resetQRCodeScannerDialog(this.t('cameraPermissionRequested'));
     this.qrCodeScannerDiv.style.display = 'flex';
 
     if (!await this.requestAndroidCameraPermission())
     {
       this.closeQRCodeScanner();
-      this.doGlobalError('Der Kamerazugriff wurde nicht erlaubt. Bitte erteilen Sie Chargy die Kameraberechtigung in den App-Einstellungen.');
+      this.doGlobalError(this.t('cameraAccessDeniedSettings'));
       return;
     }
 
-    this.setQRCodeScannerStatus('Kamera wird gestartet...');
+    this.setQRCodeScannerStatus(this.t('cameraStarting'));
 
     try
     {
@@ -573,8 +695,8 @@ export default class App {
       this.closeQRCodeScanner();
       this.doGlobalError(
         exceptionName === 'NotAllowedError' || exceptionName === 'SecurityError'
-          ? 'Der Kamerazugriff wurde nicht erlaubt. Bitte prüfen Sie die Kameraberechtigung für Chargy.'
-          : 'Die Kamera konnte nicht gestartet werden.',
+          ? this.t('cameraAccessDenied')
+          : this.t('cameraCouldNotStart'),
         exception
       );
     }
@@ -618,7 +740,7 @@ export default class App {
     this.qrCodeScannerIsProcessing = false;
     this.qrCodeScannerLastText     = null;
     this.qrCodeScannerLastURL      = null;
-    this.resetQRCodeScannerDialog('Kamera bereit. QR-Code in den Rahmen halten.');
+    this.resetQRCodeScannerDialog(this.t('cameraReady'));
 
     if (this.qrCodeScannerAnimationFrame == null)
       this.scanQRCodeFrame();
@@ -694,7 +816,7 @@ export default class App {
   private async handleScannedQRCodeText(qrText: string): Promise<void>
   {
     this.qrCodeScannerIsProcessing = true;
-    this.setQRCodeScannerStatus('QR-Code erkannt. Inhalt wird geprüft...');
+    this.setQRCodeScannerStatus(this.t('qrCodeDetected'));
 
     const detected = await this._chargyApp.detectContentFormat(
       {
@@ -722,8 +844,8 @@ export default class App {
 
     this.setQRCodeScannerStatus(
       url != null
-        ? 'Der QR-Code enthält eine URL, aber keinen Transparenzdatensatz.'
-        : 'Der QR-Code enthält keinen gültigen Transparenzdatensatz.'
+        ? this.t('qrCodeContainsURL')
+        : this.t('qrCodeContainsNoRecord')
     );
   }
 
@@ -785,7 +907,7 @@ export default class App {
       await this.processFile(file, file.name);
     }
     catch (exception) {
-      this.doGlobalError("Fehlerhafter Transparenzdatensatz!", exception);
+      this.doGlobalError(this.t('invalidChargeTransparencyRecord'), exception);
     }
 
   }
@@ -826,7 +948,7 @@ export default class App {
 
     }
     catch(exception) {
-      this.doGlobalError("Fehlerhafter Transparenzdatensatz!", exception);
+      this.doGlobalError(this.t('invalidChargeTransparencyRecord'), exception);
     }
 
   }

@@ -1,0 +1,74 @@
+{
+    "mobileAppHeadline": {
+        "de": "Transparenz-Software",
+        "en": "Transparency software"
+    },
+    "inputHelp": {
+        "de": "Sie können den Transparenzdatensatz zu Ihren Ladevorgängen entweder aus einer Datei laden, über die Zwischenablage einfügen oder als QR-Code scannen...",
+        "en": "You can load the transparency record for your charging sessions from a file, paste it from the clipboard, or scan it as a QR code..."
+    },
+    "recordLabel": {
+        "de": "Datensatz",
+        "en": "Record"
+    },
+    "bufferLabel": {
+        "de": "Puffer",
+        "en": "Buffer"
+    },
+    "hashedBufferLabel": {
+        "de": "Hashwert des Puffers (SHA-256)",
+        "en": "Buffer hash (SHA-256)"
+    },
+    "otherProblemLabel": {
+        "de": "Sonstiges Problem",
+        "en": "Other problem"
+    },
+    "chargingDurationLabel": {
+        "de": "Ladedauer",
+        "en": "Charging duration"
+    },
+    "dayLabel": {
+        "de": "Tag",
+        "en": "day"
+    },
+    "daysLabel": {
+        "de": "Tage",
+        "en": "days"
+    },
+    "hourShortLabel": {
+        "de": "Std.",
+        "en": "hr"
+    },
+    "minuteShortLabel": {
+        "de": "Min.",
+        "en": "min"
+    },
+    "secondShortLabel": {
+        "de": "Sek.",
+        "en": "sec"
+    },
+    "timeSuffix": {
+        "de": " Uhr",
+        "en": ""
+    },
+    "unknownMeasurementDataFormat": {
+        "de": "Unbekanntes Messdatensatzformat!",
+        "en": "Unknown measurement data format!"
+    },
+    "cameraPermissionRequested": {
+        "de": "Kameraberechtigung wird angefragt...",
+        "en": "Requesting camera permission..."
+    },
+    "cameraAccessDeniedSettings": {
+        "de": "Der Kamerazugriff wurde nicht erlaubt. Bitte erteilen Sie Chargy die Kameraberechtigung in den App-Einstellungen.",
+        "en": "Camera access was denied. Please grant Chargy camera permission in the app settings."
+    },
+    "cameraAccessDenied": {
+        "de": "Der Kamerazugriff wurde nicht erlaubt. Bitte prüfen Sie die Kameraberechtigung für Chargy.",
+        "en": "Camera access was denied. Please check the camera permission for Chargy."
+    },
+    "qrCodeScannerCloseLabel": {
+        "de": "QR-Code-Scanner schließen",
+        "en": "Close QR code scanner"
+    }
+}

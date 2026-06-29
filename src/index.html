@@ -17,7 +17,7 @@
     specific language governing permissions and limitations
     under the License.
 -->
-<html>
+<html lang="de">
 
 	<head>
 		<meta charset="utf-8">
@@ -54,18 +54,34 @@
         </div>-->
         
         <div id="logo">
+            <span id="appTitle" data-i18n-key="mobileAppHeadline">Transparenz-Software</span>
+            <div id="languageSelector">
+                <button id="languageButton" aria-haspopup="true" aria-expanded="false" title="Sprache auswählen">
+                    <img id="languageFlag" class="languageFlag" src="images/flags/de.svg" alt="" aria-hidden="true">
+                </button>
+                <div id="languageMenu" role="menu">
+                    <button data-language="de" role="menuitem">
+                        <img class="languageFlag" src="images/flags/de.svg" alt="" aria-hidden="true">
+                        <span>Deutsch</span>
+                    </button>
+                    <button data-language="en" role="menuitem">
+                        <img class="languageFlag" src="images/flags/en.svg" alt="" aria-hidden="true">
+                        <span>English</span>
+                    </button>
+                </div>
+            </div>
         </div>
 
         <div id="startPage" class="pages">
 
-            <div id="text">Sie können den Transparenzdatensatz zu Ihren Ladevorgängen entweder aus
-                            einer Datei laden oder über die Zwischenablage einfügen...</div>
+            <div id="text" data-i18n-key="inputHelp">Sie können den Transparenzdatensatz zu Ihren Ladevorgängen entweder aus
+                            einer Datei laden, über die Zwischenablage einfügen oder als QR-Code scannen...</div>
 
             <div id="buttonsDiv">
-                <button id="fileInputButton"><i class="far fa-folder-open"></i><br />Datensatz<br />laden</button>
-                <input id="fileInput" type="file" accept=".json,.chargy,.pdf,application/json,application/pdf" style="display: none"/>
-                <button id="qrScanButton" disabled title="Keine Kamera verfügbar"><i class="fas fa-qrcode"></i><br />QR-Code<br />scannen</button>
-                <button id="pasteButton"><i class="fas fa-paste"></i><br />Datensatz<br />einfügen</button>
+                <button id="fileInputButton"><i class="far fa-folder-open"></i><br /><span data-i18n-key="recordLabel">Datensatz</span><br /><span data-i18n-key="loadLabel">laden</span></button>
+                <input id="fileInput" type="file" style="display: none"/>
+                <button id="qrScanButton" disabled title="Keine Kamera verfügbar"><i class="fas fa-qrcode"></i><br /><span data-i18n-key="qrCodeLabel">QR-Code</span><br /><span data-i18n-key="scanLabel">scannen</span></button>
+                <button id="pasteButton"><i class="fas fa-paste"></i><br /><span data-i18n-key="recordLabel">Datensatz</span><br /><span data-i18n-key="pasteLabel">einfügen</span></button>
             </div>
 
             <div id="loadingErrors">
@@ -79,8 +95,8 @@
                 <div id="infos">
                     <div id="description"></div>
                     <div id="dates">
-                        <div class="row"><div class="key">von</div><div id="begin" class="value"></div></div>
-                        <div class="row"><div class="key">bis</div><div id="end"   class="value"></div></div>
+                        <div class="row"><div class="key" data-i18n-key="from">von</div><div id="begin" class="value"></div></div>
+                        <div class="row"><div class="key" data-i18n-key="till">bis</div><div id="end"   class="value"></div></div>
                     </div>
                 </div>
                 <div id="map"></div>
@@ -101,28 +117,30 @@
             <div id="error"></div>
 
             <div id="intro">
-                Folgende Daten des Ladevorgangs sind eichrechtsrelevant und damit gemäß <span id="cryptoAlgorithm"></span> Teil der digitalen Signatur:
+                <span data-i18n-key="signatureRelevantDataIntro">Folgende Daten des Ladevorgangs sind mess- und eichrechtsrelevant und damit gemäß</span>
+                <span id="cryptoAlgorithm"></span>
+                <span data-i18n-key="signatureRelevantDataOutro">Teil der digitalen Signatur:</span>
             </div>
 
             <div id="cryptoData"></div>
 
             <div id="buffer" class="infoblock">
-                <div class="description">Puffer</div>
+                <div class="description" data-i18n-key="bufferLabel">Puffer</div>
                 <div class="value"></div>
             </div>
 
             <div id="hashedBuffer" class="infoblock">
-                <div class="description">Hashed Puffer (SHA256)</div>
+                <div class="description" data-i18n-key="hashedBufferLabel">Hashwert des Puffers (SHA-256)</div>
                 <div class="value">0x0000000000000000000000000000000000000000000000000000000000000000</div>
             </div>
 
             <div id="publicKey" class="infoblock">
-                <div class="description">Public Key</div>
+                <div class="description" data-i18n-key="Public Key">Öffentlicher Schlüssel</div>
                 <div class="value">0x0000000000000000000000000000000000000000000000000000000000000000</div>
             </div>
 
             <div id="signatureExpected" class="infoblock">
-                <div class="description">Erwartete Signatur</div>
+                <div class="description" data-i18n-key="Expected signature">Erwartete Signatur</div>
                 <div class="value">0x000000000000000000000000000000000000000000000</div>
             </div>
 
@@ -132,30 +150,30 @@
         
         <div id="issueTrackerPage" class="pages">
         
-            <div id="headline">
-                Einen Mängel melden...
+            <div id="headline" data-i18n-key="issueTrackerHeadline">
+                Sie wollen einen oder mehrere Mängel melden?
             </div>
 
             <form id="newIssue">
 
-                <div class="label">Bitte wählen sie eine oder mehrere Kategorien...</div>
-                <input type="checkbox" name="category" value="invalidCTR"> Transparenzdatensatz konnte nicht geladen werden<br>
-                <input type="checkbox" name="category" value="invalidSignatures"> Signatur(en) im Transparenzdatensatz sind ungültig<br>
-                <input type="checkbox" name="category" value="InvalidStationData"> Falsche Daten zu einer Ladestation<br>
-                <input type="checkbox" name="category" value="InvalidStationData"> Fehler in der Transparenzsoftware<br>
-                <input type="checkbox" name="category" value="other"> Sonstiges Problem<br>
+                <div class="label" data-i18n-key="issueCategoriesLabel">Bitte wählen sie eine oder mehrere Kategorien...</div>
+                <input type="checkbox" name="category" value="invalidCTR"> <span data-i18n-key="issueInvalidCTR">Transparenzdatensatz konnte nicht geladen werden</span><br>
+                <input type="checkbox" name="category" value="invalidSignatures"> <span data-i18n-key="issueInvalidSignatures">Signatur(en) im Transparenzdatensatz sind ungültig</span><br>
+                <input type="checkbox" name="category" value="InvalidStationData"> <span data-i18n-key="issueInvalidStationData">Falsche Daten zu einer Ladestation</span><br>
+                <input type="checkbox" name="category" value="softwareBug"> <span data-i18n-key="issueSoftwareBug">Allgemeiner Fehler in der Transparenzsoftware</span><br>
+                <input type="checkbox" name="category" value="other"> <span data-i18n-key="otherProblemLabel">Sonstiges Problem</span><br>
 
-                <div class="label">Bitte beschreiben Sie den Mängel ein wenig genauer...</div>
+                <div class="label" data-i18n-key="issueDescriptionLabel">Bitte beschreiben Sie die aufgetretenen Fehler oder Probleme ein wenig genauer...</div>
                 <textarea id="description"></textarea>
 
-                <div class="label">Ihre Kontaktdaten, falls Rückfragen notwendig sein sollten...</div>
-                <input type="text" id="name"  placeholder="Ihr Name"><br /> 
-                <input type="text" id="phone" placeholder="Ihre Telefonnummer"><br /> 
-                <input type="text" id="email" placeholder="Ihre E-Mail Adresse"><br /> 
+                <div class="label" data-i18n-key="issueContactLabel">Ihre Kontaktdaten, falls Rückfragen notwendig sein sollten...</div>
+                <input type="text" id="name"  placeholder="Ihr Name" data-i18n-placeholder-key="issueNamePlaceholder"><br />
+                <input type="text" id="phone" placeholder="Ihre Telefonnummer" data-i18n-placeholder-key="issuePhonePlaceholder"><br />
+                <input type="text" id="email" placeholder="Ihre E-Mail Adresse" data-i18n-placeholder-key="issueEMailPlaceholder"><br />
 
                 <div id="sendIssueBox">
-                    <input type="checkbox" name="acceptsPrivacy"> Datenschutzerklärung akzeptiert?<br />
-                    <button id="sendIssue">Mängel melden</button>
+                    <input type="checkbox" name="acceptsPrivacy"> <span data-i18n-key="privacyStatementLabel">Datenschutzerklärung</span> <span data-i18n-key="privacyStatementAcceptedLabel">gelesen und akzeptiert?</span><br />
+                    <button id="sendIssue" data-i18n-key="reportIssueLabel">Mängel melden</button>
                 </div>
 
             </form>
@@ -173,7 +191,7 @@
             <div class="scannerDialog">
                 <div class="scannerHeadline">
                     <div id="qrCodeScannerError"></div>
-                    <div id="qrCodeScannerTitle">QR-Code scannen</div>
+                    <div id="qrCodeScannerTitle" data-i18n-key="scanQRCodeLabel">QR-Code scannen</div>
                 </div>
 
                 <div id="scannerViewport">
@@ -182,19 +200,19 @@
                     <div id="scannerFrame"></div>
                 </div>
 
-                <div id="qrCodeScannerStatus" aria-live="polite">Kamera wird gestartet...</div>
+                <div id="qrCodeScannerStatus" aria-live="polite" data-i18n-key="cameraStarting">Kamera wird gestartet...</div>
 
                 <div id="qrCodeScannerResult">
-                    <div id="qrCodeScannerResultLabel">Erkannter Inhalt</div>
+                    <div id="qrCodeScannerResultLabel" data-i18n-key="recognizedContent">Erkannter Inhalt</div>
                     <pre id="qrCodeScannerResultText"></pre>
                     <div id="qrCodeScannerURLActions">
-                        <button id="qrCodeScannerOpenURLButton"><i class="fas fa-external-link-alt"></i> URL öffnen</button>
+                        <button id="qrCodeScannerOpenURLButton"><i class="fas fa-external-link-alt"></i> <span data-i18n-key="openURLLabel">URL öffnen</span></button>
                     </div>
-                    <button id="qrCodeScannerRescanButton"><i class="fas fa-redo"></i> Erneut scannen</button>
+                    <button id="qrCodeScannerRescanButton"><i class="fas fa-redo"></i> <span data-i18n-key="rescanLabel">Erneut scannen</span></button>
                 </div>
 
                 <div class="scannerFooter">
-                    <button id="qrCodeScannerCancelButton" aria-label="QR-Code-Scanner schließen"><i class="fas fa-arrow-alt-circle-left"></i></button>
+                    <button id="qrCodeScannerCancelButton" aria-label="QR-Code-Scanner schließen" data-i18n-aria-label-key="qrCodeScannerCloseLabel"><i class="fas fa-arrow-alt-circle-left"></i></button>
                 </div>
             </div>
         </div>

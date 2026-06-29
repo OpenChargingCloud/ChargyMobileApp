@@ -3,13 +3,13 @@ $body-background-color: #ffffff !default;
 $page-background-color: #f8f8f8 !default;
 
 $logo-background-color: #ffffff !default;
-$logo-background-image: url("../images/chargeIT-logo.jpg") !default;
-$logo-background-size: contain !default;
+$logo-background-image: url("../images/chargy_shield3_512x512.png") !default;
+$logo-background-size: auto 80% !default;
+$logo-background-position: left center !default;
 $logo-background-repeat: no-repeat !default;
-$logo-padding-left: 42vw !default;
+$logo-padding-left: 9vh !default;
 $logo-line-height: 8.2vh !default;
 $logo-font-size: 130% !default;
-$logo-before-content: "Transparenz-Software" !default;
 
 $start-button-color: #8d420e !default;
 $start-button-background: linear-gradient(to right, rgb(236, 96, 57) 0%, rgb(247, 164, 36) 100%) !default;
