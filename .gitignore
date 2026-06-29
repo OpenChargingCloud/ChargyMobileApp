@@ -7,6 +7,7 @@ Desktop.ini
 
 # Node
 node_modules
+.build
 package-lock.json
 npm-debug.log
 node_modules

@@ -10,6 +10,6 @@
     },
     "include": [
         "./**/*.ts",
-        "../www.src/ts/**/*.ts"
+        "../src/ts/**/*.ts"
     ]
 }

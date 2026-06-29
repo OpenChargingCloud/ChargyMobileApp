@@ -17,9 +17,7 @@
  * under the License.
  */
 //import 'core-js';
-import chargy from './chargy';
-import { transformToExpectedFormat } from './chargeDataParser';
-import { extractTransparencyRecordsFromPdf } from './pdfAttachmentExtractor';
+import ChargyApp from './chargyApp';
 
 declare let cordova: any;
 
@@ -45,7 +43,7 @@ export default class App {
     measurementInfosPage_MovementStartX  = null;
     cryptoDetailsPage_MovementStartX     = null;
 
-    _chargy: chargy;
+    _chargyApp: ChargyApp;
 
     start() {
 	console.log("Meter ID:");
@@ -385,7 +383,7 @@ export default class App {
 */
     //#endregion
 
-    this._chargy = new chargy(this);
+    this._chargyApp = new ChargyApp(this);
 
 	  app.showPage(this.startPage);
     
@@ -421,37 +419,13 @@ export default class App {
 
   //#endregion
 
-//--CB--Prüfung ob das eingelesene JSON vom PTB ist, daraufhin dann umbauen auf das Format was Chargy möchte
-
-transformToExpectedFormat(raw: any): any {
-    return transformToExpectedFormat(raw);
-}
-
-  async processTransparencyRecord(raw: any) {
-    const fixed = this.transformToExpectedFormat(raw);
-    await this._chargy.detectContentFormat(fixed);
+  async processFile(file: Blob, fileName: string) {
+    await this._chargyApp.detectContentFormat({
+      name: fileName,
+      type: file.type,
+      data: new Uint8Array(await file.arrayBuffer())
+    });
   }
-
-  async processPdfFile(file: File) {
-    const records = await extractTransparencyRecordsFromPdf(await file.arrayBuffer());
-
-    for (const record of records)
-      await this.processTransparencyRecord(record.content);
-  }
-
-  async processPdfBlob(blob: Blob) {
-    const records = await extractTransparencyRecordsFromPdf(await blob.arrayBuffer());
-
-    for (const record of records)
-      await this.processTransparencyRecord(record.content);
-  }
-
-  isPdfFile(file: File): boolean {
-    return file.type === "application/pdf" || /\.pdf$/i.test(file.name);
-  }
-
-
-//______
 
   //#region Read and parse CTR file
 
@@ -460,47 +434,12 @@ transformToExpectedFormat(raw: any): any {
     if (!file)
         return;
 
-    if (this.isPdfFile(file)) {
-        try {
-            await this.processPdfFile(file);
-        }
-        catch (exception) {
-            this.doGlobalError("Fehlerhafter PDF/A-3 Transparenzdatensatz!", exception);
-        }
-        return;
+    try {
+      await this.processFile(file, file.name);
     }
-
-    var me = this;
-    var reader = new FileReader();
-    console.log("ReadAndParseFile:"+file);
-
-    reader.onload = function(event) {
-        try
-        {
-          if(file){
-
-            //--CB--Aufruf der Prüfstrucktur ob OCMF
-
-            const raw = JSON.parse((event.target as any).result);
-            me.processTransparencyRecord(raw).
-               catch((exception) => {
-                   me.doGlobalError("Fehlerhafter Transparenzdatensatz!", exception);
-               });
-
-            //______
-
-            }
-        }
-        catch (exception) {
-            me.doGlobalError("Fehlerhafter Transparenzdatensatz!", exception);
-        }
+    catch (exception) {
+      this.doGlobalError("Fehlerhafter Transparenzdatensatz!", exception);
     }
-
-    reader.onerror = function(event) {
-        me.doGlobalError("Fehlerhafter Transparenzdatensatz!", event);
-    }
-
-    reader.readAsText(file, 'UTF-8');
 
   }
 
@@ -522,7 +461,7 @@ transformToExpectedFormat(raw: any): any {
           for (const clipboardItem of clipboardItems) {
             if (clipboardItem.types && clipboardItem.types.indexOf("application/pdf") >= 0) {
               const pdfBlob = await clipboardItem.getType("application/pdf");
-              await this.processPdfBlob(pdfBlob);
+              await this.processFile(pdfBlob, "clipboard.pdf");
               return;
             }
           }
@@ -536,13 +475,7 @@ transformToExpectedFormat(raw: any): any {
       //@ts-ignore
       var clipText = await navigator.clipboard.readText();
 
-      //--CB--Aufruf der Prüfstrucktur ob OCMF
-
-      //await this._chargy.detectContentFormat(JSON.parse(clipText));
-        const raw = JSON.parse(clipText);
-
-        await this.processTransparencyRecord(raw);
-      //______
+      await this._chargyApp.detectContentFormat(clipText);
 
     }
     catch(exception) {

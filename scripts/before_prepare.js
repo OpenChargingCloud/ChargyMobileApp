@@ -137,20 +137,7 @@ module.exports = function(ctx) {
 
 	}
 
-	function copyPdfJsAssets() {
-
-		const pdfJsTarget = path.join(wwwTarget, 'lib', 'pdfjs');
-
-		fs.rmSync(pdfJsTarget, { recursive: true, force: true });
-		ensureDirectory(pdfJsTarget);
-
-		const pdfJsBuild = path.join(ctx.opts.projectRoot, 'node_modules', 'pdfjs-dist', 'build');
-		copyFile(path.join(pdfJsBuild, 'pdf.mjs'),         path.join(pdfJsTarget, 'pdf.mjs'));
-		copyFile(path.join(pdfJsBuild, 'pdf.worker.mjs'),  path.join(pdfJsTarget, 'pdf.worker.mjs'));
-
-	}
-
-	const wwwSource = path.join(ctx.opts.projectRoot, 'www.src');
+	const wwwSource = path.join(ctx.opts.projectRoot, 'src');
 	const wwwTarget = path.join(ctx.opts.projectRoot, 'www');
 	
 	if (!fs.existsSync(wwwSource))
@@ -175,7 +162,6 @@ module.exports = function(ctx) {
 		copyDirectory('images', true);
 		copyDirectory('webfonts');
 		copyLeafletAssets();
-		copyPdfJsAssets();
 
 
 // TypeScript
@@ -211,8 +197,8 @@ module.exports = function(ctx) {
 				
 				// for (i = 0; i < map.sources.length; i++) { 
 				// 	console.log(map.sources[i]);
-				// 	// file:///E:/Coding/CardiLink/Cordova/CardiMobileApp/www.src/sass/styles.scss
-				//     map.sources[i] = "../.." + map.sources[i].substring(map.sources[i].indexOf('/www.src'));
+				// 	// file:///E:/Coding/CardiLink/Cordova/CardiMobileApp/src/sass/styles.scss
+				//     map.sources[i] = "../.." + map.sources[i].substring(map.sources[i].indexOf('/src'));
 				// 	console.log(map.sources[i]);
 				// }
 
@@ -266,8 +252,8 @@ module.exports = function(ctx) {
 				
 				// for (i = 0; i < map.sources.length; i++) { 
 				// 	console.log(map.sources[i]);
-				// 	// file:///E:/Coding/CardiLink/Cordova/CardiMobileApp/www.src/sass/styles.scss
-				//     map.sources[i] = "../.." + map.sources[i].substring(map.sources[i].indexOf('/www.src'));
+				// 	// file:///E:/Coding/CardiLink/Cordova/CardiMobileApp/src/sass/styles.scss
+				//     map.sources[i] = "../.." + map.sources[i].substring(map.sources[i].indexOf('/src'));
 				// 	console.log(map.sources[i]);
 				// }
 
@@ -287,17 +273,16 @@ module.exports = function(ctx) {
 		 */
 
 		runNodeScript(ctx.opts.projectRoot, ['sass', 'sass.js'], [
-			'www.src/scss/styles.scss',
+			'src/scss/styles.scss',
 			'www/css/styles.css'
 		]);
 
 
 // Bundle
 
-		runNodeScript(ctx.opts.projectRoot, ['browserify', 'bin', 'cmd.js'], [
-			'www/js/index.js',
-			'-o',
-			'www/js/bundle.js'
+		runNodeScript(ctx.opts.projectRoot, ['webpack', 'bin', 'webpack.js'], [
+			'--config',
+			'webpack.config.cjs'
 		]);
 
 		console.log('App is ready!');

@@ -97,7 +97,7 @@ $ npm run test:watch
 
 In *Visual Studio Code* you can install the official `Vitest` extension by the verified publisher `Vitest` to run tests from the Testing sidebar.
 
-The first tests live in `ChargyMobileApp/tests` and use fixture files from `ChargyMobileApp/tests/fixtures`. To add another text-in/text-out parser test, add an input file and an `.expected.txt` file to the fixtures folder, then add a matching case in `ChargyMobileApp/tests/chargeDataParser.test.ts`.
+The integration tests in `ChargyMobileApp/tests/chargyCore.test.ts` pass fixture files directly to `@open-charging-cloud/chargy-core`. Add new format and validation cases there instead of implementing application-specific parsers or signature checks.
 
 
 ## Test the mobile application

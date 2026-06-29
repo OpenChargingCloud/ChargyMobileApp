@@ -1,13 +1,15 @@
 {
     "compilerOptions": {
-		"outDir": "www/js",
-        "rootDir": "www.src/ts",
+		"outDir": ".build/js",
+		"rootDir": "src/ts",
         "allowJs": true,
 		//"target": "es5",
         //"module": "es2015",
         "target": "es6",
 		"module": "commonjs",
 		"moduleResolution": "node",
+        "esModuleInterop": true,
+        "resolveJsonModule": true,
         "ignoreDeprecations": "6.0",
         "strict": false,
         "strictNullChecks": false,
@@ -37,7 +39,7 @@
         ]
     },
     "include": [
-        "www.src/ts/**/*",
+        "src/ts/**/*",
     ],
     "exclude": [
     ]
