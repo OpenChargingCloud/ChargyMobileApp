@@ -21,15 +21,20 @@ Chargy was inspired by [TRuDI](https://www.ptb.de/cms/ptb/fachabteilungen/abt2/f
 
 This application is based on [Apache Cordova](https://cordova.apache.org), a cross platform Open Source framework for creating mobile applications with Java-/TypeScript, HTML, and (S)CSS.    
 
-Chargy is developed for and tested on the following mobile operating systems:
+Chargy is developed for and tested on the following mobile operating systems and test frameworks:
  - Apple iOS
  - Google Android
+ - Browser *(for testing only)*
 
-The Chargy Mobile project has a sister project called [Chargy Desktop](https://github.com/OpenChargingCloud/ChargyDesktopApp) which provides the same features, but is based on [Electron](https://github.com/electron-userland/electron-forge/tree/5.x) and is available for the following operating systems:
+The Chargy Mobile project has two sister projects.
+
+1. The first is called [ChargyDesktopApp](https://github.com/OpenChargingCloud/ChargyDesktopApp) which provides the same features, but is based on [Electron](https://github.com/electron-userland/electron-forge/tree/5.x) and is available for the following operating systems:
 
  - Microsoft Windows 10+
  - Apple Mac OS X
  - Linux Debian/Ubuntu
+
+2. The second is called [ChargyWebApp](https://github.com/OpenChargingCloud/ChargyWebApp) which provides the same features, but is available as node.js web app:
 
 
 ## Install dependencies
@@ -104,11 +109,6 @@ $ npm run browser
 ```
 
 When testing mobile-style navigation in the browser, click and drag with the mouse to simulate a swipe gesture.
-
-In order to test it using the Electron framework
-```
-$ npx cordova run cordova-electron
-```
 
 To test Chargy on your Android smart phone please install [Android Studio](https://developer.android.com/studio), attach your smart phone via USB to your computer and run the following command. If you have installed the Android simulators and did not attach your smart phone Chary will be started within the default simulator profile.
 

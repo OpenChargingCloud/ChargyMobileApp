@@ -5,14 +5,19 @@ export interface PdfTransparencyRecord {
 
 interface PdfAttachment {
     filename?: string;
-    content: Uint8Array;
+    content?: Uint8Array | null;
+}
+
+type PdfAttachments = Map<string, PdfAttachment> | Record<string, PdfAttachment>;
+
+interface PdfDocument {
+    getAttachments: () => Promise<PdfAttachments | null>;
+    getAttachmentContent?: (id: string) => Promise<Uint8Array | null>;
 }
 
 type PdfJsLib = {
     getDocument: (options: any) => {
-        promise: Promise<{
-            getAttachments: () => Promise<Record<string, PdfAttachment> | null>;
-        }>;
+        promise: Promise<PdfDocument>;
     };
     GlobalWorkerOptions?: {
         workerSrc: string;
@@ -70,13 +75,23 @@ export async function extractTransparencyRecordsFromPdf(pdfData: ArrayBuffer): P
     const records: PdfTransparencyRecord[] = [];
     const xmlAttachmentNames: string[] = [];
 
-    for (const [attachmentKey, attachment] of Object.entries(attachments)) {
+    const attachmentEntries = attachments instanceof Map
+        ? attachments.entries()
+        : Object.entries(attachments);
+
+    for (const [attachmentKey, attachment] of attachmentEntries) {
         const attachmentName = attachment.filename || attachmentKey;
 
         if (isJsonAttachment(attachmentName)) {
+            const content = attachment.content ??
+                            await pdf.getAttachmentContent?.(attachmentKey);
+
+            if (!content)
+                throw new Error("PDF-Anhang konnte nicht gelesen werden: " + attachmentName);
+
             records.push({
                 attachmentName: attachmentName,
-                content: JSON.parse(decodeAttachment(attachment.content))
+                content: JSON.parse(decodeAttachment(content))
             });
         }
         else if (isXmlAttachment(attachmentName)) {
