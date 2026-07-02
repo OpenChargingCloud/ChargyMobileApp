@@ -1,6 +1,19 @@
 const path    = require('path');
 const webpack = require('webpack');
 const MinimizerPlugin = require('minimizer-webpack-plugin');
+const packageJson     = require('./package.json');
+const packageLock     = require('./package-lock.json');
+
+const corePackage     = packageLock.packages?.['node_modules/@open-charging-cloud/chargy-core'];
+const coreIntegrity   = corePackage?.integrity ?? '';
+const coreSHA512      = coreIntegrity.startsWith('sha512-')
+    ? Buffer.from(coreIntegrity.substring('sha512-'.length), 'base64').toString('hex')
+    : '';
+const npmPackageVersions = Object.fromEntries(
+    Object.entries(packageLock.packages ?? {})
+        .filter(([packagePath, metadata]) => packagePath.startsWith('node_modules/') && metadata?.version)
+        .map(([packagePath, metadata]) => [packagePath.substring('node_modules/'.length), metadata.version])
+);
 
 module.exports = {
     mode:    'development',
@@ -39,6 +52,12 @@ module.exports = {
         clean:         true
     },
     plugins: [
+        new webpack.DefinePlugin({
+            __APP_PACKAGE__:       JSON.stringify(packageJson),
+            __NPM_PACKAGE_VERSIONS__: JSON.stringify(npmPackageVersions),
+            __CHARGY_CORE_VERSION__: JSON.stringify(corePackage?.version ?? ''),
+            __CHARGY_CORE_SHA512__:  JSON.stringify(coreSHA512)
+        }),
         new webpack.ProvidePlugin({
             Buffer: ['buffer', 'Buffer']
         })

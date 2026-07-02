@@ -19,42 +19,59 @@
 -->
 <html lang="de">
 
-	<head>
-		<meta charset="utf-8">
-		<meta
-		  http-equiv="Content-Security-Policy"
-		  content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: content: https://tile.openstreetmap.org; font-src 'self' data:; connect-src 'self' https://tile.openstreetmap.org; media-src 'self'; object-src 'none'; base-uri 'self';"
-		/>
-		<meta name="format-detection" content="telephone=no">
+    <head>
+        <meta charset="utf-8">
+        <meta
+          http-equiv="Content-Security-Policy"
+          content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: content: https://tile.openstreetmap.org; font-src 'self' data:; connect-src 'self' https://tile.openstreetmap.org; media-src 'self'; object-src 'none'; base-uri 'self';"
+        />
+        <meta name="format-detection" content="telephone=no">
         <meta name="msapplication-tap-highlight" content="no">
         <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width">
-        <link rel="stylesheet" type="text/css" href="css/styles.css">
+        <link rel="stylesheet" type="text/css" href="css/chargy.css">
         <title>Chargy Mobile App</title>
-		<meta name="description" content="Transparenzsoftware für die Elektromobilität">
-		<meta name="author"      content="Open Charging Cloud by GraphDefined GmbH">
-		<link rel="stylesheet" href="css/fontawesome-all.min.css" type="text/css" />
-		<link rel="stylesheet" href="lib/leaflet/leaflet.css" />
-		<link rel="stylesheet" href="lib/leaflet/L.Control.Locate.min.css" />
-		<script src="lib/leaflet/leaflet.js"></script>
-		<script src="lib/leaflet/L.Control.Locate.min.js"></script>
-		<link rel="stylesheet" href="lib/leaflet/leaflet.awesome-markers.css">
+        <meta name="description" content="Transparenzsoftware für die Elektromobilität">
+        <meta name="author"      content="Open Charging Cloud by GraphDefined GmbH">
+        <link rel="stylesheet" href="css/fontawesome-all.min.css" type="text/css" />
+        <link rel="stylesheet" href="lib/leaflet/leaflet.css" />
+        <script src="lib/leaflet/leaflet.js"></script>
+        <link rel="stylesheet" href="lib/leaflet/leaflet.awesome-markers.css">
         <script src="lib/leaflet/leaflet.awesome-markers.min.js" type="text/javascript"></script>
         
-	</head>
+    </head>
 
-	<body>
+    <body>
 
-		<div id="importantInfo"></div>
+        <div id="importantInfo"></div>
 
-        <!--<div id="MenuBar">
-            <button id="defibrillatorsButton" class="ripple"><i class="fas fa-heartbeat"></i></button>
-            <button id="mapButton"            class="ripple"><i class="fas fa-map-marked-alt"></i></button>
-            <button id="userProfileButton"    class="ripple"><i class="fas fa-user"></i></button>
-            <button id="slideMenuButton"      class="ripple"><i class="fas fa-bars"></i></button>
-        </div>-->
-        
-        <div id="logo">
+        <div id="headline">
+            <div id="logo"><span data-i18n-key="appHeadline">Chargy - Transparenzsoftware für die Elektromobilität</span></div>
+            <div id="windowButtons">
+                <div id="languageSelector">
+                    <button id="languageButton" aria-haspopup="true" aria-expanded="false" title="Sprache auswählen">
+                        <img id="languageFlag" class="languageFlag" src="images/flags/en.svg" alt="" aria-hidden="true">
+                    </button>
+                    <div id="languageMenu" role="menu">
+                        <button data-language="de" role="menuitem">
+                            <img class="languageFlag" src="images/flags/de.svg" alt="" aria-hidden="true">
+                            <span>Deutsch</span>
+                        </button>
+                        <button data-language="en" role="menuitem">
+                            <img class="languageFlag" src="images/flags/en.svg" alt="" aria-hidden="true">
+                            <span>English</span>
+                        </button>
+                    </div>
+                </div>
+                <button id="aboutButton"><i class="far fa-question-circle"></i></button>
+            </div>
+        </div>
+
+        <!-- <div id="logo">
+
             <span id="appTitle" data-i18n-key="mobileAppHeadline">Transparenz-Software</span>
+
+            <button id="aboutButton" aria-label="Informationen über Chargy" title="Informationen über Chargy"><i class="far fa-question-circle"></i></button>
+
             <div id="languageSelector">
                 <button id="languageButton" aria-haspopup="true" aria-expanded="false" title="Sprache auswählen">
                     <img id="languageFlag" class="languageFlag" src="images/flags/de.svg" alt="" aria-hidden="true">
@@ -70,7 +87,8 @@
                     </button>
                 </div>
             </div>
-        </div>
+
+        </div> -->
 
         <div id="startPage" class="pages">
 
@@ -79,7 +97,7 @@
 
             <div id="buttonsDiv">
                 <button id="fileInputButton"><i class="far fa-folder-open"></i><br /><span data-i18n-key="recordLabel">Datensatz</span><br /><span data-i18n-key="loadLabel">laden</span></button>
-                <input id="fileInput" type="file" style="display: none"/>
+                <input id="fileInput" type="file" multiple style="display: none"/>
                 <button id="qrScanButton" disabled title="Keine Kamera verfügbar"><i class="fas fa-qrcode"></i><br /><span data-i18n-key="qrCodeLabel">QR-Code</span><br /><span data-i18n-key="scanLabel">scannen</span></button>
                 <button id="pasteButton"><i class="fas fa-paste"></i><br /><span data-i18n-key="recordLabel">Datensatz</span><br /><span data-i18n-key="pasteLabel">einfügen</span></button>
             </div>
@@ -109,9 +127,10 @@
                 <div id="measurementInfo"></div>
                 <canvas id="chart"></canvas>
                 <div id="measurementValues"></div>
+                <div id="sessionValidationWarnings"></div>
             </div>
         </div>
-        
+
         <div id="cryptoDetailsPage" class="pages">
 
             <div id="error"></div>
@@ -147,7 +166,7 @@
             <div id="signatureCheck"></div>
 
         </div>
-        
+
         <div id="issueTrackerPage" class="pages">
         
             <div id="headline" data-i18n-key="issueTrackerHeadline">
@@ -180,11 +199,181 @@
 
             <div id="issueBackButtonDiv">
                 <button id="issueBackButton"><i class="fas fa-arrow-alt-circle-left"></i></button>
-            </div>			
+            </div>
         
         </div>
 
         <div id="aboutPage" class="pages">
+
+            <div id="softwareInfos">
+                <div id="product">
+                    Chargy MobileApp - <span id="appEdition"></span> v<span id="appVersion"></span>
+                </div>
+                <div id="copyright">
+                    &copy; 2018-2026 GraphDefined GmbH
+                </div>
+            </div>
+
+            <p data-i18n-key="aboutOpenSourceIntro">
+                Diese Software ist Open Source und basiert auf den folgenden Open-Source-Software-Bibliotheken:
+            </p>
+
+            <div id="openSourceLibs">
+
+                <div class="lib">
+                    <div class="name">Chargy MobileApp <span id="chargyMobileVersion"></span></div>
+                    <div class="license"><button class="linkButton" href="https://github.com/OpenChargingCloud/ChargyWebApp/blob/master/LICENSE">Copyright &copy; 2018-2026 GraphDefined GmbH<br />AGPL v3 License</button></div>
+                </div>
+                <div class="lib">
+                    <div class="name">Chargy Core <span id="chargyCoreVersion"></span></div>
+                    <div class="license"><button class="linkButton" href="https://github.com/OpenChargingCloud/ChargyCore.TS/blob/master/LICENSE">Copyright &copy; 2018-2026 GraphDefined GmbH<br />AGPL v3 License</button></div>
+                </div>
+                <div class="lib">
+                    <div class="name">TypeScript <span id="typeScript"></span></div>
+                    <div class="license"><button class="linkButton" href="https://github.com/microsoft/TypeScript/blob/master/LICENSE.txt">Copyright &copy; Microsoft Corporation<br />Apache License v2.0</button></div>
+                </div>
+                <div class="lib">
+                    <div class="name">SASS <span id="SASS"></span></div>
+                    <div class="license"><button class="linkButton" href="https://github.com/sass/dart-sass/blob/main/LICENSE">Copyright &copy; 2016, Google Inc.<br />MIT License</button></div>
+                </div>
+                <div class="lib">
+                    <div class="name">Cordova <span id="cordova"></span></div>
+                    <div class="license"><a class="linkButton" href="https://github.com/apache/cordova-cli/blob/master/LICENSE">Copyright &copy; The Apache Software Foundation<br />Apache License v2.0</a></div>
+                </div>
+                <div class="lib">
+                    <div class="name">Cordova InAppBrowser <span id="cordovaInAppBrowser"></span></div>
+                    <div class="license"><button class="linkButton" href="https://github.com/apache/cordova-plugin-inappbrowser/blob/master/LICENSE">Copyright &copy; The Apache Software Foundation<br />Apache License v2.0</button></div>
+                </div>
+                <div class="lib">
+                    <div class="name">moment <span id="momentJS"></span></div>
+                    <div class="license"><button class="linkButton" href="https://github.com/moment/moment/blob/develop/LICENSE">Copyright &copy; JS Foundation and other contributors<br />MIT License</button></div>
+                </div>
+                <div class="lib">
+                    <div class="name">elliptic <span id="elliptic"></span></div>
+                    <div class="license"><button class="linkButton" href="https://github.com/indutny/elliptic">Copyright &copy; Fedor Indutny, 2014<br />MIT License</button></div>
+                </div>
+                <div class="lib">
+                    <div class="name">secp224k1 1.0.0</div>
+                    <div class="license"><button class="linkButton" href="https://github.com/CraigglesO/elliptic-curve-signature-algo/blob/master/LICENSE">Copyright &copy; Craig OConnor, Achim Friedland<br />MIT License</button></div>
+                </div>
+                <div class="lib">
+                    <div class="name">pdfjs-dist <span id="pdfjsdist"></span></div>
+                    <div class="license"><button class="linkButton" href="https://github.com/mozilla/pdfjs-dist/blob/master/LICENSE">Copyright &copy; Mozilla<br />Apache v2.0 License</button></div>
+                </div>
+
+                                <div class="lib">
+                                    <div class="name">seek-bzip <span id="seekBzip"></span></div>
+                                    <div class="license"><button class="linkButton" href="https://github.com/cscott/seek-bzip/blob/master/LICENSE">Copyright &copy; C. Scott Ananian<br />MIT License</button></div>
+                                </div>
+                                <div class="lib">
+                                    <div class="name">File Type <span id="fileType"></span></div>
+                                    <div class="license"><button class="linkButton" href="https://github.com/sindresorhus/file-type/blob/main/license">Copyright &copy; Sindre Sorhus<br />MIT License</button></div>
+                                </div>
+                                <div class="lib">
+                                    <div class="name">jsQR <span id="jsQR"></span></div>
+                                    <div class="license"><button class="linkButton" href="https://github.com/cozmo/jsQR/blob/master/LICENSE">Copyright &copy; Cosmo Wolfe<br />Apache License v2.0</button></div>
+                                </div>
+
+                <div class="lib">
+                    <div class="name">asn1.js <span id="asn1JS"></span></div>
+                    <div class="license"><button class="linkButton" href="https://github.com/PeculiarVentures/ASN1.js/blob/master/LICENSE">Copyright &copy; 2015-2019, Peculiar Ventures<br />BSD License</button></div>
+                </div>
+                <div class="lib">
+                    <div class="name">buffer <span id="bufferJS"></span></div>
+                    <div class="license"><button class="linkButton" href="https://github.com/feross/buffer/blob/master/LICENSE">Copyright &copy; Feross Aboukhadijeh, and other contributors<br />MIT License</button></div>
+                </div>
+                <div class="lib">
+                    <div class="name">base32-decode <span id="base32Decode"></span></div>
+                    <div class="license"><button class="linkButton" href="https://github.com/LinusU/base32-decode">Copyright &copy; Linus Unnebäck<br />MIT License</button></div>
+                </div>
+                <div class="lib">
+                    <div class="name">leaflet <span id="leafletJS"></span></div>
+                    <div class="license"><button class="linkButton" href="https://github.com/Leaflet/Leaflet/blob/master/LICENSE">Copyright &copy; 2010-2022, Vladimir Agafonkin<br />Copyright &copy; 2010-2011, CloudMade<br />BSD 2-Clause License</button></div>
+                </div>
+                <div class="lib">
+                    <div class="name">leaflet Awesome Markers <span id="leafletAwesomeMarkers"></span></div>
+                    <div class="license"><button class="linkButton" href="https://github.com/lennardv2/Leaflet.awesome-markers/blob/2.0/develop/LICENSE">Copyright &copy; 2013 L. Voogdt<br />BSD 2-Clause License</button></div>
+                </div>
+                <div class="lib">
+                    <div class="name">chart.js <span id="chartJS"></span></div>
+                    <div class="license"><button class="linkButton" href="https://github.com/chartjs/Chart.js/blob/master/LICENSE.md">Copyright &copy; 2014-2024 Chart.js Contributors<br />Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License</button></div>
+                </div>
+                <div class="lib">
+                    <div class="name">decimal.js <span id="decimalJS"></span></div>
+                    <div class="license"><button class="linkButton" href="https://github.com/MikeMcl/decimal.js/blob/master/LICENCE.md">Copyright &copy; 2022 Michael Mclaughlin<br />MIT License</button></div>
+                </div>
+                <div class="lib">
+                    <div class="name">FontAwesome <span id="fontAwesome"></span></div>
+                    <div class="license"><button class="linkButton" href="https://fontawesome.com/license/free">Copyright &copy; 2022 Fonticons, Inc.<br />Font Awesome Free License</button></div>
+                </div>
+                <div class="lib">
+                    <div class="name">Webpack <span id="webpack"></span></div>
+                    <div class="license"><button class="linkButton" href="https://github.com/webpack/webpack/blob/main/LICENSE">Copyright JS Foundation and other contributors</button></div>
+                </div>
+            </div>
+
+            <p data-i18n-key="aboutCryptoAPI">
+                Die SHA256/512-Hash-Funktionen werden durch die Crypto API des Web Browsers realisiert.
+            </p>
+            <p>
+                <span data-i18n-key="aboutECCIntro">Elliptische Kurven Kryptographie wird durch</span> <button class="linkButton" href="https://github.com/indutny/elliptic">elliptic</button> <span data-i18n-key="aboutECCAnd">und einer angepassten Implementierung der</span> <button class="linkButton" href="https://github.com/CraigglesO/elliptic-curve-signature-algo">secp224k1-Kurve</button> <span data-i18n-key="aboutECCOutro">realisiert.
+                Hierbei kommen je nach Verfahren und Ladestations- bzw. Smart-Meter-Hersteller unterschiedliche elliptische Kurven zum Einsatz.</span>
+            </p>
+            <p>
+                <span data-i18n-key="aboutDocumentation">Weitere Details zu den internen Datenstrukturen und Abläufen von Chargy gibt es auf</span> <button class="linkButton" href="https://github.com/OpenChargingCloud/ChargyMobileApp/tree/master/documentation">GitHub</button>.
+            </p>
+
+
+
+            <div id="applicationHash">
+                <div id="text" data-i18n-key="applicationHashLabel">SHA-512 Hashwert dieser Software:</div>
+                <div id="value"><span style="font-style: italics" data-i18n-key="isBeingCalculated">Wird berechnet...</span></div>
+                <div id="sigHead"></div>
+                <div id="signatures"></div>
+            </div>
+
+            <div id="chargyCoreHash">
+                <div id="text" data-i18n-key="chargyCoreHashLabel">SHA-512 Hashwert der Chargy Core v<span id="version"></span>:</div>
+                <div id="value"></div>
+            </div>
+
+            <div id="applicationSignatures">
+                <div id="text" data-i18n-key="applicationSignaturesLabel">Digitale Signaturen dieser Software:</div>
+                <div id="value"><span style="font-style: italics" data-i18n-key="areBeingCalculated">Werden berechnet...</span></div>
+            </div>
+
+            <div id="funding">
+                <p>
+                    <span data-i18n-key="fundingIntro">Dieses Open-Source-Projekt wird teilweise durch den</span>
+                    <button class="linkButton" href="https://nlnet.nl/commonsfund/">NGI Zero Commons Fund</button>
+                    <span data-i18n-key="fundingAsPartOf">im Rahmen unseres</span>
+                    <button class="linkButton" href="https://nlnet.nl/project/EVQI/" data-i18n-key="fundingEVQIProjectLabel">EVQI-Projekts</button><span data-i18n-key="fundingProjectOutro"> gefördert</span>.
+                </p>
+                <p>
+                    <span data-i18n-key="fundingSupportIntro">Wir schätzen auch jede zusätzliche Finanzierung und langfristige Unterstützung für die Chargy-Familie, zum Beispiel über</span>
+                    <button class="linkButton" href="https://github.com/sponsors/GraphDefined">GitHub Sponsors</button>,
+                    <span data-i18n-key="fundingSupportOutro">da es uns hilft, das Projekt nachhaltig, unabhängig und nützlich für die gesamte E-Mobilitäts-Community weiterzuentwickeln.</span>
+                </p>
+                <center>
+                    <img src="images/NGI0_tag.svg" height="30">
+                </center>
+            </div>
+
+            <div id="TOSP">
+                <span data-i18n-key="tospIntro">Diese Software ist einer der Gewinner des</span>
+                <a href="https://www.it-leistungsschau.de/programm/TOSP2019/" data-i18n-key="tospPrizeLabel">1. Thüringer Open Source Preises</a>
+                <span data-i18n-key="tospAwardedBy">im März 2019. Der Preis wurde verliehen durch</span>
+                <a href="https://www.itnet-th.de">ITnet Thüringen e.V.</a>
+                <span data-i18n-key="tospAndThe">und das</span>
+                <a href="https://www.thueringen.de/th6/tmwwdg/" data-i18n-key="tospMinistryLabel">Thüringer Ministerium für Wirtschaft, Wissenschaft und Digitale Gesellschaft</a>.
+                <div id="logos">
+                    <a id="TMWWDG" href="https://www.thueringen.de/th6/tmwwdg/"><img src="images/TMWWDG.svg"                 alt="Thüringer Ministerium für Wirtschaft, Wissenschaft und Digitale Gesellschaft"></a>
+                    <a id="ITnet"  href="https://www.itnet-th.de"              ><img src="images/ITnet_Thueringen_small.png" alt="ITnet Thüringen e.V."></a>
+                </div>
+            </div>
+
+            <button id="aboutBackButton" class="pageBackButton" aria-label="Zurück"><i class="fas fa-arrow-alt-circle-left"></i></button>
+
         </div>
 
         <div id="qrCodeScanner" role="dialog" aria-modal="true" aria-labelledby="qrCodeScannerTitle">

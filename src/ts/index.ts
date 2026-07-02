@@ -1,21 +1,20 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+ * Copyright (c) 2018-2026 GraphDefined GmbH <achim.friedland@graphdefined.com>
+ * This file is part of Chargy MobileApp <https://github.com/OpenChargingCloud/ChargyMobileApp>
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Affero GPL license, Version 3.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ *     http://www.gnu.org/licenses/agpl.html
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
+
 //import 'core-js';
 import ChargyApp                         from './chargyApp';
 import { readQRCodeTextFromImageData }  from '@open-charging-cloud/chargy-core';
@@ -24,8 +23,17 @@ import {
     resolveInitialUILanguage,
     SupportedLanguage
 }                                      from './i18n';
+import {
+    browserFileNameFromNameAndType,
+    browserFileTypeFromNameOrData,
+    normalizeDroppedSVGImageData
+}                                      from './browserFiles';
 
 declare let cordova: any;
+declare const __APP_PACKAGE__: { version: string; dependencies: Record<string, string>; devDependencies: Record<string, string> };
+declare const __NPM_PACKAGE_VERSIONS__: Record<string, string>;
+declare const __CHARGY_CORE_VERSION__: string;
+declare const __CHARGY_CORE_SHA512__: string;
 
 // @ts-ignore
 var leaflet: any = L;
@@ -48,6 +56,7 @@ export default class App {
     private languageButton:              HTMLButtonElement;
     private languageMenuDiv:             HTMLDivElement;
     private languageFlagImage:           HTMLImageElement;
+    private aboutButton:                 HTMLButtonElement;
 
     private qrScanButton:                 HTMLButtonElement;
     private qrCodeScannerDiv:             HTMLDivElement;
@@ -167,8 +176,10 @@ export default class App {
         this.languageButton             = document.getElementById('languageButton')             as HTMLButtonElement;
         this.languageMenuDiv            = document.getElementById('languageMenu')               as HTMLDivElement;
         this.languageFlagImage          = document.getElementById('languageFlag')               as HTMLImageElement;
+        this.aboutButton                = document.getElementById('aboutButton')                 as HTMLButtonElement;
         this.setupLanguageSelector();
         void this.setUILanguage(this.UILanguage, false);
+        this.setupAboutPage();
 
         var fileInputButton             = <HTMLButtonElement> document.getElementById('fileInputButton');
         var fileInput                   = <HTMLInputElement>  document.getElementById('fileInput');
@@ -179,8 +190,13 @@ export default class App {
             fileInput.click();
         }
 
-        // @ts-ignore
-        fileInput.onchange              = (event) => this.readAndParseFile(event.target.files[0]);
+        fileInput.onchange = async (event: Event) => {
+            const input = event.target;
+            if (input instanceof HTMLInputElement && input.files != null)
+                await this.readAndParseFiles(input.files);
+        };
+
+        this.setupBrowserDragAndDrop();
 
         var pasteButton                 = <HTMLButtonElement> document.getElementById('pasteButton');
         pasteButton.onclick             = (event) => this.PasteFile();
@@ -562,6 +578,10 @@ export default class App {
     this.languageButton.setAttribute('aria-expanded', 'false');
     this.languageFlagImage.src = 'images/flags/' + this.UILanguage + '.svg';
 
+    const chargyCoreHashText = this.aboutPage?.querySelector<HTMLDivElement>('#chargyCoreHash #text');
+    if (chargyCoreHashText != null)
+      chargyCoreHashText.textContent = this.t('chargyCoreHashLabel').replace('{version}', __CHARGY_CORE_VERSION__);
+
     for (const languageMenuButton of Array.from(this.languageMenuDiv.querySelectorAll<HTMLButtonElement>('button[data-language]')))
     {
       const isActive = languageMenuButton.dataset['language'] === this.UILanguage;
@@ -896,20 +916,145 @@ export default class App {
     });
   }
 
-  //#region Read and parse CTR file
+  private setupBrowserDragAndDrop(): void {
+    if (typeof cordova !== 'undefined' &&
+        (cordova.platformId === 'android' || cordova.platformId === 'ios'))
+      return;
 
-  async readAndParseFile(file: File) {
+    this.startPage.addEventListener('dragenter', (event: DragEvent) => {
+      event.preventDefault();
+      this.startPage.classList.add('over');
+    }, false);
 
-    if (!file)
-        return;
+    this.startPage.addEventListener('dragover', (event: DragEvent) => {
+      event.stopPropagation();
+      event.preventDefault();
+      if (event.dataTransfer != null)
+        event.dataTransfer.dropEffect = 'copy';
+      this.startPage.classList.add('over');
+    }, false);
+
+    this.startPage.addEventListener('dragleave', (event: DragEvent) => {
+      if (event.relatedTarget == null || !this.startPage.contains(event.relatedTarget as Node))
+        this.startPage.classList.remove('over');
+    }, false);
+
+    this.startPage.addEventListener('drop', (event: DragEvent) => {
+      event.stopPropagation();
+      event.preventDefault();
+      this.startPage.classList.remove('over');
+
+      if (event.dataTransfer?.files != null && event.dataTransfer.files.length > 0)
+        void this.readAndParseFiles(event.dataTransfer.files);
+    }, false);
+  }
+
+  private setupAboutPage(): void {
+    const version = (value?: string) => value?.replace(/^[^0-9]*/, '') ?? '';
+    (document.getElementById('appVersion') as HTMLSpanElement).textContent = __APP_PACKAGE__.version;
+    const versions: Record<string, string> = {
+      chargyMobileVersion: __APP_PACKAGE__.version,
+      chargyCoreVersion: __CHARGY_CORE_VERSION__,
+      typeScript: version(__APP_PACKAGE__.devDependencies.typescript), SASS: version(__APP_PACKAGE__.devDependencies.sass),
+      cordova: version(__APP_PACKAGE__.devDependencies.cordova), momentJS: version(__APP_PACKAGE__.dependencies.moment),
+      cordovaInAppBrowser: version(__APP_PACKAGE__.devDependencies['cordova-plugin-inappbrowser']),
+      elliptic: version(__APP_PACKAGE__.dependencies.elliptic), asn1JS: version(__APP_PACKAGE__.dependencies['asn1.js']),
+      base32Decode: version(__APP_PACKAGE__.dependencies['base32-decode']), bufferJS: version(__APP_PACKAGE__.dependencies.buffer),
+      chartJS: version(__APP_PACKAGE__.dependencies['chart.js']), leafletJS: version(__APP_PACKAGE__.dependencies.leaflet),
+      leafletAwesomeMarkers: version(__APP_PACKAGE__.dependencies['leaflet.awesome-markers']),
+      pdfjsdist: version(__APP_PACKAGE__.dependencies['pdfjs-dist']), webpack: version(__APP_PACKAGE__.devDependencies.webpack),
+      seekBzip: __NPM_PACKAGE_VERSIONS__['seek-bzip'] ?? '', fileType: __NPM_PACKAGE_VERSIONS__['file-type'] ?? '',
+      jsQR: __NPM_PACKAGE_VERSIONS__.jsqr ?? '', decimalJS: __NPM_PACKAGE_VERSIONS__['decimal.js'] ?? '',
+      fontAwesome: '5.2.0'
+    };
+    for (const [id, packageVersion] of Object.entries(versions))
+      for (const element of Array.from(document.querySelectorAll<HTMLSpanElement>(`#${id}`)))
+        element.textContent = packageVersion;
+
+    (this.aboutPage.querySelector('#chargyCoreHash #value') as HTMLDivElement).textContent = this.formatHash(__CHARGY_CORE_SHA512__);
+
+    for (const link of Array.from(this.aboutPage.querySelectorAll<HTMLElement>('[href]'))) {
+      link.onclick = (event: MouseEvent) => {
+        event.preventDefault();
+        event.stopPropagation();
+
+        const url = link.getAttribute('href');
+        if (url != null)
+          this.openExternalURL(url);
+      };
+    }
+
+    this.aboutButton.onclick = () => { this.showPage(this.aboutPage); void this.calculateApplicationHash(); };
+    (document.getElementById('aboutBackButton') as HTMLButtonElement).onclick = () => this.showPage(this.startPage);
+  }
+
+  private formatHash(hash: string): string { return hash.match(/.{1,8}/g)?.join(' ') ?? hash; }
+
+  private openExternalURL(url: string): void {
+    let externalURL: URL;
 
     try {
-      await this.processFile(file, file.name);
+      externalURL = new URL(url);
+    } catch {
+      return;
+    }
+
+    if (externalURL.protocol !== 'https:' && externalURL.protocol !== 'http:')
+      return;
+
+    if (typeof cordova !== 'undefined' &&
+        (cordova.platformId === 'android' || cordova.platformId === 'ios') &&
+        cordova.InAppBrowser?.open != null)
+      cordova.InAppBrowser.open(externalURL.href, '_system');
+    else
+      window.open(externalURL.href, '_blank', 'noopener,noreferrer');
+  }
+
+  private async calculateApplicationHash(): Promise<void> {
+    const target = this.aboutPage.querySelector('#applicationHash #value') as HTMLDivElement;
+    if (target.dataset.ready === 'true') return;
+    try {
+      const files = ['index.html', 'css/chargy.css', 'js/bundle.js'];
+      const hashes = await Promise.all(files.map(async file => crypto.subtle.digest('SHA-512', await (await fetch(file)).arrayBuffer())));
+      const length = hashes.reduce((sum, hash) => sum + hash.byteLength, 0);
+      const combined = new Uint8Array(length); let offset = 0;
+      for (const hash of hashes) { combined.set(new Uint8Array(hash), offset); offset += hash.byteLength; }
+      const hash = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-512', combined)), byte => byte.toString(16).padStart(2, '0')).join('');
+      target.textContent = this.formatHash(hash); target.dataset.ready = 'true';
+    } catch (error) { target.textContent = 'Hashwert konnte nicht berechnet werden.'; console.error(error); }
+  }
+
+  //#region Read and parse CTR file
+
+  async readAndParseFiles(files: FileList | readonly File[]) {
+    const filesToLoad = Array.from(files);
+
+    if (filesToLoad.length === 0)
+      return;
+
+    this.importantInfo.style.display = 'none';
+    this.importantInfo.innerHTML = '';
+
+    try {
+      const fileInfos = await Promise.all(filesToLoad.map(async file => {
+        const name = file.name.trim() !== '' ? file.name : 'unknown';
+        const rawData = await file.arrayBuffer();
+        const type = browserFileTypeFromNameOrData(name, file.type, rawData);
+        const normalizedName = browserFileNameFromNameAndType(name, type);
+
+        return {
+          name: normalizedName,
+          path: 'file://' + normalizedName,
+          type,
+          data: normalizeDroppedSVGImageData(normalizedName, type, rawData)
+        };
+      }));
+
+      await this._chargyApp.detectContentFormat(fileInfos);
     }
     catch (exception) {
       this.doGlobalError(this.t('invalidChargeTransparencyRecord'), exception);
     }
-
   }
 
   //#endregion

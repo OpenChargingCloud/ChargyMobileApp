@@ -1,3 +1,20 @@
+/*
+ * Copyright (c) 2018-2026 GraphDefined GmbH <achim.friedland@graphdefined.com>
+ * This file is part of Chargy MobileApp <https://github.com/OpenChargingCloud/ChargyMobileApp>
+ *
+ * Licensed under the Affero GPL license, Version 3.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.gnu.org/licenses/agpl.html
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 import {
     Chargy,
     ChargyInterfaces         as iface,
@@ -13,6 +30,18 @@ import {
     createI18nDictionary,
     SupportedLanguage
 }                                      from './i18n';
+import { formatOBISForDisplay }        from './uiFormatting';
+import {
+    getSessionWarnings,
+    hasSessionWarnings,
+    isWarningSession
+}                                      from './sessionPresentation';
+import {
+    getMeasurementDifferenceText,
+    getMeasurementDisplayValue,
+    getMeasurementValueInKWh,
+    shouldShowMeasurementChart
+}                                      from './measurementPresentation';
 
 // @ts-ignore
 var leaflet: any = L;
@@ -192,12 +221,26 @@ export default class ChargyApp {
                     iconColor:                  '#c2ec8e'
                 });
 
+                var orangeMarker              = leaflet.AwesomeMarkers.icon({
+                    prefix:                     'fa',
+                    icon:                       'exclamation',
+                    markerColor:                'orange',
+                    iconColor:                  '#ae6a0a'
+                });
+
                 var markerIcon  = redMarker;
 
                 switch (result.status)
                 {
 
                     case iface.SessionVerificationResult.UnknownSessionFormat:
+                        markerIcon = redMarker;
+                        break;
+
+                    case iface.SessionVerificationResult.InplausibleMeasurement:
+                        markerIcon = orangeMarker;
+                        break;
+
                     case iface.SessionVerificationResult.PublicKeyNotFound:
                     case iface.SessionVerificationResult.InvalidPublicKey:
                     case iface.SessionVerificationResult.InvalidSignature:
@@ -205,7 +248,7 @@ export default class ChargyApp {
                         break;
 
                     case iface.SessionVerificationResult.ValidSignature:
-                        markerIcon = greenMarker;
+                        markerIcon = hasSessionWarnings(chargingSession) ? orangeMarker : greenMarker;
                         break;
 
 
@@ -250,6 +293,13 @@ export default class ChargyApp {
                     {
 
                         case iface.SessionVerificationResult.UnknownSessionFormat:
+                            marker.bindPopup(me.chargy.GetLocalizedMessage("InvalidChargingSession"));
+                            break;
+
+                        case iface.SessionVerificationResult.InplausibleMeasurement:
+                            marker.bindPopup(me.chargy.GetLocalizedMessage("sessionValidationWarningsLabel"));
+                            break;
+
                         case iface.SessionVerificationResult.PublicKeyNotFound:
                         case iface.SessionVerificationResult.InvalidPublicKey:
                         case iface.SessionVerificationResult.InvalidSignature:
@@ -257,7 +307,11 @@ export default class ChargyApp {
                             break;
 
                         case iface.SessionVerificationResult.ValidSignature:
-                            marker.bindPopup(me.chargy.GetLocalizedMessage("ValidChargingSession"));
+                            marker.bindPopup(me.chargy.GetLocalizedMessage(
+                                hasSessionWarnings(chargingSession)
+                                    ? "sessionValidationWarningsLabel"
+                                    : "ValidChargingSession"
+                            ));
                             break;
 
 
@@ -274,13 +328,20 @@ export default class ChargyApp {
                 {
 
                     case iface.SessionVerificationResult.UnknownSessionFormat:
+                        return '<i class="fas fa-times-circle"></i> ' + me.chargy.GetLocalizedMessage("InvalidChargingSession");
+
+                    case iface.SessionVerificationResult.InplausibleMeasurement:
+                        return '<i class="fas fa-exclamation-circle"></i> ' + me.chargy.GetLocalizedMessage("sessionValidationWarningsLabel");
+
                     case iface.SessionVerificationResult.PublicKeyNotFound:
                     case iface.SessionVerificationResult.InvalidPublicKey:
                     case iface.SessionVerificationResult.InvalidSignature:
                         return '<i class="fas fa-times-circle"></i> ' + me.chargy.GetLocalizedMessage("InvalidChargingSession");
 
                     case iface.SessionVerificationResult.ValidSignature:
-                        return '<i class="fas fa-check-circle"></i> ' + me.chargy.GetLocalizedMessage("ValidChargingSessionShort");
+                        return hasSessionWarnings(chargingSession)
+                                   ? '<i class="fas fa-exclamation-circle"></i> ' + me.chargy.GetLocalizedMessage("sessionValidationWarningsLabel")
+                                   : '<i class="fas fa-check-circle"></i> '       + me.chargy.GetLocalizedMessage("ValidChargingSessionShort");
 
 
                     default:
@@ -636,6 +697,9 @@ export default class ChargyApp {
                     verificationStatusDiv.className = "verificationStatus";
                     verificationStatusDiv.innerHTML = await checkSessionCrypto(chargingSession);
 
+                    if (isWarningSession(chargingSession))
+                        verificationStatusDiv.classList.add("warning");
+
                     //#endregion
 
 
@@ -727,57 +791,58 @@ export default class ChargyApp {
                     MeasurementInfoDiv.innerHTML     = '';
                     // chargyLib.CreateDiv(this.evseTarifInfosDiv,  "measurementInfo");
 
-                    //#region Show meter vendor infos
+                    chargyLib.CreateDiv(MeasurementInfoDiv, "headline",
+                                        this.chargy.GetLocalizedMessage("Charging Session Information"));
 
-                    var meter                        = this.chargy.GetMeter(measurement.energyMeterId);
+                    const energyMeterInfosDiv = chargyLib.CreateDiv(MeasurementInfoDiv, "energyMeterInfos");
+                                                chargyLib.CreateDiv(energyMeterInfosDiv, "headline2",
+                                                                    this.chargy.GetLocalizedMessage("Energy Meter"));
 
-                    if (meter != null)
-                    {
+                    const meter = this.chargy.GetMeter(measurement.energyMeterId);
 
-                        let MeterVendorDiv           = chargyLib.CreateDiv(MeasurementInfoDiv,  "meterVendor");
+                    chargyLib.CreateDiv2(
+                        energyMeterInfosDiv,
+                        "meterId",
+                        this.chargy.GetLocalizedMessage(meter != null ? "Serial Number" : "Meter serial number"),
+                        measurement.energyMeterId
+                    );
 
-                        let MeterVendorIdDiv         = chargyLib.CreateDiv(MeterVendorDiv,      "meterVendorId",
-                                                                 this.chargy.GetLocalizedMessage("Manufacturer"));
+                    if (meter != null) {
 
-                        let MeterVendorValueDiv      = chargyLib.CreateDiv(MeterVendorDiv,      "meterVendorIdValue",
-                                                                 meter.manufacturer?.name ?? "");
+                        const manufacturer = meter.manufacturer?.name;
+                        const model        = meter.model?.name;
+                        const hardware     = meter.hardware?.revision;
+                        const firmware     = meter.firmware?.version;
 
+                        if (manufacturer)
+                            chargyLib.CreateDiv2(energyMeterInfosDiv, "meterManufacturer",
+                                                 this.chargy.GetLocalizedMessage("Manufacturer"),
+                                                 manufacturer);
 
-                        let MeterModelDiv            = chargyLib.CreateDiv(MeasurementInfoDiv,  "meterModel");
+                        if (model)
+                            chargyLib.CreateDiv2(energyMeterInfosDiv, "meterModel",
+                                                 this.chargy.GetLocalizedMessage("Model"),
+                                                 model);
 
-                        let MeterModelIdDiv          = chargyLib.CreateDiv(MeterModelDiv,       "meterModelId",
-                                                                 this.chargy.GetLocalizedMessage("Model"));
+                        if (hardware)
+                            chargyLib.CreateDiv2(energyMeterInfosDiv, "meterHardwareVersion",
+                                                 this.chargy.GetLocalizedMessage("Hardware Version"),
+                                                 hardware);
 
-                        let MeterModelValueDiv       = chargyLib.CreateDiv(MeterModelDiv,       "meterModelIdValue",
-                                                                 meter.model?.name ?? "");
+                        if (firmware)
+                            chargyLib.CreateDiv2(energyMeterInfosDiv, "meterFirmwareVersion",
+                                                 this.chargy.GetLocalizedMessage("Firmware Version"),
+                                                 firmware);
 
                     }
 
-                    //#endregion
+                    chargyLib.CreateDiv2(energyMeterInfosDiv, "measurement",
+                                         this.chargy.GetLocalizedMessage("Measurement"),
+                                         measurement.name);
 
-                    //#region Show meter infos
-
-                    let MeterDiv                    = chargyLib.CreateDiv(MeasurementInfoDiv,       "meter");
-
-                    let MeterIdDiv                  = chargyLib.CreateDiv(MeterDiv,                 "meterId",
-                                                                this.chargy.GetLocalizedMessage(meter != null ? "Serial Number" : "Meter serial number"));
-
-                    let MeterIdValueDiv             = chargyLib.CreateDiv(MeterDiv,                 "meterIdValue",
-                                                                measurement.energyMeterId);
-
-                    //#endregion
-
-                    //#region Show measurement infos
-
-                    let MeasurementDiv               = chargyLib.CreateDiv(MeasurementInfoDiv,      "measurement");
-
-                    let MeasurementIdDiv             = chargyLib.CreateDiv(MeasurementDiv,          "measurementId",
-                                                                 this.chargy.GetLocalizedMessage("Measurement"));
-
-                    let MeasurementIdValueDiv        = chargyLib.CreateDiv(MeasurementDiv,          "measurementIdValue",
-                                                                 measurement.name + " (OBIS: " + chargyLib.parseOBIS(measurement.obis) + ")");
-
-                    //#endregion
+                    chargyLib.CreateDiv2(energyMeterInfosDiv, "OBIS",
+                                         this.chargy.GetLocalizedMessage("OBIS code"),
+                                         formatOBISForDisplay(measurement.obis));
 
                     //#region Show measurement values...
 
@@ -787,6 +852,8 @@ export default class ChargyApp {
                         //#region Configure chart
 
                         let chartDiv = this.app.measurementInfosPage.querySelector<HTMLCanvasElement>('#chart');
+                        const showChart = shouldShowMeasurementChart(measurement.values.length);
+                        chartDiv.style.display = showChart ? '' : 'none';
 
                         let chartData: ChartConfiguration<'bar', number[], string> = {
                             type: 'bar',
@@ -823,17 +890,21 @@ export default class ChargyApp {
 
                         let MeasurementValuesDiv         = this.app.measurementInfosPage.querySelector<HTMLDivElement>('#measurementValues');
                         MeasurementValuesDiv.innerHTML   = '';
+                        chargyLib.CreateDiv(MeasurementValuesDiv, "headline2",
+                                            this.chargy.GetLocalizedMessage("Meter Values"));
+                        const MeasurementValueRowsDiv    = chargyLib.CreateDiv(MeasurementValuesDiv, "measurementValueRows");
 
                         let chartLabels                  = [];
                         let chartValues                  = [];
-                        let previousValue                = 0;
+                        let previousDisplayValue         = undefined;
+                        let previousChartValue           = undefined;
 
                         for (var measurementValue of measurement.values)
                         {
 
                             measurementValue.measurement     = measurement;
 
-                            let MeasurementValueDiv          = chargyLib.CreateDiv(MeasurementValuesDiv, "measurementValue");
+                            let MeasurementValueDiv          = chargyLib.CreateDiv(MeasurementValueRowsDiv, "measurementValue");
                             MeasurementValueDiv.onclick      = this.captureMeasurementCryptoDetails(measurementValue);
 
                             var timestamp                    = chargyLib.parseUTC(measurementValue.timestamp);
@@ -843,61 +914,44 @@ export default class ChargyApp {
                                                                          timestamp.format('HH:mm:ss') + this.chargy.GetLocalizedMessage("timeSuffix"));
 
 
-                            // Show energy counter value
-                        /*     let value2Div                    = chargyLib.CreateDiv(MeasurementValueDiv, "value",
-                                                                         parseFloat((measurementValue.value * Math.pow(10, measurementValue.measurement.scale)).toFixed(10)).toString());
+                            // Show the meter's native value and unit. A prescribed
+                            // display prefix/precision takes precedence, just as in
+                            // the ChargyWebApp.
+                            const displayValue               = getMeasurementDisplayValue(measurement, measurementValue);
 
-                            switch (measurement.unit)
-                            {
+                            chargyLib.CreateDiv(MeasurementValueDiv, "value1", displayValue.text);
+                            chargyLib.CreateDiv(MeasurementValueDiv, "unit1",  displayValue.unit);
 
-                                case "KILO_WATT_HOURS":
-                                    chargyLib.CreateDiv(MeasurementValueDiv, "unit", "kWh");
-                                    break;
+                            // Show the difference in the same display unit.
+                            chargyLib.CreateDiv(
+                                MeasurementValueDiv,
+                                "value2",
+                                getMeasurementDifferenceText(
+                                    displayValue.value,
+                                    previousDisplayValue,
+                                    measurementValue.value_displayPrecision
+                                )
+                            );
+                            chargyLib.CreateDiv(
+                                MeasurementValueDiv,
+                                "unit2",
+                                previousDisplayValue === undefined ? "" : displayValue.unit
+                            );
 
-                                // "WATT_HOURS"
-                                default:
-                                chargyLib.CreateDiv(MeasurementValueDiv, "unit", "Wh");
-                                    break;
-
-                            } */
-
-
-                            // Show energy difference
-                            var currentValue                 = Number(measurementValue.value);
-
-                            switch (measurement.unit)
-                            {
-
-                                case "KILO_WATT_HOURS":
-                                    currentValue = parseFloat((currentValue * Math.pow(10, measurementValue.measurement.scale)).toFixed(10));
-                                    break;
-
-                                // "WATT_HOURS"
-                                default:
-                                    currentValue = parseFloat((currentValue / 1000 * Math.pow(10, measurementValue.measurement.scale)).toFixed(10));
-                                    break;
-
-                            }
-
-                            let value                        = (previousValue > 0
-                                                                    ? parseFloat((currentValue - previousValue).toFixed(10))
-                                                                    : 0);
-
-                            //let aa = chartData.data.datasets[0].data;
-                            chartValues.push(value);
-
-                            let valueDiv                     = chargyLib.CreateDiv(MeasurementValueDiv, "value",
-                                                                         "+" + value);
-
-                            let unitDiv                      = chargyLib.CreateDiv(MeasurementValueDiv, "unit",
-                                                                         "kWh");
+                            // Charts continue to use kWh so values from different
+                            // native meter units remain comparable.
+                            const chartValue                 = getMeasurementValueInKWh(measurement, measurementValue);
+                            chartValues.push(previousChartValue === undefined
+                                                 ? 0
+                                                 : chartValue.minus(previousChartValue).toNumber());
 
 
                             // Show signature status
                             let verificationStatusDiv        = chargyLib.CreateDiv(MeasurementValueDiv, "verificationStatus",
                                                                          await checkMeasurementCrypto(measurementValue));
 
-                            previousValue                    = currentValue;
+                            previousDisplayValue             = displayValue.value;
+                            previousChartValue               = chartValue;
 
                         }
 
@@ -907,7 +961,9 @@ export default class ChargyApp {
                         if (this.measurementChart)
                             this.measurementChart.destroy();
 
-                        this.measurementChart = new Chart(chartDiv, chartData);
+                        this.measurementChart = showChart
+                                                    ? new Chart(chartDiv, chartData)
+                                                    : null;
 
                     }
 
@@ -915,6 +971,30 @@ export default class ChargyApp {
 
                 }
 ;
+            }
+
+            const sessionWarnings             = getSessionWarnings(chargingSession);
+            const validationWarningsDiv       = this.app.measurementInfosPage.querySelector<HTMLDivElement>('#sessionValidationWarnings');
+            validationWarningsDiv.innerHTML   = '';
+
+            if (sessionWarnings.length > 0) {
+
+                chargyLib.CreateDiv(validationWarningsDiv, "headline2",
+                                    this.chargy.GetLocalizedMessage("sessionValidationLabel"));
+
+                const warningRowsDiv = chargyLib.CreateDiv(validationWarningsDiv, "warningRows");
+
+                for (const warning of sessionWarnings) {
+
+                    const warningRowDiv = chargyLib.CreateDiv(warningRowsDiv, "warningRow " + warning.level);
+                    const levelDiv      = chargyLib.CreateDiv(warningRowDiv, "level");
+                    const textDiv       = chargyLib.CreateDiv(warningRowDiv, "text");
+
+                    levelDiv.innerText  = this.chargy.GetLocalizedMessage("warningLevel_" + warning.level);
+                    textDiv.innerText   = this.chargy.GetLocalizedText(warning.message) ?? chargyLib.firstValue(warning.message) ?? "";
+
+                }
+
             }
 
         }
@@ -962,55 +1042,76 @@ export default class ChargyApp {
 
     //#region showMeasurementCryptoDetails
 
-    public showMeasurementCryptoDetails(measurementValue:  chargeTransparencyRecord.IMeasurementValue) : void
+    public async showMeasurementCryptoDetails(measurementValue: chargeTransparencyRecord.IMeasurementValue): Promise<void>
     {
 
-        function doError(text: String)
+        const cryptoDiv             = this.app.cryptoDetailsPage;
+        const errorDiv              = cryptoDiv.querySelector('#error')                       as HTMLDivElement;
+        const introDiv              = cryptoDiv.querySelector('#intro')                       as HTMLDivElement;
+        const cryptoDataDiv         = cryptoDiv.querySelector('#cryptoData')                  as HTMLDivElement;
+        const bufferValue           = cryptoDiv.querySelector('#buffer .value')               as HTMLDivElement;
+        const hashedBufferValue     = cryptoDiv.querySelector('#hashedBuffer .value')         as HTMLDivElement;
+        const publicKeyValue        = cryptoDiv.querySelector('#publicKey .value')            as HTMLDivElement;
+        const signatureExpectedValue = cryptoDiv.querySelector('#signatureExpected .value')  as HTMLDivElement;
+        const signatureCheckValue   = cryptoDiv.querySelector('#signatureCheck')              as HTMLDivElement;
+
+        const doError = (text: string): void => {
+            errorDiv.innerHTML     = '<i class="fas fa-times-circle"></i> ' + text;
+            introDiv.style.display = 'none';
+        };
+
+        if (!errorDiv               || !introDiv            || !cryptoDataDiv       ||
+            !bufferValue            || !hashedBufferValue   || !publicKeyValue      ||
+            !signatureExpectedValue || !signatureCheckValue)
         {
-            //inputInfosDiv.style.display  = 'flex';
-            //errorTextDiv.style.display   = 'inline-block';
-            introDiv.innerHTML           = '<i class="fas fa-times-circle"></i> ' + text;
+            console.error('The measurement crypto details page is incomplete.');
+            return;
         }
 
-
-        let cryptoDiv      = this.app.cryptoDetailsPage;
-        let errorDiv       = cryptoDiv.querySelector('#error')      as HTMLDivElement;
-        let introDiv       = cryptoDiv.querySelector('#intro')      as HTMLDivElement;
-        let cryptoDataDiv  = cryptoDiv.querySelector('#cryptoData') as HTMLDivElement;
+        errorDiv.innerHTML     = '';
+        introDiv.style.display = 'block';
 
         if (measurementValue             == null ||
             measurementValue.measurement == null)
         {
             doError(this.chargy.GetLocalizedMessage("unknownMeasurementDataFormat"));
+            return;
         }
 
 
         //#region Show data and result on overlay
 
-        let bufferValue               = cryptoDiv.querySelector('#buffer .value')             as HTMLDivElement;
-        let hashedBufferValue         = cryptoDiv.querySelector('#hashedBuffer .value')       as HTMLDivElement;
-        let publicKeyValue            = cryptoDiv.querySelector('#publicKey .value')          as HTMLDivElement;
-        let signatureExpectedValue    = cryptoDiv.querySelector('#signatureExpected .value')  as HTMLDivElement;
-        let signatureCheckValue       = cryptoDiv.querySelector('#signatureCheck')            as HTMLDivElement;
-
-        //introDiv.innerHTML                = '';
         cryptoDataDiv.innerHTML           = '';
         bufferValue.innerHTML             = '';
-        hashedBufferValue.innerHTML       = '0x00000000000000000000000000000000000';
-        publicKeyValue.innerHTML          = '0x00000000000000000000000000000000000';
-        signatureExpectedValue.innerHTML  = '0x00000000000000000000000000000000000';
+        hashedBufferValue.innerHTML       = '<span class="error">0x00000000000000000000000000000000000</span>';
+        publicKeyValue.innerHTML          = '<span class="error">0x00000000000000000000000000000000000</span>';
+        signatureExpectedValue.innerHTML  = '<span class="error">0x00000000000000000000000000000000000</span>';
         signatureCheckValue.innerHTML     = '';
 
         if (measurementValue.method)
-            void measurementValue.method.ViewMeasurement(measurementValue,
-                                                    errorDiv,
-                                                    introDiv,
-                                                    cryptoDataDiv,
-                                                    bufferValue,
-                                                    hashedBufferValue,
-                                                    publicKeyValue,
-                                                    signatureExpectedValue,
-                                                    signatureCheckValue);
+        {
+            try {
+                const error = await measurementValue.method.ViewMeasurement(
+                    measurementValue,
+                    errorDiv,
+                    introDiv,
+                    cryptoDataDiv,
+                    bufferValue,
+                    hashedBufferValue,
+                    publicKeyValue,
+                    signatureExpectedValue,
+                    signatureCheckValue
+                );
+
+                if (error)
+                    doError(error.message);
+            }
+            catch (exception) {
+                doError(exception instanceof Error
+                            ? exception.message
+                            : this.chargy.GetLocalizedMessage("unknownMeasurementDataFormat"));
+            }
+        }
 
         else
         {
@@ -1027,7 +1128,7 @@ export default class ChargyApp {
         var me = this;
         return function(this: HTMLDivElement, ev: MouseEvent) {
                    me.app.showPage(me.app.cryptoDetailsPage);
-                   me.showMeasurementCryptoDetails(measurementValue);
+                   void me.showMeasurementCryptoDetails(measurementValue);
                };
     }
 

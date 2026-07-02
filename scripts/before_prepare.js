@@ -121,13 +121,6 @@ module.exports = function(ctx) {
 		copyDirectoryContents(path.join(leafletDist, 'images'),
 							  path.join(leafletTarget, 'images'));
 
-		const locateDist = path.join(ctx.opts.projectRoot, 'node_modules', 'leaflet.locatecontrol', 'dist');
-		copyFile(path.join(locateDist, 'L.Control.Locate.umd.js'),       path.join(leafletTarget, 'L.Control.Locate.js'));
-		copyFile(path.join(locateDist, 'L.Control.Locate.min.js'),       path.join(leafletTarget, 'L.Control.Locate.min.js'));
-		copyFile(path.join(locateDist, 'L.Control.Locate.min.js.map'),   path.join(leafletTarget, 'L.Control.Locate.min.js.map'));
-		copyFile(path.join(locateDist, 'L.Control.Locate.min.css'),      path.join(leafletTarget, 'L.Control.Locate.min.css'));
-		copyFile(path.join(locateDist, 'L.Control.Locate.min.css.map'),  path.join(leafletTarget, 'L.Control.Locate.min.css.map'));
-
 		const awesomeMarkersDist = path.join(ctx.opts.projectRoot, 'node_modules', 'leaflet.awesome-markers', 'dist');
 		copyFile(path.join(awesomeMarkersDist, 'leaflet.awesome-markers.css'),     path.join(leafletTarget, 'leaflet.awesome-markers.css'));
 		copyFile(path.join(awesomeMarkersDist, 'leaflet.awesome-markers.js'),      path.join(leafletTarget, 'leaflet.awesome-markers.js'));
@@ -197,7 +190,7 @@ module.exports = function(ctx) {
 				
 				// for (i = 0; i < map.sources.length; i++) { 
 				// 	console.log(map.sources[i]);
-				// 	// file:///E:/Coding/CardiLink/Cordova/CardiMobileApp/src/sass/styles.scss
+				// 	// file:///E:/Coding/CardiLink/Cordova/CardiMobileApp/src/scss/chargy.scss
 				//     map.sources[i] = "../.." + map.sources[i].substring(map.sources[i].indexOf('/src'));
 				// 	console.log(map.sources[i]);
 				// }
@@ -252,7 +245,7 @@ module.exports = function(ctx) {
 				
 				// for (i = 0; i < map.sources.length; i++) { 
 				// 	console.log(map.sources[i]);
-				// 	// file:///E:/Coding/CardiLink/Cordova/CardiMobileApp/src/sass/styles.scss
+				// 	// file:///E:/Coding/CardiLink/Cordova/CardiMobileApp/src/scss/chargy.scss
 				//     map.sources[i] = "../.." + map.sources[i].substring(map.sources[i].indexOf('/src'));
 				// 	console.log(map.sources[i]);
 				// }
@@ -273,8 +266,8 @@ module.exports = function(ctx) {
 		 */
 
 		runNodeScript(ctx.opts.projectRoot, ['sass', 'sass.js'], [
-			'src/scss/styles.scss',
-			'www/css/styles.css'
+			'src/scss/chargy.scss',
+			'www/css/chargy.css'
 		]);
 
 

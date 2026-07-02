@@ -52,107 +52,102 @@ body {
     background-color: rgba(255, 0, 0, 0.75)
   }
 
-  #logo {
-    position:           fixed;
-    top:                0px;
-    left:               0px;
-    right:              0px;
-    height:             8vh;
+  #headline {
     box-sizing:         border-box;
     display:            flex;
     align-items:        center;
-    padding-left:       custom.$logo-padding-left;
-    z-index:            1000;
+    width:              100%;
+    height:             8vh;
+    min-height:         56px;
+    padding:            4px 14px;
     background-color:   custom.$logo-background-color;
-    background-image:   custom.$logo-background-image;
-    background-size:    custom.$logo-background-size;
-    background-position: custom.$logo-background-position;
-    background-repeat:  custom.$logo-background-repeat;
-    line-height:        custom.$logo-line-height;
-    font-size:          custom.$logo-font-size;
+    font-family:        Arial;
+    font-size:          110%;
 
-    #appTitle {
-      overflow:           hidden;
-      text-overflow:      ellipsis;
-      white-space:        nowrap;
+    #logo {
+      flex:                1 1 auto;
+      min-width:           0;
+      height:              100%;
+      padding-left:        custom.$logo-padding-left;
+      background-image:    custom.$logo-background-image;
+      background-size:     custom.$logo-background-size;
+      background-position: custom.$logo-background-position;
+      background-repeat:   custom.$logo-background-repeat;
+      line-height:         custom.$logo-line-height;
+      font-size:           custom.$logo-font-size;
+      text-align:          center;
+      white-space:         nowrap;
+      overflow:            hidden;
+      text-overflow:       ellipsis;
     }
 
-    #languageSelector {
-      position:           relative;
-      display:            flex;
-      align-items:        center;
-      margin-left:        auto;
-      margin-right:       3vw;
-      line-height:        normal;
+    #windowButtons {
+      display:         flex;
+      flex:            0 0 auto;
+      align-items:     center;
+      gap:             7px;
 
-      #languageButton {
-        display:            flex;
-        align-items:        center;
-        justify-content:    center;
-        width:              44px;
-        height:             38px;
-        padding:            0;
-        border:             0;
-        border-radius:      6px;
-        background-color:   transparent;
-      }
+      #languageSelector {
+        position:      relative;
+        display:       flex;
+        align-items:   center;
 
-      #languageButton:hover,
-      #languageButton:focus-visible {
-        background-color:   #e7f2fb;
-      }
+        #languageMenu {
+          display:          none;
+          position:         absolute;
+          top:              34px;
+          right:            0;
+          z-index:          2000;
+          min-width:        135px;
+          padding:          4px;
+          border-radius:    6px;
+          background-color: #ffffff;
+          box-shadow:       0 5px 18px rgba(0, 0, 0, 0.18);
 
-      #languageMenu {
-        display:            none;
-        position:           absolute;
-        top:                42px;
-        right:              0;
-        z-index:            2000;
-        min-width:          132px;
-        padding:            4px;
-        border-radius:      6px;
-        background-color:   #ffffff;
-        box-shadow:         0 5px 18px rgba(0, 0, 0, 0.22);
-
-        button {
-          display:            flex;
-          align-items:        center;
-          gap:                8px;
-          width:              100%;
-          min-height:         40px;
-          padding:            6px 8px;
-          border:             0;
-          border-radius:      4px;
-          color:              #222222;
-          background-color:   transparent;
-          font-size:          90%;
-          text-align:         left;
-          white-space:        nowrap;
+          button {
+            display:       flex;
+            align-items:   center;
+            gap:           8px;
+            width:         100%;
+            padding:       6px 8px;
+            border-radius: 4px;
+            font-size:     90%;
+            text-align:    left;
+            white-space:   nowrap;
+          }
         }
 
-        button:hover,
-        button:focus-visible,
-        button.active {
-          background-color:   #e7f2fb;
+        #languageMenu.open { display: block; }
+
+        .languageFlag {
+          display:        block;
+          width:          24px;
+          height:         15px;
+          object-fit:     cover;
+          border:         1px solid rgba(0, 0, 0, 0.22);
+          pointer-events: none;
         }
       }
 
-      #languageMenu.open {
-        display:            block;
+      button {
+        display:          flex;
+        align-items:      center;
+        justify-content:  center;
+        width:            34px;
+        height:           34px;
+        padding:          0;
+        border:           0;
+        border-radius:    5px;
+        color:            #111111;
+        background:       transparent;
+        outline:          0;
+        font-size:        190%;
       }
 
-      .languageFlag {
-        display:            inline-block;
-        width:              22px;
-        height:             14px;
-        object-fit:         cover;
-        overflow:           hidden;
-        border:             1px solid rgba(0, 0, 0, 0.22);
-        pointer-events:     none;
-      }
+      button:hover, button:focus-visible { background-color: #e7f2fb; }
     }
   }
-  
+
   .fa-check-circle {
     color:            #5ab337;
   }
@@ -165,9 +160,9 @@ body {
 
     display:            none;
     position:           absolute;
-    min-height:         92vh;
+    min-height:         calc(100vh - max(8vh, 56px));
     min-width:          100vw;
-    top:                8vh;
+    top:                max(8vh, 56px);
     background-color: custom.$page-background-color;
 
     .subpages {
@@ -266,6 +261,11 @@ body {
 
     margin:             auto;
     font-size:          140%;
+    transition:         background-color 120ms ease-in-out;
+
+    &.over {
+      background-color: cornflowerblue !important;
+    }
   
     #text {
       margin:             6vh 5vw 7vh 5vw;
@@ -343,6 +343,152 @@ body {
 
     }
 
+  }
+
+  #aboutPage {
+    box-sizing:       border-box;
+    width:            100%;
+    padding:          15px 5vw 78px 5vw;
+    overflow-y:       scroll;
+    overflow-x:       hidden;
+    font-size:        115%;
+
+    #softwareInfos {
+      margin:         5px 0 20px 0;
+      font-size:      110%;
+      #product { font-weight: bold; }
+      #copyright { font-size: 80%; }
+    }
+
+    #openSourceLibs {
+      display:        table;
+      margin:         10px 20px;
+      border-spacing: 2px;
+      .lib {
+        display: table-row;
+        .name, .license { display: table-cell; vertical-align: middle; }
+        .license { padding-left: 12px; }
+      }
+    }
+
+    .linkButton {
+        display:          inline-block;
+        border:           0;
+        border-radius:    4px;
+        padding:          3px 7px;
+        color:            #222222;
+        background-color: #b9dbf5;
+        font-size:        75%;
+        font-weight:      normal;
+        text-align:       left;
+        text-decoration:  none;
+    }
+
+                        .linkButton:hover {
+                            color:              #aad0ec;
+                            background-color:   #3c75a0;
+                        }
+
+                        #applicationHash,
+                        #chargyCoreHash {
+
+                            margin:             1em 0 1em 0;
+
+                            #value {
+                                font-family:        monospace;
+                                font-size:          110%;
+                                margin-top:         3px;
+                                background-color:   rgb(192 192 192 / 30%);
+                                padding:            6px 8px;
+                                border-radius:      4px;
+                            }
+
+                            #sigHead {
+                                padding-top:        5px;
+                                font-size:          80%;
+                            }
+
+                            #signatures {
+
+                                padding:            3px 0px 0px 5px;
+                                font-size:          80%;
+
+                                i {
+                                    // position:           relative;
+                                    // top:                1px;
+                                    padding-right:      3px;
+                                }
+
+                            }
+
+                        }
+
+                        #applicationSignatures {
+
+                            display:            none;
+                            margin:             1em 0 1em 0;
+
+                            #value {
+                                font-family:        monospace;
+                                font-size:          110%;
+                                margin-top:         3px;
+                            }
+
+                        }
+
+                        #TOSP {
+
+                            margin-top:         3vh;
+                            font-size:          80%;
+
+                            a {
+                                color:              #517692;
+                                font-weight:        bold;
+                                text-decoration:    none;
+                            }
+
+                            #logos {
+
+                                display:                flex;
+                                justify-content:        space-evenly;
+                                align-items:            center;
+                                margin-top:             0.5vh;
+                                margin-bottom:          40px;
+
+                                #TMWWDG {
+
+                                    margin:             2vh 7% 3vh 7%;
+
+                                    img {
+                                        width:              100%;
+                                    }
+
+                                }
+
+                                #ITnet {
+
+                                    width:              50%;
+                                    margin:             2vh 9% 3vh 1%;
+
+                                    img {
+                                        width:              100%;
+                                    }
+
+                                }
+
+                            }
+
+                        }
+
+    p { margin: 0 0 12px 0; line-height: 150%; }
+    a { color: #517692; font-weight: bold; text-decoration: none; }
+    .pageBackButton { position: fixed; left: 8px; bottom: 8px; border: 0; color: #519ad0; background: transparent; font-size: 300%; }
+  }
+
+  #aboutPage::-webkit-scrollbar { display: none; }
+
+  @media (max-width: 520px) {
+    #aboutPage { #openSourceLibs { margin: 10px 0; } }
   }
 
   #qrCodeScanner {
@@ -660,6 +806,10 @@ body {
 
           }
 
+          .verificationStatus.warning {
+            color:              #a36f00;
+          }
+
         }
 
         .chargingSession:hover {
@@ -702,65 +852,39 @@ body {
 
           #measurementInfo {
 
-              display:            table;
+              display:            block;
               padding-top:        2vh;
 
-              .meter {
-
-                  display:            table-row;
-
-                  .meterId {
-                      display:            table-cell;
-                      padding-right:      20px;
-                  }
-
-                  .meterIdValue {
-                      display:            table-cell;
-                  }
-
+              .headline {
+                  color:              #2e71a2;
+                  font-weight:        bold;
+                  padding-bottom:     1.2vh;
               }
 
-              .meterVendor {
+              .energyMeterInfos {
 
-                  display:            table-row;
+                  display:            table;
 
-                  .meterVendorId {
-                      display:            table-cell;
-                      padding-right:      20px;
+                  .headline2 {
+                      margin-top:         0.6vh;
+                      font-weight:        bold;
                   }
 
-                  .meterVendorValue {
-                      display:            table-cell;
-                  }
+                  > div:not(.headline2) {
 
-              }
+                      display:            table-row;
 
-              .meterModel {
+                      > div:first-child {
+                          display:            table-cell;
+                          padding-left:       12px;
+                          padding-right:      20px;
+                          white-space:        nowrap;
+                      }
 
-                  display:            table-row;
+                      > div:last-child {
+                          display:            table-cell;
+                      }
 
-                  .meterModelId {
-                      display:            table-cell;
-                      padding-right:      20px;
-                  }
-
-                  .meterModelValue {
-                      display:            table-cell;
-                  }
-
-              }
-
-              .measurement {
-
-                  display:            table-row;
-
-                  .measurementId {
-                      display:            table-cell;
-                      padding-right:      30px;
-                  }
-
-                  .measurementIdValue {
-                      display:            table-cell;
                   }
 
               }
@@ -775,10 +899,20 @@ body {
 
           #measurementValues {
 
-              display:            table;
+              display:            block;
               padding:            2vh 0;
               width:              100%;
-              cursor:             zoom-in;
+
+              .headline2 {
+                  margin-top:         0.6vh;
+                  font-weight:        bold;
+              }
+
+              .measurementValueRows {
+                  display:            table;
+                  width:              100%;
+                  cursor:             zoom-in;
+              }
 
               .measurementValue {
 
@@ -791,17 +925,24 @@ body {
                       white-space:        nowrap
                   }
 
-                  .value {
+                  .value1,
+                  .value2 {
                       display:            table-cell;
                       text-align:         right;
                       padding-right:      1vw;
                       white-space:        nowrap
                   }
 
-                  .unit {
+                  .unit1,
+                  .unit2 {
                       display:            table-cell;
                       padding-right:      2vw;
                       white-space:        nowrap
+                  }
+
+                  .value2,
+                  .unit2 {
+                      color:              rgba(44, 74, 96, 0.75);
                   }
 
                   .verificationStatus {
@@ -809,6 +950,62 @@ body {
                       padding:            0 1vw;
                       width:              100%;
                       white-space:        nowrap
+                  }
+
+              }
+
+          }
+
+          #sessionValidationWarnings {
+
+              margin-top:         1.2vh;
+              width:              100%;
+              padding-bottom:     2vh;
+
+              .headline2 {
+                  margin-top:     0.6vh;
+                  font-weight:    bold;
+              }
+
+              .warningRows {
+                  display:        table;
+                  width:          100%;
+                  margin-top:     0.3vh;
+              }
+
+              .warningRow {
+                  display:        table-row;
+
+                  .level,
+                  .text {
+                      display:        table-cell;
+                      padding:        3px 8px;
+                      vertical-align: top;
+                  }
+
+                  .level {
+                      width:             1%;
+                      white-space:       nowrap;
+                      font-weight:       bold;
+                      color:             #7b5e0d;
+                      background-color:  #f3c33c;
+                      border-radius:     6px;
+                      font-size:         90%;
+                      vertical-align:    middle;
+                  }
+
+                  .text {
+                      overflow-wrap:     anywhere;
+                  }
+
+                  &.medium .level {
+                      color:             #7c4300;
+                      background-color:  #f0a33a;
+                  }
+
+                  &.high .level {
+                      color:             #7d1717;
+                      background-color:  #ef8f8f;
                   }
 
               }
