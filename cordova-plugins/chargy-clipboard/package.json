@@ -1,0 +1,17 @@
+{
+    "name": "chargy-clipboard",
+    "version": "1.0.0",
+    "description": "Native clipboard access for the Chargy Cordova app",
+    "cordova": {
+        "id": "chargy-clipboard",
+        "platforms": [
+            "ios"
+        ]
+    },
+    "keywords": [
+        "cordova",
+        "ios",
+        "clipboard"
+    ],
+    "license": "AGPL-3.0-or-later"
+}

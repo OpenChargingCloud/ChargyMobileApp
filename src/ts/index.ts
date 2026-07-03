@@ -28,6 +28,10 @@ import {
     browserFileTypeFromNameOrData,
     normalizeDroppedSVGImageData
 }                                      from './browserFiles';
+import {
+    readClipboardContent,
+    readCordovaClipboardContent
+}                                      from './clipboard';
 
 declare let cordova: any;
 declare const __APP_PACKAGE__: { version: string; dependencies: Record<string, string>; devDependencies: Record<string, string> };
@@ -1067,33 +1071,19 @@ export default class App {
     this.importantInfo.innerHTML      = '';
 
     try {
+      const isIOSCordova = typeof cordova !== 'undefined' && cordova.platformId === 'ios';
+      const content = isIOSCordova
+        ? await readCordovaClipboardContent(cordova.exec.bind(cordova))
+        : await readClipboardContent(navigator.clipboard);
 
-      if ((navigator.clipboard as any).read) {
-        try {
-          const clipboardItems = await (navigator.clipboard as any).read();
-
-          for (const clipboardItem of clipboardItems) {
-            if (clipboardItem.types && clipboardItem.types.indexOf("application/pdf") >= 0) {
-              const pdfBlob = await clipboardItem.getType("application/pdf");
-              await this.processFile(pdfBlob, "clipboard.pdf");
-              return;
-            }
-          }
-        }
-        catch (exception) {
-          console.log("Clipboard PDF read failed, falling back to text clipboard.");
-          console.log(exception);
-        }
-      }
-
-      //@ts-ignore
-      var clipText = await navigator.clipboard.readText();
-
-      await this._chargyApp.detectContentFormat(clipText);
+      if (content.kind === 'file')
+        await this.processFile(content.blob, content.fileName);
+      else
+        await this._chargyApp.detectContentFormat(content.text);
 
     }
     catch(exception) {
-      this.doGlobalError(this.t('invalidChargeTransparencyRecord'), exception);
+      this.doGlobalError(this.t('clipboardReadFailed'), exception);
     }
 
   }

@@ -6,8 +6,48 @@ import {
     browserFileTypeFromName,
     normalizeDroppedSVGImageData
 } from "../src/ts/browserFiles";
+import {
+    readClipboardContent,
+    readCordovaClipboardContent
+} from "../src/ts/clipboard";
 
 describe("browser file helpers", () => {
+    test("uses the native Cordova bridge for the iOS clipboard path", async () => {
+        const exec = (success: (value: string) => void,
+                      _failure: (error: unknown) => void,
+                      service: string,
+                      action: string) => {
+            expect(service).toBe("ChargyClipboard");
+            expect(action).toBe("readText");
+            success("{\"format\":\"test\"}");
+        };
+
+        await expect(readCordovaClipboardContent(exec)).resolves.toEqual({
+            kind: "text",
+            text: "{\"format\":\"test\"}"
+        });
+    });
+
+    test("reads text from a rich clipboard item without a second clipboard request", async () => {
+        let textReads = 0;
+        const clipboard = {
+            read: async () => [{
+                types: [ "text/plain" ],
+                getType: async () => new Blob([ "<record />" ], { type: "text/plain" })
+            }],
+            readText: async () => {
+                textReads++;
+                return "unused";
+            }
+        };
+
+        await expect(readClipboardContent(clipboard)).resolves.toEqual({
+            kind: "text",
+            text: "<record />"
+        });
+        expect(textReads).toBe(0);
+    });
+
     test("recognizes a dropped SVG without a browser MIME type", () => {
         expect(browserFileTypeFromName("ALFEN-Testdata-03_SAFEXMLContainer_asQRCode.svg", ""))
             .toBe("image/svg+xml");

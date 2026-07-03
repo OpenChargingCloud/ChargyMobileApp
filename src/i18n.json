@@ -7,6 +7,10 @@
         "de": "Sie können den Transparenzdatensatz zu Ihren Ladevorgängen entweder aus einer Datei laden, über die Zwischenablage einfügen oder als QR-Code scannen...",
         "en": "You can load the transparency record for your charging sessions from a file, paste it from the clipboard, or scan it as a QR code..."
     },
+    "clipboardReadFailed": {
+        "de": "Der Transparenzdatensatz konnte nicht aus der Zwischenablage gelesen werden.",
+        "en": "The transparency record could not be read from the clipboard."
+    },
     "recordLabel": {
         "de": "Datensatz",
         "en": "Record"

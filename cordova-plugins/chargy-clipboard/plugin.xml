@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
+        id="chargy-clipboard"
+        version="1.0.0">
+    <name>Chargy Clipboard</name>
+    <description>Native iOS clipboard access for Chargy</description>
+    <license>AGPL-3.0-or-later</license>
+
+    <platform name="ios">
+        <config-file target="config.xml" parent="/*">
+            <feature name="ChargyClipboard">
+                <param name="ios-package" value="ChargyClipboard" />
+            </feature>
+        </config-file>
+
+        <header-file src="src/ios/ChargyClipboard.h" />
+        <source-file src="src/ios/ChargyClipboard.m" />
+    </platform>
+</plugin>
