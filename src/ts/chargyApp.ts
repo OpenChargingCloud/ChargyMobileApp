@@ -25,7 +25,8 @@ import * as elliptic                   from 'elliptic';
 import moment                          from 'moment';
 import base32Decode                    from 'base32-decode';
 import * as asn1                       from 'asn1.js';
-import Chart, { ChartConfiguration }   from 'chart.js/auto';
+import Chart                           from 'chart.js/auto';
+import type { Plugin, TooltipItem }    from 'chart.js';
 import {
     createI18nDictionary,
     SupportedLanguage
@@ -60,10 +61,36 @@ interface MobileApp {
     hidePage(page: HTMLDivElement): void;
 }
 
+type ChargingProgressChartMode = "energy" | "power";
+type MeasurementValuesViewMode = "measurements" | ChargingProgressChartMode;
+type ChargingProgressChart = Chart<'bar', number[]>;
+type ChargingProgressChartPoint = {
+    x:                   number;
+    y:                   number;
+    start:               number;
+    end:                 number;
+    intervalLabel:       string;
+    isValidSignature:    boolean;
+    signatureStatusText: string;
+};
+type ChargingProgressTickStatus = {
+    timestamp:        number;
+    isValidSignature: boolean;
+};
+type ChargingProgressChartData = {
+    points:         ChargingProgressChartPoint[];
+    tickTimestamps: number[];
+    tickStatuses:   ChargingProgressTickStatus[];
+    unit:           string;
+    datasetLabel:   string;
+    yAxisLabel:     string;
+};
+
 export default class ChargyApp {
 
     private readonly chargy: Chargy;
-    private measurementChart: Chart;
+    private measurementChart: ChargingProgressChart | null = null;
+    private measurementValuesViewMode: MeasurementValuesViewMode = "measurements";
 
     chargingSessions = new Array<chargeTransparencyRecord.IChargingSession>();
 
@@ -725,6 +752,367 @@ export default class ChargyApp {
 
     //#endregion
 
+    //#region Charging progress chart helpers
+
+    private clearMeasurementChart(): void {
+        if (this.measurementChart) {
+            this.measurementChart.destroy();
+            this.measurementChart = null;
+        }
+    }
+
+    private formatChargingProgressTimestamp(timestamp: number): string {
+        return chargyLib.parseUTC(new Date(timestamp).toISOString()).format('HH:mm:ss');
+    }
+
+    private isValidMeasurementValueSignature(measurementValue: chargeTransparencyRecord.IMeasurementValue): boolean {
+        switch (measurementValue.result?.status) {
+            case iface.VerificationResult.ValidSignature:
+            case iface.VerificationResult.ValidStartValue:
+            case iface.VerificationResult.ValidIntermediateValue:
+            case iface.VerificationResult.ValidStopValue:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    private getMeasurementValueSignatureStatusText(measurementValue: chargeTransparencyRecord.IMeasurementValue): string {
+
+        if (measurementValue.result == null)
+            return this.chargy.GetLocalizedMessage("Invalid signature");
+
+        switch (measurementValue.result.status) {
+            case iface.VerificationResult.ValidationError:
+                if (measurementValue.errors?.[0] != null)
+                    return measurementValue.errors[0].toString();
+                if (measurementValue.result.errors?.[0] != null)
+                    return measurementValue.result.errors[0].toString();
+                return this.chargy.GetLocalizedMessage("GeneralError");
+            case iface.VerificationResult.UnknownCTRFormat:
+                return this.chargy.GetLocalizedMessage("Unknown charge transparency data format!");
+            case iface.VerificationResult.EnergyMeterNotFound:
+                return this.chargy.GetLocalizedMessage("Energy meter not found");
+            case iface.VerificationResult.PublicKeyNotFound:
+                return this.chargy.GetLocalizedMessage("Public key not found");
+            case iface.VerificationResult.InvalidPublicKey:
+                return this.chargy.GetLocalizedMessage("Invalid public key");
+            case iface.VerificationResult.InvalidSignature:
+                return this.chargy.GetLocalizedMessage("Invalid signature");
+            case iface.VerificationResult.InvalidStartValue:
+                return this.chargy.GetLocalizedMessage("Invalid start value");
+            case iface.VerificationResult.InvalidIntermediateValue:
+                return this.chargy.GetLocalizedMessage("Invalid intermediate value");
+            case iface.VerificationResult.InvalidStopValue:
+                return this.chargy.GetLocalizedMessage("Invalid stop value");
+            case iface.VerificationResult.NoOperation:
+                return this.chargy.GetLocalizedMessage("Meter value");
+            case iface.VerificationResult.StartValue:
+                return this.chargy.GetLocalizedMessage("Start value");
+            case iface.VerificationResult.IntermediateValue:
+                return this.chargy.GetLocalizedMessage("Intermediate value");
+            case iface.VerificationResult.StopValue:
+                return this.chargy.GetLocalizedMessage("End value");
+            case iface.VerificationResult.ValidSignature:
+                return this.chargy.GetLocalizedMessage("Valid signature");
+            case iface.VerificationResult.ValidStartValue:
+                return this.chargy.GetLocalizedMessage("Valid start value");
+            case iface.VerificationResult.ValidIntermediateValue:
+                return this.chargy.GetLocalizedMessage("Valid intermediate value");
+            case iface.VerificationResult.ValidStopValue:
+                return this.chargy.GetLocalizedMessage("Valid stop value");
+            default:
+                return this.chargy.GetLocalizedMessage("Invalid signature");
+        }
+
+    }
+
+    private getChargingProgressChartData(measurement: chargeTransparencyRecord.IMeasurement,
+                                         mode: ChargingProgressChartMode): ChargingProgressChartData | null {
+
+        if (!shouldShowMeasurementChart(measurement.values.length))
+            return null;
+
+        const points: ChargingProgressChartPoint[] = [];
+        const tickTimestamps: number[] = [];
+        const tickStatuses: ChargingProgressTickStatus[] = [];
+        let previousValue = null;
+        let previousTimestamp: number | null = null;
+
+        for (const measurementValue of measurement.values) {
+            const currentValue     = getMeasurementValueInKWh(measurement, measurementValue);
+            const currentTimestamp = chargyLib.parseUTC(measurementValue.timestamp).valueOf();
+
+            tickTimestamps.push(currentTimestamp);
+            tickStatuses.push({
+                timestamp:        currentTimestamp,
+                isValidSignature: this.isValidMeasurementValueSignature(measurementValue)
+            });
+
+            if (previousValue !== null && previousTimestamp !== null) {
+                const chargedEnergy = currentValue.minus(previousValue);
+                const elapsedHours  = (currentTimestamp - previousTimestamp) / 3600000;
+                const chartValue    = mode === "power" && elapsedHours > 0
+                                          ? chargedEnergy.div(elapsedHours)
+                                          : chargedEnergy;
+
+                points.push({
+                    x:                   previousTimestamp + (currentTimestamp - previousTimestamp) / 2,
+                    y:                   parseFloat(chartValue.toFixed(3)),
+                    start:               previousTimestamp,
+                    end:                 currentTimestamp,
+                    intervalLabel:       this.formatChargingProgressTimestamp(previousTimestamp) + " - " +
+                                         this.formatChargingProgressTimestamp(currentTimestamp),
+                    isValidSignature:    this.isValidMeasurementValueSignature(measurementValue),
+                    signatureStatusText: this.getMeasurementValueSignatureStatusText(measurementValue)
+                });
+            }
+
+            previousValue     = currentValue;
+            previousTimestamp = currentTimestamp;
+        }
+
+        if (points.length === 0)
+            return null;
+
+        return mode === "power"
+            ? {
+                  points,
+                  tickTimestamps,
+                  tickStatuses,
+                  unit:         "KW",
+                  datasetLabel: this.chargy.GetLocalizedMessage("chargingProgressPowerDatasetLabel"),
+                  yAxisLabel:   this.chargy.GetLocalizedMessage("chargingProgressPowerYAxisLabel")
+              }
+            : {
+                  points,
+                  tickTimestamps,
+                  tickStatuses,
+                  unit:         "kWh",
+                  datasetLabel: this.chargy.GetLocalizedMessage("chargingProgressEnergyDatasetLabel"),
+                  yAxisLabel:   this.chargy.GetLocalizedMessage("chargingProgressEnergyYAxisLabel")
+              };
+
+    }
+
+    private createChargingProgressChart(chartFrame: HTMLDivElement,
+                                        measurement: chargeTransparencyRecord.IMeasurement,
+                                        mode: ChargingProgressChartMode): ChargingProgressChart | null {
+
+        const chartData = this.getChargingProgressChartData(measurement, mode);
+        if (!chartData)
+            return null;
+
+        const canvas                = chartFrame.appendChild(document.createElement('canvas'));
+        const unit                  = chartData.unit;
+        const lastTickIndex         = chartData.tickTimestamps.length - 1;
+        const lastTickTimestamp     = chartData.tickTimestamps[lastTickIndex];
+        const previousTickTimestamp = chartData.tickTimestamps[lastTickIndex - 1] ?? lastTickTimestamp;
+        const rightAxisPadding      = Math.max(1, lastTickTimestamp - previousTickTimestamp) * 0.35;
+
+        const intervalBarPlugin: Plugin<'bar'> = {
+            id: "chargingProgressIntervalBars",
+            afterBuildTicks: (_chart, args): void => {
+                if (args.scale.id === "x")
+                    args.scale.ticks = chartData.tickTimestamps.map(timestamp => ({ value: timestamp }));
+            },
+            beforeDatasetsDraw: (chart): void => {
+                const xScale = chart.scales["x"];
+                const meta   = chart.getDatasetMeta(0);
+                if (xScale == null)
+                    return;
+
+                meta.data.forEach((element, index) => {
+                    const point = chartData.points[index];
+                    if (point == null)
+                        return;
+                    const startX = xScale.getPixelForValue(point.start);
+                    const endX   = xScale.getPixelForValue(point.end);
+                    const bar    = element as unknown as { x: number; width: number };
+                    bar.x        = startX + (endX - startX) / 2;
+                    bar.width    = Math.max(1, Math.abs(endX - startX));
+                });
+            },
+            afterDraw: (chart): void => {
+                const xScale = chart.scales["x"];
+                if (xScale == null)
+                    return;
+
+                const ctx         = chart.ctx;
+                const radius      = 6;
+                const tickCenterY = chart.chartArea.bottom + 18;
+                ctx.save();
+                ctx.font         = "11px sans-serif";
+                ctx.textBaseline = "middle";
+
+                for (const tickStatus of chartData.tickStatuses) {
+                    const tickLabel   = this.formatChargingProgressTimestamp(tickStatus.timestamp);
+                    const tickX       = xScale.getPixelForValue(tickStatus.timestamp);
+                    const textWidth   = ctx.measureText(tickLabel).width;
+                    const iconCenterX = Math.min(chart.width - radius - 2, tickX + textWidth / 2 + radius + 5);
+
+                    ctx.beginPath();
+                    ctx.fillStyle = tickStatus.isValidSignature ? "#5aad31" : "#d94841";
+                    ctx.arc(iconCenterX, tickCenterY, radius, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.strokeStyle = "#ffffff";
+                    ctx.lineWidth   = 1.7;
+                    ctx.lineCap     = "round";
+                    ctx.lineJoin    = "round";
+                    ctx.beginPath();
+
+                    if (tickStatus.isValidSignature) {
+                        ctx.moveTo(iconCenterX - 3.2, tickCenterY - 0.2);
+                        ctx.lineTo(iconCenterX - 1.0, tickCenterY + 2.3);
+                        ctx.lineTo(iconCenterX + 3.4, tickCenterY - 3.0);
+                    }
+                    else {
+                        ctx.moveTo(iconCenterX - 2.6, tickCenterY - 2.6);
+                        ctx.lineTo(iconCenterX + 2.6, tickCenterY + 2.6);
+                        ctx.moveTo(iconCenterX + 2.6, tickCenterY - 2.6);
+                        ctx.lineTo(iconCenterX - 2.6, tickCenterY + 2.6);
+                    }
+                    ctx.stroke();
+                }
+                ctx.restore();
+            }
+        };
+
+        const chart = new Chart(canvas, {
+            type: 'bar',
+            data: {
+                datasets: [{
+                    label:              chartData.datasetLabel,
+                    data:               chartData.points as unknown as number[],
+                    backgroundColor:    "rgba(48, 126, 181, 0.72)",
+                    borderColor:        "rgba(44, 74, 96, 0.95)",
+                    borderWidth:        1,
+                    borderRadius:       0,
+                    borderSkipped:      false,
+                    categoryPercentage: 1,
+                    barPercentage:      1
+                }]
+            },
+            options: {
+                responsive:          true,
+                maintainAspectRatio: false,
+                layout: { padding: { right: 18 } },
+                parsing: { xAxisKey: "x", yAxisKey: "y" },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        displayColors: false,
+                        callbacks: {
+                            title: (context: Array<TooltipItem<'bar'>>): string => {
+                                const raw = context[0]?.raw as ChargingProgressChartPoint | undefined;
+                                return raw?.intervalLabel ?? "";
+                            },
+                            label: (context: TooltipItem<'bar'>): string[] => {
+                                const value = typeof context.parsed.y === "number" ? context.parsed.y : Number(context.raw);
+                                const raw = context.raw as ChargingProgressChartPoint | undefined;
+                                const valueText = mode === "power"
+                                    ? "Ø " + value.toString() + " " + unit
+                                    : (value >= 0 ? "+" : "") + value.toString() + " " + unit;
+                                return [
+                                    valueText,
+                                    (raw?.isValidSignature === true ? "✅ " : "❌ ") +
+                                    (raw?.signatureStatusText ?? this.chargy.GetLocalizedMessage("Invalid signature"))
+                                ];
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        type: "linear",
+                        min: chartData.tickTimestamps[0],
+                        max: lastTickTimestamp + rightAxisPadding,
+                        offset: false,
+                        grid: { offset: false },
+                        ticks: {
+                            callback: (value): string => {
+                                const timestamp = typeof value === "number" ? value : parseFloat(value);
+                                return Number.isFinite(timestamp)
+                                    ? this.formatChargingProgressTimestamp(timestamp)
+                                    : value.toString();
+                            }
+                        },
+                        title: { display: true, text: this.chargy.GetLocalizedMessage("Timestamp") }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        title: { display: true, text: chartData.yAxisLabel + " (" + unit + ")" }
+                    }
+                }
+            },
+            plugins: [ intervalBarPlugin ]
+        });
+
+        this.measurementChart = chart;
+        return chart;
+
+    }
+
+    private createMeasurementValuesViewLinks(viewLinksDiv: HTMLDivElement,
+                                             measurementRowsDiv: HTMLDivElement,
+                                             chartDiv: HTMLDivElement,
+                                             chartFrame: HTMLDivElement,
+                                             measurement: chargeTransparencyRecord.IMeasurement): void {
+
+        const setActive = (activeButton: HTMLButtonElement): void => {
+            for (const button of [ measurementsButton, energyButton, powerButton ]) {
+                button.classList.toggle("activated", button === activeButton);
+                button.disabled = button === activeButton;
+            }
+        };
+
+        const showRows = (): void => {
+            this.measurementValuesViewMode   = "measurements";
+            measurementRowsDiv.style.display = "";
+            chartDiv.style.display           = "none";
+            setActive(measurementsButton);
+        };
+
+        const showChart = (mode: ChargingProgressChartMode, button: HTMLButtonElement): void => {
+            this.measurementValuesViewMode    = mode;
+            measurementRowsDiv.style.display = "none";
+            chartDiv.style.display           = "block";
+            this.clearMeasurementChart();
+            chartFrame.innerHTML = "";
+            this.createChargingProgressChart(chartFrame, measurement, mode);
+            setActive(button);
+        };
+
+        const measurementsButton       = viewLinksDiv.appendChild(document.createElement('button'));
+        measurementsButton.type        = "button";
+        measurementsButton.className   = "viewLink";
+        measurementsButton.textContent = this.chargy.GetLocalizedMessage("Meter Values");
+
+        const energyButton             = viewLinksDiv.appendChild(document.createElement('button'));
+        energyButton.type              = "button";
+        energyButton.className         = "viewLink";
+        energyButton.textContent       = this.chargy.GetLocalizedMessage("chargingProgressEnergyLinkLabel");
+
+        const powerButton              = viewLinksDiv.appendChild(document.createElement('button'));
+        powerButton.type               = "button";
+        powerButton.className          = "viewLink";
+        powerButton.textContent        = this.chargy.GetLocalizedMessage("chargingProgressPowerLinkLabel");
+
+        measurementsButton.onclick = showRows;
+        energyButton.onclick       = () => showChart("energy", energyButton);
+        powerButton.onclick        = () => showChart("power", powerButton);
+        chartDiv.style.display     = "none";
+
+        switch (this.measurementValuesViewMode) {
+            case "energy": showChart("energy", energyButton); break;
+            case "power":  showChart("power",  powerButton);  break;
+            default:       showRows();                         break;
+        }
+
+    }
+
+    //#endregion
+
     //#region showChargingSessionDetails
 
     public async showChargingSessionDetails(chargingSession: chargeTransparencyRecord.IChargingSession)
@@ -775,6 +1163,8 @@ export default class ChargyApp {
 
         try
         {
+
+            this.clearMeasurementChart();
 
             //this.app.measurementInfosPage.style.display = 'block';
             //this.evseTarifInfosDiv.innerHTML = "";
@@ -849,55 +1239,28 @@ export default class ChargyApp {
                     if (measurement.values && measurement.values.length > 0)
                     {
 
-                        //#region Configure chart
-
-                        let chartDiv = this.app.measurementInfosPage.querySelector<HTMLCanvasElement>('#chart');
-                        const showChart = shouldShowMeasurementChart(measurement.values.length);
-                        chartDiv.style.display = showChart ? '' : 'none';
-
-                        let chartData: ChartConfiguration<'bar', number[], string> = {
-                            type: 'bar',
-                            data: {
-                                labels: [],
-                                datasets: [{
-                                    label: 'kWh',
-                                    data: [],
-                                    backgroundColor: 'rgba(255, 159, 64, 0.35)',
-                                    borderColor: 'rgba(255, 159, 64, 1)',
-                                    borderWidth: 1
-                                }]
-                            },
-                            options: {
-                                responsive: true,
-                                maintainAspectRatio: false,
-                                plugins: {
-                                    legend: {
-                                        display: false
-                                    },
-                                    title: {
-                                        display: false
-                                    }
-                                },
-                                scales: {
-                                    y: {
-                                        beginAtZero: true
-                                    }
-                                }
-                            }
-                        };
-
-                        //#endregion
-
                         let MeasurementValuesDiv         = this.app.measurementInfosPage.querySelector<HTMLDivElement>('#measurementValues');
                         MeasurementValuesDiv.innerHTML   = '';
                         chargyLib.CreateDiv(MeasurementValuesDiv, "headline2",
                                             this.chargy.GetLocalizedMessage("Meter Values"));
+                        const MeasurementValueViewsDiv   = shouldShowMeasurementChart(measurement.values.length)
+                                                               ? chargyLib.CreateDiv(MeasurementValuesDiv, "measurementValueViews")
+                                                               : null;
                         const MeasurementValueRowsDiv    = chargyLib.CreateDiv(MeasurementValuesDiv, "measurementValueRows");
 
-                        let chartLabels                  = [];
-                        let chartValues                  = [];
+                        if (MeasurementValueViewsDiv !== null) {
+                            const chartDiv   = chargyLib.CreateDiv(MeasurementValuesDiv, "chargingProgressChart");
+                            const chartFrame = chargyLib.CreateDiv(chartDiv, "chartFrame");
+                            this.createMeasurementValuesViewLinks(
+                                MeasurementValueViewsDiv,
+                                MeasurementValueRowsDiv,
+                                chartDiv,
+                                chartFrame,
+                                measurement
+                            );
+                        }
+
                         let previousDisplayValue         = undefined;
-                        let previousChartValue           = undefined;
 
                         for (var measurementValue of measurement.values)
                         {
@@ -908,7 +1271,6 @@ export default class ChargyApp {
                             MeasurementValueDiv.onclick      = this.captureMeasurementCryptoDetails(measurementValue);
 
                             var timestamp                    = chargyLib.parseUTC(measurementValue.timestamp);
-                            chartLabels.push(timestamp.format('HH:mm:ss'));
 
                             let timestampDiv                 = chargyLib.CreateDiv(MeasurementValueDiv, "timestamp",
                                                                          timestamp.format('HH:mm:ss') + this.chargy.GetLocalizedMessage("timeSuffix"));
@@ -938,32 +1300,13 @@ export default class ChargyApp {
                                 previousDisplayValue === undefined ? "" : displayValue.unit
                             );
 
-                            // Charts continue to use kWh so values from different
-                            // native meter units remain comparable.
-                            const chartValue                 = getMeasurementValueInKWh(measurement, measurementValue);
-                            chartValues.push(previousChartValue === undefined
-                                                 ? 0
-                                                 : chartValue.minus(previousChartValue).toNumber());
-
-
                             // Show signature status
                             let verificationStatusDiv        = chargyLib.CreateDiv(MeasurementValueDiv, "verificationStatus",
                                                                          await checkMeasurementCrypto(measurementValue));
 
                             previousDisplayValue             = displayValue.value;
-                            previousChartValue               = chartValue;
 
                         }
-
-                        chartData.data.labels           = chartLabels;
-                        chartData.data.datasets[0].data = chartValues;
-
-                        if (this.measurementChart)
-                            this.measurementChart.destroy();
-
-                        this.measurementChart = showChart
-                                                    ? new Chart(chartDiv, chartData)
-                                                    : null;
 
                     }
 
