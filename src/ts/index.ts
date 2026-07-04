@@ -1071,8 +1071,9 @@ export default class App {
     this.importantInfo.innerHTML      = '';
 
     try {
-      const isIOSCordova = typeof cordova !== 'undefined' && cordova.platformId === 'ios';
-      const content = isIOSCordova
+      const usesNativeClipboard = typeof cordova !== 'undefined' &&
+                                  (cordova.platformId === 'android' || cordova.platformId === 'ios');
+      const content = usesNativeClipboard
         ? await readCordovaClipboardContent(cordova.exec.bind(cordova))
         : await readClipboardContent(navigator.clipboard);
 

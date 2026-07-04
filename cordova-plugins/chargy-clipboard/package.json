@@ -5,11 +5,13 @@
     "cordova": {
         "id": "chargy-clipboard",
         "platforms": [
+            "android",
             "ios"
         ]
     },
     "keywords": [
         "cordova",
+        "android",
         "ios",
         "clipboard"
     ],

@@ -12,7 +12,7 @@ import {
 } from "../src/ts/clipboard";
 
 describe("browser file helpers", () => {
-    test("uses the native Cordova bridge for the iOS clipboard path", async () => {
+    test("uses the native Cordova bridge for mobile clipboard access", async () => {
         const exec = (success: (value: string) => void,
                       _failure: (error: unknown) => void,
                       service: string,

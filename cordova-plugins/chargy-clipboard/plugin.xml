@@ -3,7 +3,7 @@
         id="chargy-clipboard"
         version="1.0.0">
     <name>Chargy Clipboard</name>
-    <description>Native iOS clipboard access for Chargy</description>
+    <description>Native Android and iOS clipboard access for Chargy</description>
     <license>AGPL-3.0-or-later</license>
 
     <platform name="ios">
@@ -15,5 +15,16 @@
 
         <header-file src="src/ios/ChargyClipboard.h" />
         <source-file src="src/ios/ChargyClipboard.m" />
+    </platform>
+
+    <platform name="android">
+        <config-file target="res/xml/config.xml" parent="/*">
+            <feature name="ChargyClipboard">
+                <param name="android-package" value="cloud.charging.open.plugins.clipboard.ChargyClipboard" />
+            </feature>
+        </config-file>
+
+        <source-file src="src/android/ChargyClipboard.java"
+                     target-dir="src/cloud/charging/open/plugins/clipboard" />
     </platform>
 </plugin>

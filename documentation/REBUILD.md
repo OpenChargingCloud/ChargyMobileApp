@@ -14,18 +14,8 @@ sudo apt install nodejs
 Afterwards you can install the remaining software using the node packet manager
 ```
 $ npm install -g cordova@latest
-+ cordova@9.0.0
 ```
 
-```
-$ npm install -g typescript@latest
-+ typescript@3.4.5
-```
-
-```
-$ npm install -g sass@latest
-+ sass@1.20.1
-```
 
 
 ## Create a new Apache Cordova project
@@ -81,6 +71,10 @@ Running npm install...
 Starting webpack bundling and transpilation phase...
 --save flag or autosave detected
 Saving android@latest into config.xml file ...
+
+
+ cordova build android --debug
+
 ```
 
 #### Local browser
@@ -98,20 +92,6 @@ Running npm install...
 Starting webpack bundling and transpilation phase...
 --save flag or autosave detected
 Saving browser@latest into config.xml file ...
-```
-
-#### Electron
-
-Electron is a framework that uses web technologies (HTML, CSS, and JS) to build cross-platform desktop applications.
-
-```
-$ cordova platform add cordova-electron@latest
-Using cordova-fetch for cordova-electron@latest
-Adding electron project...
-Creating Cordova project for cordova-electron:
-        Path: E:\Coding\OpenChargingCloud\ChargyMobileApp\platforms\cordova-electron
-        Name: ChargyMobileApp
-Installing "cordova-plugin-whitelist" for electron
 ```
 
 
