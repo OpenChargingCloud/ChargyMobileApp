@@ -162,6 +162,43 @@ export default class App {
 
     }
 
+    private handleBackButton(event: Event): void {
+        event.preventDefault();
+
+        if (this.qrCodeScannerDiv?.style.display === 'flex') {
+            this.closeQRCodeScanner();
+            return;
+        }
+
+        if (this.languageMenuDiv?.classList.contains('open')) {
+            this.languageMenuDiv.classList.remove('open');
+            this.languageButton.setAttribute('aria-expanded', 'false');
+            return;
+        }
+
+        if (this.cryptoDetailsPage.style.display !== 'none') {
+            this.showPage(this.measurementInfosPage);
+            return;
+        }
+
+        if (this.measurementInfosPage.style.display !== 'none') {
+            this.showPage(this.chargingSessionsPage);
+            return;
+        }
+
+        if (this.chargingSessionsPage.style.display !== 'none' ||
+            this.aboutPage.style.display           !== 'none' ||
+            this.issueTrackerPage.style.display    !== 'none') {
+            this.showPage(this.startPage);
+            return;
+        }
+
+        const nativeNavigator = navigator as Navigator & {
+            app?: { exitApp?: () => void };
+        };
+        nativeNavigator.app?.exitApp?.();
+    }
+
 
     onDeviceReady() {
 
@@ -174,6 +211,8 @@ export default class App {
         this.cryptoDetailsPage          = document.getElementById("cryptoDetailsPage")          as HTMLDivElement;
         this.issueTrackerPage           = document.getElementById("issueTrackerPage")           as HTMLDivElement;
         this.aboutPage                  = document.getElementById("aboutPage")                  as HTMLDivElement;
+
+        document.addEventListener('backbutton', (event: Event) => this.handleBackButton(event), false);
 
         this._chargyApp                 = new ChargyApp(this, this.UILanguage);
 

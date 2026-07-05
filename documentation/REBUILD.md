@@ -71,11 +71,13 @@ Running npm install...
 Starting webpack bundling and transpilation phase...
 --save flag or autosave detected
 Saving android@latest into config.xml file ...
-
-
- cordova build android --debug
+```
 
 ```
+cordova build android --debug
+cordova run android --emulator
+```
+
 
 #### Local browser
 
