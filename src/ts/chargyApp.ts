@@ -91,6 +91,10 @@ export default class ChargyApp {
     private readonly chargy: Chargy;
     private measurementChart: ChargingProgressChart | null = null;
     private measurementValuesViewMode: MeasurementValuesViewMode = "measurements";
+    private currentChargingSession: chargeTransparencyRecord.IChargingSession | null = null;
+    private currentMeasurementValue: chargeTransparencyRecord.IMeasurementValue | null = null;
+    private refreshChargingSessionsPage: (() => Promise<void>) | null = null;
+    private mapMarkers: any[] = [];
 
     chargingSessions = new Array<chargeTransparencyRecord.IChargingSession>();
 
@@ -139,6 +143,24 @@ export default class ChargyApp {
         return this.chargy.GetLocalizedMessage(key);
     }
 
+    public async refreshVisibleContent(): Promise<void> {
+        if (this.app.cryptoDetailsPage.style.display !== 'none' &&
+            this.currentMeasurementValue != null) {
+            await this.showMeasurementCryptoDetails(this.currentMeasurementValue);
+            return;
+        }
+
+        if (this.app.measurementInfosPage.style.display !== 'none' &&
+            this.currentChargingSession != null) {
+            await this.showChargingSessionDetails(this.currentChargingSession);
+            return;
+        }
+
+        if (this.app.chargingSessionsPage.style.display !== 'none' &&
+            this.refreshChargingSessionsPage != null)
+            await this.refreshChargingSessionsPage();
+    }
+
 
     //#region Global error handling...
 
@@ -182,7 +204,8 @@ export default class ChargyApp {
 
             if (chargeTransparencyRecord.IsAChargeTransparencyRecord(result))
             {
-                await processChargeTransparencyRecord(result);
+                this.refreshChargingSessionsPage = () => processChargeTransparencyRecord(result);
+                await this.refreshChargingSessionsPage();
                 return true;
             }
 
@@ -216,7 +239,10 @@ export default class ChargyApp {
 
             me.chargingSessions          = [];
 
-            var markers: any = [];
+            for (const marker of me.mapMarkers)
+                marker.remove();
+            me.mapMarkers = [];
+
             var minlat                    = +1000;
             var maxlat                    = -1000;
             var minlng                    = +1000;
@@ -302,7 +328,7 @@ export default class ChargyApp {
                 {
 
                     var marker = leaflet.marker([geoLocation.lat, geoLocation.lng], { icon: markerIcon }).addTo(me2.app.map);
-                    markers.push(marker);
+                    me.mapMarkers.push(marker);
 
                     if (minlat > geoLocation.lat)
                         minlat = geoLocation.lat;
@@ -1118,6 +1144,8 @@ export default class ChargyApp {
     public async showChargingSessionDetails(chargingSession: chargeTransparencyRecord.IChargingSession)
     {
 
+        this.currentChargingSession = chargingSession;
+
         var me = this;
 
         async function checkMeasurementCrypto(measurementValue: chargeTransparencyRecord.IMeasurementValue)
@@ -1387,6 +1415,8 @@ export default class ChargyApp {
 
     public async showMeasurementCryptoDetails(measurementValue: chargeTransparencyRecord.IMeasurementValue): Promise<void>
     {
+
+        this.currentMeasurementValue = measurementValue;
 
         const cryptoDiv             = this.app.cryptoDetailsPage;
         const errorDiv              = cryptoDiv.querySelector('#error')                       as HTMLDivElement;

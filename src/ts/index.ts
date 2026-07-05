@@ -578,6 +578,7 @@ export default class App {
       localStorage.setItem('ChargyUILanguage', language);
 
     this.applyTranslations();
+    await this._chargyApp.refreshVisibleContent();
 
     if (this.qrScanButton != null)
       await this.updateQRCodeScannerAvailability();

@@ -54,6 +54,12 @@ Saved plugin info for "cordova-plugin-whitelist" to config.xml
 Saving ios@latest into config.xml file ...
 ```
 
+```
+cordova build ios
+cordova run ios
+```
+
+
 #### Android
 
 ```
@@ -94,6 +100,11 @@ Running npm install...
 Starting webpack bundling and transpilation phase...
 --save flag or autosave detected
 Saving browser@latest into config.xml file ...
+```
+
+```
+cordova build browser
+cordova run browser
 ```
 
 
