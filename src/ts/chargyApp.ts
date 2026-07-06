@@ -43,6 +43,7 @@ import {
     getMeasurementValueInKWh,
     shouldShowMeasurementChart
 }                                      from './measurementPresentation';
+import { expandPdfAttachments }        from './pdfAttachments';
 
 // @ts-ignore
 var leaflet: any = L;
@@ -200,7 +201,9 @@ export default class ChargyApp {
                     ? [fileInfos]
                     : fileInfos;
 
-            const result = await this.chargy.DetectAndConvertContentFormat(normalizedFileInfos);
+            const result = await this.chargy.DetectAndConvertContentFormat(
+                await expandPdfAttachments(normalizedFileInfos)
+            );
 
             if (chargeTransparencyRecord.IsAChargeTransparencyRecord(result))
             {

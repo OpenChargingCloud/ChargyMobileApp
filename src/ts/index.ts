@@ -32,6 +32,9 @@ import {
     readClipboardContent,
     readCordovaClipboardContent
 }                                      from './clipboard';
+import { installUint8ArrayToHexPolyfill } from './compatibility';
+
+installUint8ArrayToHexPolyfill();
 
 declare let cordova: any;
 declare const __APP_PACKAGE__: { version: string; dependencies: Record<string, string>; devDependencies: Record<string, string> };
