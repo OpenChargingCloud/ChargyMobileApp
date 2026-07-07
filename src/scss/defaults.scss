@@ -834,6 +834,91 @@ body {
 
   }
 
+  #publicKeyInfoPage {
+
+    box-sizing:         border-box;
+    padding:            10px 8px 72px;
+
+    #publicKeyBackButton {
+      position:           fixed;
+      left:               8px;
+      bottom:             8px;
+      border:             0;
+      color:              #519ad0;
+      background:         transparent;
+      font-size:          300%;
+    }
+
+    #publicKeyInfoContent {
+      max-width:          920px;
+      margin:             0 auto;
+    }
+
+    h1 {
+      margin:             0 4px 10px;
+      font-size:          135%;
+    }
+
+    #publicKeys {
+      display:            flex;
+      flex-direction:     column;
+      gap:                7px;
+    }
+
+    .publicKeyCard {
+      padding:            9px 11px;
+      border-radius:      7px;
+      background-color:   #d6e4ef;
+
+      .title {
+        padding-bottom:     5px;
+        font-size:          110%;
+        font-weight:        bold;
+        overflow-wrap:      anywhere;
+      }
+
+      .publicKeyTable {
+        display:            table;
+        width:              100%;
+      }
+
+      .publicKeyInfo {
+        display:            table-row;
+
+        .icon {
+          display:            table-cell;
+          width:              1.5em;
+          padding:            5px 9px 5px 2px;
+          color:              #416b8a;
+          text-align:         center;
+          vertical-align:     top;
+        }
+
+        .text {
+          display:            table-cell;
+          padding:            3px 0;
+
+          .label {
+            color:              #5a7184;
+            font-size:          85%;
+            font-weight:        bold;
+          }
+
+          .value {
+            overflow-wrap:      anywhere;
+          }
+
+          .keyValue {
+            font-family:        monospace;
+            font-size:          90%;
+            line-height:        1.35;
+            word-break:         break-all;
+          }
+        }
+      }
+    }
+  }
+
   #measurementInfosPage {
 
       display: none;

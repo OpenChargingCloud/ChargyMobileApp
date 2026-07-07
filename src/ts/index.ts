@@ -52,6 +52,7 @@ export default class App {
     public importantInfo:               HTMLDivElement;
     public startPage:                   HTMLDivElement;
     public chargingSessionsPage:        HTMLDivElement;
+    public publicKeyInfoPage:            HTMLDivElement;
     public measurementInfosPage:        HTMLDivElement;
     public cryptoDetailsPage:           HTMLDivElement;
     public issueTrackerPage:            HTMLDivElement;
@@ -158,6 +159,7 @@ export default class App {
 
         this.startPage.style.display                  = 'none';
         this.chargingSessionsPage.style.display       = 'none';
+        this.publicKeyInfoPage.style.display           = 'none';
         this.measurementInfosPage.style.display       = 'none';
         this.cryptoDetailsPage.style.display          = 'none';
         this.issueTrackerPage.style.display           = 'none';
@@ -190,6 +192,7 @@ export default class App {
         }
 
         if (this.chargingSessionsPage.style.display !== 'none' ||
+            this.publicKeyInfoPage.style.display     !== 'none' ||
             this.aboutPage.style.display           !== 'none' ||
             this.issueTrackerPage.style.display    !== 'none') {
             this.showPage(this.startPage);
@@ -210,10 +213,13 @@ export default class App {
         this.importantInfo              = document.getElementById("importantInfo")              as HTMLDivElement;
         this.startPage                  = document.getElementById("startPage")                  as HTMLDivElement;
         this.chargingSessionsPage       = document.getElementById("chargingSessionsPage")       as HTMLDivElement;
+        this.publicKeyInfoPage           = document.getElementById("publicKeyInfoPage")           as HTMLDivElement;
         this.measurementInfosPage       = document.getElementById("measurementInfosPage")       as HTMLDivElement;
         this.cryptoDetailsPage          = document.getElementById("cryptoDetailsPage")          as HTMLDivElement;
         this.issueTrackerPage           = document.getElementById("issueTrackerPage")           as HTMLDivElement;
         this.aboutPage                  = document.getElementById("aboutPage")                  as HTMLDivElement;
+
+        (document.getElementById('publicKeyBackButton') as HTMLButtonElement).onclick = () => this.showPage(this.startPage);
 
         document.addEventListener('backbutton', (event: Event) => this.handleBackButton(event), false);
 
