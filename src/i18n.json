@@ -1,4 +1,40 @@
 {
+    "urlDetailsTitle": {
+        "de": "URL-Informationen",
+        "en": "URL information"
+    },
+    "urlLabel": {
+        "de": "URL",
+        "en": "URL"
+    },
+    "urlContextLabel": {
+        "de": "Kontext",
+        "en": "Context"
+    },
+    "urlAddressLabel": {
+        "de": "Adresse",
+        "en": "Address"
+    },
+    "urlMethodLabel": {
+        "de": "Methode",
+        "en": "Method"
+    },
+    "urlAcceptTypeLabel": {
+        "de": "Accept-Type",
+        "en": "Accept type"
+    },
+    "urlActionsLabel": {
+        "de": "Aktionen",
+        "en": "Actions"
+    },
+    "urlServiceTypesLabel": {
+        "de": "Service-Typen",
+        "en": "Service types"
+    },
+    "urlServiceDataLabel": {
+        "de": "Service-Daten",
+        "en": "Service data"
+    },
     "publicKeyDetailsTitle": {
         "de": "PublicKey-Informationen",
         "en": "Public key information"

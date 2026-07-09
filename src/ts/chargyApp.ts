@@ -19,7 +19,8 @@ import {
     Chargy,
     ChargyInterfaces         as iface,
     ChargeTransparencyRecord as chargeTransparencyRecord,
-    PublicKeyInfo            as publicKeyInfo
+    PublicKeyInfo            as publicKeyInfo,
+    SimpleURL                as simpleURL
 }                                      from '@open-charging-cloud/chargy-core';
 import * as chargyLib                  from '@open-charging-cloud/chargy-core';
 import * as elliptic                   from 'elliptic';
@@ -97,6 +98,7 @@ export default class ChargyApp {
     private currentChargingSession: chargeTransparencyRecord.IChargingSession | null = null;
     private currentMeasurementValue: chargeTransparencyRecord.IMeasurementValue | null = null;
     private currentPublicKeyLookup: publicKeyInfo.IPublicKeyLookup | null = null;
+    private currentSimpleURL: simpleURL.IURL | null = null;
     private refreshChargingSessionsPage: (() => Promise<void>) | null = null;
     private mapMarkers: any[] = [];
 
@@ -160,6 +162,12 @@ export default class ChargyApp {
             return;
         }
 
+        if (this.app.publicKeyInfoPage.style.display !== 'none' &&
+            this.currentSimpleURL != null) {
+            this.showSimpleURL(this.currentSimpleURL);
+            return;
+        }
+
         if (this.app.measurementInfosPage.style.display !== 'none' &&
             this.currentChargingSession != null) {
             await this.showChargingSessionDetails(this.currentChargingSession);
@@ -217,6 +225,7 @@ export default class ChargyApp {
             if (chargeTransparencyRecord.IsAChargeTransparencyRecord(result))
             {
                 this.currentPublicKeyLookup = null;
+                this.currentSimpleURL = null;
                 this.refreshChargingSessionsPage = () => processChargeTransparencyRecord(result);
                 await this.refreshChargingSessionsPage();
                 return true;
@@ -225,6 +234,12 @@ export default class ChargyApp {
             if (publicKeyInfo.IsAPublicKey(result) || publicKeyInfo.IsAPublicKeyLookup(result))
             {
                 this.showPublicKeyInfo(result);
+                return true;
+            }
+
+            if (simpleURL.IsAURL(result))
+            {
+                this.showSimpleURL(result);
                 return true;
             }
 
@@ -815,9 +830,11 @@ export default class ChargyApp {
                                : [ publicKeyResult ];
 
         this.currentPublicKeyLookup = { publicKeys };
+        this.currentSimpleURL = null;
         this.app.showPage(this.app.publicKeyInfoPage);
 
         const page          = this.app.publicKeyInfoPage;
+        this.setInfoPageTitle(page, 'publicKeyDetailsTitle');
         const publicKeysDiv = page.querySelector<HTMLDivElement>('#publicKeys');
         if (publicKeysDiv == null)
             return;
@@ -876,6 +893,56 @@ export default class ChargyApp {
                 this.appendPublicKeyInfoRow(table, 'fa-file-signature', 'publicKeySignatureCountLabel', signatureText);
             }
         }
+    }
+
+    //#region showSimpleURL
+
+    private showSimpleURL(urlInfo: simpleURL.IURL): void
+    {
+        this.currentSimpleURL = urlInfo;
+        this.currentPublicKeyLookup = null;
+        this.app.showPage(this.app.publicKeyInfoPage);
+
+        const page          = this.app.publicKeyInfoPage;
+        this.setInfoPageTitle(page, 'urlDetailsTitle');
+        const publicKeysDiv = page.querySelector<HTMLDivElement>('#publicKeys');
+        if (publicKeysDiv == null)
+            return;
+
+        publicKeysDiv.replaceChildren();
+
+        const card      = chargyLib.CreateDiv(publicKeysDiv, 'publicKeyCard');
+        const title     = chargyLib.CreateDiv(card, 'title');
+        title.innerText = this.chargy.GetLocalizedMessage('urlLabel');
+
+        const table = chargyLib.CreateDiv(card, 'publicKeyTable');
+
+        this.appendPublicKeyInfoRow(table, 'fa-globe', 'urlContextLabel', urlInfo['@context']);
+        this.appendPublicKeyInfoRow(table, 'fa-link',  'urlAddressLabel', urlInfo.url, true);
+
+        if (urlInfo.method !== undefined)
+            this.appendPublicKeyInfoRow(table, 'fa-exchange-alt', 'urlMethodLabel', urlInfo.method);
+
+        if (urlInfo.acceptType !== undefined)
+            this.appendPublicKeyInfoRow(table, 'fa-file-download', 'urlAcceptTypeLabel', urlInfo.acceptType);
+
+        if (urlInfo.actions !== undefined)
+            this.appendPublicKeyInfoRow(table, 'fa-bolt', 'urlActionsLabel', urlInfo.actions.join(', '));
+
+        if (urlInfo.serviceTypes !== undefined)
+            this.appendPublicKeyInfoRow(table, 'fa-cogs', 'urlServiceTypesLabel', urlInfo.serviceTypes.join(', '));
+
+        if (urlInfo.serviceData !== undefined)
+            this.appendPublicKeyInfoRow(table, 'fa-code', 'urlServiceDataLabel', JSON.stringify(urlInfo.serviceData, null, 2), true);
+    }
+
+    //#endregion
+
+    private setInfoPageTitle(page: HTMLDivElement, titleKey: string): void
+    {
+        const title = page.querySelector<HTMLHeadingElement>('h1');
+        if (title != null)
+            title.innerText = this.chargy.GetLocalizedMessage(titleKey);
     }
 
     private appendPublicKeyInfoRow(table: HTMLDivElement,

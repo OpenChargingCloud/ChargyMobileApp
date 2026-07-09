@@ -1012,11 +1012,14 @@ export default class App {
       cordova: version(__APP_PACKAGE__.devDependencies.cordova), momentJS: version(__APP_PACKAGE__.dependencies.moment),
       cordovaInAppBrowser: version(__APP_PACKAGE__.devDependencies['cordova-plugin-inappbrowser']),
       elliptic: version(__APP_PACKAGE__.dependencies.elliptic), asn1JS: version(__APP_PACKAGE__.dependencies['asn1.js']),
+      nobleCurves: __NPM_PACKAGE_VERSIONS__['@noble/curves'] ?? '',
+      noblePostQuantum: __NPM_PACKAGE_VERSIONS__['@noble/post-quantum'] ?? '',
       base32Decode: version(__APP_PACKAGE__.dependencies['base32-decode']), bufferJS: version(__APP_PACKAGE__.dependencies.buffer),
       chartJS: version(__APP_PACKAGE__.dependencies['chart.js']), leafletJS: version(__APP_PACKAGE__.dependencies.leaflet),
       leafletAwesomeMarkers: version(__APP_PACKAGE__.dependencies['leaflet.awesome-markers']),
       pdfjsdist: version(__APP_PACKAGE__.dependencies['pdfjs-dist']), webpack: version(__APP_PACKAGE__.devDependencies.webpack),
       seekBzip: __NPM_PACKAGE_VERSIONS__['seek-bzip'] ?? '', fileType: __NPM_PACKAGE_VERSIONS__['file-type'] ?? '',
+      isURLSuperb: __NPM_PACKAGE_VERSIONS__['is-url-superb'] ?? '',
       jsQR: __NPM_PACKAGE_VERSIONS__.jsqr ?? '', decimalJS: __NPM_PACKAGE_VERSIONS__['decimal.js'] ?? '',
       fontAwesome: '5.2.0'
     };

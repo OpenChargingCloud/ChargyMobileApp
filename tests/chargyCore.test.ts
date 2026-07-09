@@ -3,6 +3,7 @@ import { join }         from "node:path";
 import {
     Chargy,
     IsAChargeTransparencyRecord,
+    IsAURL,
     SessionVerificationResult
 }                            from "@open-charging-cloud/chargy-core";
 import coreI18n              from "@open-charging-cloud/chargy-core/i18n.json";
@@ -34,6 +35,14 @@ async function detectFixture(fileName: string) {
     }]);
 }
 
+async function detectText(fileName: string, text: string) {
+    return createChargy().DetectAndConvertContentFormat([{
+        name: fileName,
+        type: "text/plain",
+        data: new TextEncoder().encode(text)
+    }]);
+}
+
 describe("chargy-core integration", () => {
 
     test("validates a chargeIT transparency record", async () => {
@@ -54,6 +63,17 @@ describe("chargy-core integration", () => {
 
         expect(IsAChargeTransparencyRecord(result)).toBe(false);
         expect(result.status).toBe(SessionVerificationResult.InvalidSessionFormat);
+    });
+
+    test("detects plain URLs as SimpleURL results", async () => {
+        const result = await detectText("qr-url.txt", "https://open.charging.cloud/");
+
+        expect(IsAURL(result)).toBe(true);
+
+        if (!IsAURL(result))
+            return;
+
+        expect(result.url).toBe("https://open.charging.cloud/");
     });
 
 });

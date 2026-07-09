@@ -9,20 +9,20 @@ import {
 } from "./chargyTestRuntime";
 import {
     IsAChargeTransparencyRecord,
-    IsAChargeTransparencyLiveLink
+    IsAChargeTransparencyLiveLink,
+    IsAURL
 } from '@open-charging-cloud/chargy-core';
 import type {
-    IChargeTransparencyRecord,
-    IChargeTransparencyLiveLink,
     IMeasurement,
     IMeasurementValue,
     I18NString,
     ICryptoResult,
     IFileInfo,
     ISessionCryptoResult,
-    IValidationRules,
-    IPublicKey
+    IValidationRules
 } from '@open-charging-cloud/chargy-core';
+
+type DetectionResult = Awaited<ReturnType<Chargy["DetectAndConvertContentFormat"]>>;
 
 export {
     expectVerificationReport,
@@ -256,10 +256,7 @@ async function verifyChargeData(fileName:          string,
                                 type?:             string,
                                 validationRules?:  IValidationRules)
 
-    : Promise<IChargeTransparencyRecord   |
-              IChargeTransparencyLiveLink |
-              IPublicKey                  |
-              ISessionCryptoResult>
+    : Promise<DetectionResult>
 
 {
 
@@ -278,16 +275,13 @@ async function verifyChargeData(fileName:          string,
 async function verifyChargeDataFiles(fileInfos:         IFileInfo[],
                                      validationRules?:  IValidationRules)
 
-    : Promise<IChargeTransparencyRecord   |
-              IChargeTransparencyLiveLink |
-              IPublicKey                  |
-              ISessionCryptoResult>
+    : Promise<DetectionResult>
 
 {
     return createVerificationChargy(validationRules).DetectAndConvertContentFormat(fileInfos);
 }
 
-function formatChargeDataVerificationReport(report: IChargeTransparencyRecord | IChargeTransparencyLiveLink | IPublicKey | ISessionCryptoResult): string
+function formatChargeDataVerificationReport(report: DetectionResult): string
 {
 
     if (IsAChargeTransparencyLiveLink(report))
@@ -295,6 +289,13 @@ function formatChargeDataVerificationReport(report: IChargeTransparencyRecord | 
             "format: charge-transparency-live-link",
             "timestamp: "  +  (report.timestamp ?? ""),
             "transports: " + ((report.transports?.length ?? 0).toString())
+        ].join("\n");
+
+    if (IsAURL(report))
+        return [
+            "format: url",
+            "url: " + report.url,
+            "method: " + (report.method ?? "")
         ].join("\n");
 
     if (!IsAChargeTransparencyRecord(report)) {
