@@ -1,0 +1,33 @@
+{
+    // TypeScript project used only by ESLint for type-aware linting.
+    // The build tsconfig emits src/ts into .build/js, while the linter needs
+    // both app sources and tests in one no-emit project.
+
+    "extends": "./tsconfig.json",
+
+    "compilerOptions": {
+        "module": "ESNext",
+        "moduleResolution": "Bundler",
+        "noEmit": true,
+        "rootDir": ".",
+        "types": [
+            "node",
+            "vitest"
+        ]
+    },
+
+    "files": [],
+
+    "include": [
+        "src/ts/**/*.ts",
+        "tests/**/*.ts"
+    ],
+
+    "exclude": [
+        "node_modules",
+        ".build",
+        "platforms",
+        "plugins",
+        "www"
+    ]
+}

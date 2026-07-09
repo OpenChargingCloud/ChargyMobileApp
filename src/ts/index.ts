@@ -42,11 +42,6 @@ declare const __NPM_PACKAGE_VERSIONS__: Record<string, string>;
 declare const __CHARGY_CORE_VERSION__: string;
 declare const __CHARGY_CORE_SHA512__: string;
 
-// @ts-ignore
-var leaflet: any = L;
-
-let appVersion:         string;
-
 export default class App {
 
     public importantInfo:               HTMLDivElement;
@@ -93,14 +88,12 @@ export default class App {
 
     start() {
         this.UILanguage = this.getInitialUILanguage();
-        document.addEventListener('deviceready', () => this.onDeviceReady(),  false);
-        document.addEventListener('resume',      () => this.onDeviceResume(), false);
-        document.addEventListener('pause',       () => this.onPause(),        false);
+        document.addEventListener('deviceready', () => { this.onDeviceReady(); },  false);
+        document.addEventListener('resume',      () => { this.onDeviceResume(); }, false);
+        document.addEventListener('pause',       () => { this.onPause(); },        false);
 
         if (cordova.getAppVersion != null) {
-            cordova.getAppVersion.getVersionNumber((version) => {
-                appVersion = version;
-            });
+            cordova.getAppVersion.getVersionNumber((_version) => undefined);
         }
 
     }
@@ -208,7 +201,7 @@ export default class App {
 
     onDeviceReady() {
 
-        var me = this;
+        const me = this;
 
         this.importantInfo              = document.getElementById("importantInfo")              as HTMLDivElement;
         this.startPage                  = document.getElementById("startPage")                  as HTMLDivElement;
@@ -219,9 +212,9 @@ export default class App {
         this.issueTrackerPage           = document.getElementById("issueTrackerPage")           as HTMLDivElement;
         this.aboutPage                  = document.getElementById("aboutPage")                  as HTMLDivElement;
 
-        (document.getElementById('publicKeyBackButton') as HTMLButtonElement).onclick = () => this.showPage(this.startPage);
+        (document.getElementById('publicKeyBackButton') as HTMLButtonElement).onclick = () => { this.showPage(this.startPage); };
 
-        document.addEventListener('backbutton', (event: Event) => this.handleBackButton(event), false);
+        document.addEventListener('backbutton', (event: Event) => { this.handleBackButton(event); }, false);
 
         this._chargyApp                 = new ChargyApp(this, this.UILanguage);
 
@@ -233,9 +226,9 @@ export default class App {
         void this.setUILanguage(this.UILanguage, false);
         this.setupAboutPage();
 
-        var fileInputButton             = <HTMLButtonElement> document.getElementById('fileInputButton');
-        var fileInput                   = <HTMLInputElement>  document.getElementById('fileInput');
-        fileInputButton.onclick         = (event) => {
+        const fileInputButton             = <HTMLButtonElement> document.getElementById('fileInputButton');
+        const fileInput                   = <HTMLInputElement>  document.getElementById('fileInput');
+        fileInputButton.onclick         = () => {
             this.importantInfo.style.display  = 'none';
             this.importantInfo.innerHTML      = '';
             fileInput.value = '';
@@ -250,8 +243,8 @@ export default class App {
 
         this.setupBrowserDragAndDrop();
 
-        var pasteButton                 = <HTMLButtonElement> document.getElementById('pasteButton');
-        pasteButton.onclick             = (event) => this.PasteFile();
+        const pasteButton                 = <HTMLButtonElement> document.getElementById('pasteButton');
+        pasteButton.onclick             = () => { void this.PasteFile(); };
 
         this.qrScanButton                        = document.getElementById('qrScanButton')                        as HTMLButtonElement;
         this.qrCodeScannerDiv                    = document.getElementById('qrCodeScanner')                       as HTMLDivElement;
@@ -314,7 +307,7 @@ export default class App {
 
     function releaseChargingSessionsPagePosition(e) {
 
-      let distance = (e.changedTouches
+      const distance = (e.changedTouches
                           ? e.changedTouches[0]
                           : e).clientX - me.chargingSessionsPage_MovementStartX;
 
@@ -382,7 +375,7 @@ export default class App {
 
     function releasemeasurementInfosPagePosition(e) {
 
-        let distance = (e.changedTouches
+        const distance = (e.changedTouches
                           ? e.changedTouches[0]
                           : e).clientX - me.measurementInfosPage_MovementStartX;
 
@@ -450,7 +443,7 @@ export default class App {
 
     function releaseCryptoDetailsPagePosition(e) {
 
-        let distance = (e.changedTouches
+        const distance = (e.changedTouches
                           ? e.changedTouches[0]
                           : e).clientX - me.cryptoDetailsPage_MovementStartX;
 
@@ -508,9 +501,6 @@ export default class App {
   
 
     //#region Create the map
-
-    //@ts-ignore
-    leaflet  = L;
 
     //@ts-ignore
     this.map = L.map('map').setView([49.7325504,10.1424442], 13);
@@ -719,8 +709,8 @@ export default class App {
     return await new Promise<boolean>(resolve => {
       permissions.requestPermission(
         permissions.CAMERA,
-        (status: { hasPermission?: boolean }) => resolve(status?.hasPermission === true),
-        () => resolve(false)
+        (status: { hasPermission?: boolean }) => { resolve(status?.hasPermission === true); },
+        () => { resolve(false); }
       );
     });
 
@@ -882,7 +872,7 @@ export default class App {
       }
     }
 
-    this.qrCodeScannerAnimationFrame = requestAnimationFrame(() => this.scanQRCodeFrame());
+    this.qrCodeScannerAnimationFrame = requestAnimationFrame(() => { this.scanQRCodeFrame(); });
 
   }
 
@@ -897,7 +887,7 @@ export default class App {
         type: 'text/plain',
         data: new TextEncoder().encode(qrText)
       },
-      errorMessage => this.showQRCodeScannerRejectedText(qrText, errorMessage)
+      errorMessage => { this.showQRCodeScannerRejectedText(qrText, errorMessage); }
     );
 
     if (detected)
@@ -943,7 +933,7 @@ export default class App {
 
   //#region Global error handling...
 
-  doGlobalError(text:      String,
+  doGlobalError(text:      string,
                 context?:  any)
   {
 
@@ -1004,7 +994,7 @@ export default class App {
 
   private setupAboutPage(): void {
     const version = (value?: string) => value?.replace(/^[^0-9]*/, '') ?? '';
-    (document.getElementById('appVersion') as HTMLSpanElement).textContent = __APP_PACKAGE__.version;
+    (document.getElementById('appVersion')).textContent = __APP_PACKAGE__.version;
     const versions: Record<string, string> = {
       chargyMobileVersion: __APP_PACKAGE__.version,
       chargyCoreVersion: __CHARGY_CORE_VERSION__,
@@ -1027,7 +1017,7 @@ export default class App {
       for (const element of Array.from(document.querySelectorAll<HTMLSpanElement>(`#${id}`)))
         element.textContent = packageVersion;
 
-    (this.aboutPage.querySelector('#chargyCoreHash #value') as HTMLDivElement).textContent = this.formatHash(__CHARGY_CORE_SHA512__);
+    (this.aboutPage.querySelector('#chargyCoreHash #value')).textContent = this.formatHash(__CHARGY_CORE_SHA512__);
 
     for (const link of Array.from(this.aboutPage.querySelectorAll<HTMLElement>('[href]'))) {
       link.onclick = (event: MouseEvent) => {
@@ -1041,7 +1031,7 @@ export default class App {
     }
 
     this.aboutButton.onclick = () => { this.showPage(this.aboutPage); void this.calculateApplicationHash(); };
-    (document.getElementById('aboutBackButton') as HTMLButtonElement).onclick = () => this.showPage(this.startPage);
+    (document.getElementById('aboutBackButton') as HTMLButtonElement).onclick = () => { this.showPage(this.startPage); };
   }
 
   private formatHash(hash: string): string { return hash.match(/.{1,8}/g)?.join(' ') ?? hash; }
@@ -1067,7 +1057,7 @@ export default class App {
   }
 
   private async calculateApplicationHash(): Promise<void> {
-    const target = this.aboutPage.querySelector('#applicationHash #value') as HTMLDivElement;
+    const target = this.aboutPage.querySelector<HTMLElement>('#applicationHash #value');
     if (target.dataset.ready === 'true') return;
     try {
       const files = ['index.html', 'css/chargy.css', 'js/bundle.js'];
@@ -1145,5 +1135,5 @@ export default class App {
   
 }
 
-let app = new App();
+const app = new App();
 app.start();

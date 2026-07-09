@@ -6,6 +6,10 @@ import {
 
 const xml = new TextEncoder().encode("<?xml version=\"1.0\"?><test />");
 
+function bytes(data: ArrayBuffer | Uint8Array): number[] {
+    return Array.from(data instanceof Uint8Array ? data : new Uint8Array(data));
+}
+
 describe("PDF attachment normalization", () => {
 
     test("accepts the Map returned by PDF.js 6.1", () => {
@@ -22,7 +26,7 @@ describe("PDF attachment normalization", () => {
             path: "file://receipt.pdf",
             type: "application/xml"
         });
-        expect(Array.from(result[0].data)).toEqual(Array.from(xml));
+        expect(bytes(result[0].data)).toEqual(Array.from(xml));
     });
 
     test("continues to accept the object returned by older PDF.js versions", () => {
@@ -44,12 +48,12 @@ describe("PDF attachment normalization", () => {
 
         const hydrated = await hydratePdfAttachments(
             attachments,
-            async id => id === "attachment-id" ? xml : null
+            id => Promise.resolve(id === "attachment-id" ? xml : null)
         );
         const result = fileInfosFromPdfAttachments(hydrated);
 
         expect(result).toHaveLength(1);
-        expect(Array.from(result[0].data)).toEqual(Array.from(xml));
+        expect(bytes(result[0].data)).toEqual(Array.from(xml));
     });
 
     test("ignores unsupported or malformed attachments", () => {

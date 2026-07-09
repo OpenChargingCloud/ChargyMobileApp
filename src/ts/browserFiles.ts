@@ -53,12 +53,12 @@ export function browserFileNameFromNameAndType(fileName: string,
 
 function addCrispShapeRenderingToSVGElements(svgText: string): { text: string; changed: boolean } {
     let changed = false;
-    const text = svgText.replace(/<(path|rect)\b([^>]*)>/gi, (match, tagName, attributes) => {
+    const text = svgText.replace(/<(path|rect)\b([^>]*)>/gi, (match: string, tagName: string, attributes: string) => {
         if (/\sshape-rendering\s*=/.test(attributes))
             return match;
 
         changed = true;
-        return "<" + tagName + " shape-rendering=\"crispEdges\"" + attributes + ">";
+        return `<${tagName} shape-rendering="crispEdges"${attributes}>`;
     });
 
     return { text, changed };

@@ -48,7 +48,7 @@ import {
 import { expandPdfAttachments }        from './pdfAttachments';
 
 // @ts-ignore
-var leaflet: any = L;
+const leaflet: any = L;
 
 interface MobileApp {
     importantInfo:        HTMLDivElement;
@@ -186,7 +186,7 @@ export default class ChargyApp {
                   context?:  any)
     {
 
-        var importantInfo                = document.getElementById("importantInfo")     as HTMLDivElement;
+        const importantInfo                = document.getElementById("importantInfo")     as HTMLDivElement;
 
         importantInfo.style.display              = 'block';
         importantInfo.innerHTML                  = '<i class="fas fa-times-circle"></i> ' + text;
@@ -277,14 +277,14 @@ export default class ChargyApp {
                 marker.remove();
             me.mapMarkers = [];
 
-            var minlat                    = +1000;
-            var maxlat                    = -1000;
-            var minlng                    = +1000;
-            var maxlng                    = -1000;
+            let minlat                    = 1000;
+            let maxlat                    = -1000;
+            let minlng                    = 1000;
+            let maxlng                    = -1000;
 
             //#endregion
 
-            async function checkSessionCrypto(chargingSession: chargeTransparencyRecord.IChargingSession)
+            function checkSessionCrypto(chargingSession: chargeTransparencyRecord.IChargingSession)
             {
 
                 const result = chargingSession.verificationResult ?? {
@@ -294,57 +294,35 @@ export default class ChargyApp {
 
                 //#region Add marker to map
 
-                var redMarker                 = leaflet.AwesomeMarkers.icon({
+                const redMarker                 = leaflet.AwesomeMarkers.icon({
                     prefix:                     'fa',
                     icon:                       'exclamation',
                     markerColor:                'red',
                     iconColor:                  '#ecc8c3'
                 });
 
-                var greenMarker               = leaflet.AwesomeMarkers.icon({
+                const greenMarker               = leaflet.AwesomeMarkers.icon({
                     prefix:                     'fa',
                     icon:                       'charging-station',
                     markerColor:                'green',
                     iconColor:                  '#c2ec8e'
                 });
 
-                var orangeMarker              = leaflet.AwesomeMarkers.icon({
+                const orangeMarker              = leaflet.AwesomeMarkers.icon({
                     prefix:                     'fa',
                     icon:                       'exclamation',
                     markerColor:                'orange',
                     iconColor:                  '#ae6a0a'
                 });
 
-                var markerIcon  = redMarker;
+                const markerIcon = result.status === iface.SessionVerificationResult.InplausibleMeasurement ||
+                                   (result.status === iface.SessionVerificationResult.ValidSignature && hasSessionWarnings(chargingSession))
+                                       ? orangeMarker
+                                       : result.status === iface.SessionVerificationResult.ValidSignature
+                                           ? greenMarker
+                                           : redMarker;
 
-                switch (result.status)
-                {
-
-                    case iface.SessionVerificationResult.UnknownSessionFormat:
-                        markerIcon = redMarker;
-                        break;
-
-                    case iface.SessionVerificationResult.InplausibleMeasurement:
-                        markerIcon = orangeMarker;
-                        break;
-
-                    case iface.SessionVerificationResult.PublicKeyNotFound:
-                    case iface.SessionVerificationResult.InvalidPublicKey:
-                    case iface.SessionVerificationResult.InvalidSignature:
-                        markerIcon = redMarker;
-                        break;
-
-                    case iface.SessionVerificationResult.ValidSignature:
-                        markerIcon = hasSessionWarnings(chargingSession) ? orangeMarker : greenMarker;
-                        break;
-
-
-                    default:
-                        markerIcon = redMarker;
-
-                }
-
-                var geoLocation  = null;
+                let geoLocation  = null;
 
                 if (chargingSession.chargingPool                != null &&
                     chargingSession.chargingPool.geoLocation    != null)
@@ -361,7 +339,7 @@ export default class ChargyApp {
                 if (geoLocation != null)
                 {
 
-                    var marker = leaflet.marker([geoLocation.lat, geoLocation.lng], { icon: markerIcon }).addTo(me2.app.map);
+                    const marker = leaflet.marker([geoLocation.lat, geoLocation.lng], { icon: markerIcon }).addTo(me2.app.map);
                     me.mapMarkers.push(marker);
 
                     if (minlat > geoLocation.lat)
@@ -403,7 +381,7 @@ export default class ChargyApp {
 
 
                         default:
-                            markerIcon = redMarker;
+                            break;
 
                     }
 
@@ -443,27 +421,23 @@ export default class ChargyApp {
             me.app.showPage(me.app.chargingSessionsPage);
 
             if (CTR.description) {
-                let descriptionDiv = me.app.chargingSessionsPage.querySelector<HTMLDivElement>('#description');
+                const descriptionDiv = me.app.chargingSessionsPage.querySelector<HTMLDivElement>('#description');
                 descriptionDiv.innerText = me.chargy.GetLocalizedText(CTR.description) ?? chargyLib.firstValue(CTR.description);
             }
 
             if (CTR.begin) {
-                let beginDiv = me.app.chargingSessionsPage.querySelector<HTMLDivElement>('#begin');
+                const beginDiv = me.app.chargingSessionsPage.querySelector<HTMLDivElement>('#begin');
                 beginDiv.innerHTML = chargyLib.parseUTC(CTR.begin).format('dddd, D. MMMM YYYY');
             }
 
             if (CTR.end) {
-                let endDiv = me.app.chargingSessionsPage.querySelector<HTMLDivElement>('#end');
+                const endDiv = me.app.chargingSessionsPage.querySelector<HTMLDivElement>('#end');
                 endDiv.innerHTML   = chargyLib.parseUTC(CTR.end).format('dddd, D. MMMM YYYY');
             }
 
             //#endregion
 
             //#region Show contract infos
-
-            if (CTR.contract)
-            {
-            }
 
             //#endregion
 
@@ -473,30 +447,32 @@ export default class ChargyApp {
 
             if (CTR.chargingSessions) {
 
-                let chargingSessionsDiv = me.app.chargingSessionsPage.querySelector<HTMLDivElement>('#chargingSessions');
+                const chargingSessionsDiv = me.app.chargingSessionsPage.querySelector<HTMLDivElement>('#chargingSessions');
                 chargingSessionsDiv.innerText = '';
 
-                for (var chargingSession of CTR.chargingSessions)
+                for (const chargingSession of CTR.chargingSessions)
                 {
 
 
 
 
 
-                    let chargingSessionDiv      = chargyLib.CreateDiv(chargingSessionsDiv, "chargingSession");
+                    const chargingSessionDiv      = chargyLib.CreateDiv(chargingSessionsDiv, "chargingSession");
                     chargingSession.GUI         = chargingSessionDiv;
                     chargingSessionDiv.onclick  = me.captureChargingSession(chargingSession);
 
                     //#region Show session time infos
+
+                    let duration: moment.Duration | undefined;
 
                     try {
 
                         if (chargingSession.begin)
                         {
 
-                            var beginUTC = chargyLib.parseUTC(chargingSession.begin);
+                            const beginUTC = chargyLib.parseUTC(chargingSession.begin);
 
-                            let dateDiv = chargingSessionDiv.appendChild(document.createElement('div'));
+                            const dateDiv = chargingSessionDiv.appendChild(document.createElement('div'));
                             dateDiv.className = "date";
                             dateDiv.innerHTML = beginUTC.format('dddd, D; MMM YYYY HH:mm:ss').
                                                         replace(".", "").   // Nov. -> Nov
@@ -506,8 +482,8 @@ export default class ChargyApp {
                             if (chargingSession.end)
                             {
 
-                                var endUTC   = chargyLib.parseUTC(chargingSession.end);
-                                var duration = moment.duration(endUTC.valueOf() - beginUTC.valueOf());
+                                const endUTC   = chargyLib.parseUTC(chargingSession.end);
+                                duration = moment.duration(endUTC.valueOf() - beginUTC.valueOf());
 
                                 dateDiv.innerHTML += " - " +
                                                     (Math.floor(duration.asDays()) > 0 ? endUTC.format("dddd") + " " : "") +
@@ -526,42 +502,44 @@ export default class ChargyApp {
 
                     //#endregion
 
-                    var tableDiv                = chargingSessionDiv.appendChild(document.createElement('div'));
+                    const tableDiv                = chargingSessionDiv.appendChild(document.createElement('div'));
                         tableDiv.className      = "table";
 
                     //#region Show energy infos
 
                     try {
 
-                        var productInfoDiv                   = tableDiv.appendChild(document.createElement('div'));
+                        const productInfoDiv                   = tableDiv.appendChild(document.createElement('div'));
                         productInfoDiv.className             = "productInfos";
 
-                        var productIconDiv                   = productInfoDiv.appendChild(document.createElement('div'));
+                        const productIconDiv                   = productInfoDiv.appendChild(document.createElement('div'));
                         productIconDiv.className             = "icon";
                         productIconDiv.innerHTML             = '<i class="fas fa-chart-pie"></i>';
 
-                        var productDiv                       = productInfoDiv.appendChild(document.createElement('div'));
+                        const productDiv                       = productInfoDiv.appendChild(document.createElement('div'));
                         productDiv.className                 = "text";
                         productDiv.innerHTML = chargingSession.product != null ? chargingSession.product["@id"] + "<br />" : "";
 
-                        productDiv.innerHTML += me.chargy.GetLocalizedMessage("chargingDurationLabel") + " ";
-                        if      (Math.floor(duration.asDays())    > 1) productDiv.innerHTML += duration.days()    + " " + me.chargy.GetLocalizedMessage("daysLabel")        + " " + duration.hours()   + " " + me.chargy.GetLocalizedMessage("hourShortLabel")   + " " + duration.minutes() + " " + me.chargy.GetLocalizedMessage("minuteShortLabel") + " " + duration.seconds() + " " + me.chargy.GetLocalizedMessage("secondShortLabel");
-                        else if (Math.floor(duration.asDays())    > 0) productDiv.innerHTML += duration.days()    + " " + me.chargy.GetLocalizedMessage("dayLabel")         + " " + duration.hours()   + " " + me.chargy.GetLocalizedMessage("hourShortLabel")   + " " + duration.minutes() + " " + me.chargy.GetLocalizedMessage("minuteShortLabel") + " " + duration.seconds() + " " + me.chargy.GetLocalizedMessage("secondShortLabel");
-                        else if (Math.floor(duration.asHours())   > 0) productDiv.innerHTML += duration.hours()   + " " + me.chargy.GetLocalizedMessage("hourShortLabel")   + " " + duration.minutes() + " " + me.chargy.GetLocalizedMessage("minuteShortLabel") + " " + duration.seconds() + " " + me.chargy.GetLocalizedMessage("secondShortLabel");
-                        else if (Math.floor(duration.asMinutes()) > 0) productDiv.innerHTML += duration.minutes() + " " + me.chargy.GetLocalizedMessage("minuteShortLabel") + " " + duration.seconds() + " " + me.chargy.GetLocalizedMessage("secondShortLabel");
-                        else if (Math.floor(duration.asSeconds()) > 0) productDiv.innerHTML += duration.seconds();
+                        if (duration != null) {
+                            productDiv.innerHTML += me.chargy.GetLocalizedMessage("chargingDurationLabel") + " ";
+                            if      (Math.floor(duration.asDays())    > 1) productDiv.innerHTML += duration.days()    + " " + me.chargy.GetLocalizedMessage("daysLabel")        + " " + duration.hours()   + " " + me.chargy.GetLocalizedMessage("hourShortLabel")   + " " + duration.minutes() + " " + me.chargy.GetLocalizedMessage("minuteShortLabel") + " " + duration.seconds() + " " + me.chargy.GetLocalizedMessage("secondShortLabel");
+                            else if (Math.floor(duration.asDays())    > 0) productDiv.innerHTML += duration.days()    + " " + me.chargy.GetLocalizedMessage("dayLabel")         + " " + duration.hours()   + " " + me.chargy.GetLocalizedMessage("hourShortLabel")   + " " + duration.minutes() + " " + me.chargy.GetLocalizedMessage("minuteShortLabel") + " " + duration.seconds() + " " + me.chargy.GetLocalizedMessage("secondShortLabel");
+                            else if (Math.floor(duration.asHours())   > 0) productDiv.innerHTML += duration.hours()   + " " + me.chargy.GetLocalizedMessage("hourShortLabel")   + " " + duration.minutes() + " " + me.chargy.GetLocalizedMessage("minuteShortLabel") + " " + duration.seconds() + " " + me.chargy.GetLocalizedMessage("secondShortLabel");
+                            else if (Math.floor(duration.asMinutes()) > 0) productDiv.innerHTML += duration.minutes() + " " + me.chargy.GetLocalizedMessage("minuteShortLabel") + " " + duration.seconds() + " " + me.chargy.GetLocalizedMessage("secondShortLabel");
+                            else if (Math.floor(duration.asSeconds()) > 0) productDiv.innerHTML += duration.seconds();
+                        }
 
                         if (chargingSession.measurements)
                         {
-                            for (var measurement of chargingSession.measurements)
+                            for (const measurement of chargingSession.measurements)
                             {
                                 //<i class="far fa-chart-bar"></i>
                                 if (measurement.values && measurement.values.length > 0)
                                 {
 
-                                    var first  = Number(measurement.values[0].value);
-                                    var last   = Number(measurement.values[measurement.values.length-1].value);
-                                    var amount = parseFloat(((last - first) * Math.pow(10, measurement.scale)).toFixed(10));
+                                    const first  = Number(measurement.values[0].value);
+                                    const last   = Number(measurement.values[measurement.values.length-1].value);
+                                    let amount = parseFloat(((last - first) * Math.pow(10, measurement.scale)).toFixed(10));
 
                                     switch (measurement.unit)
                                     {
@@ -598,10 +576,10 @@ export default class ChargyApp {
                         if (chargingSession.authorizationStart != null)
                         {
 
-                            var authorizationStartDiv            = tableDiv.appendChild(document.createElement('div'));
+                            const authorizationStartDiv            = tableDiv.appendChild(document.createElement('div'));
                                 authorizationStartDiv.className  = "authorizationStart";
 
-                            var authorizationStartIconDiv                   = authorizationStartDiv.appendChild(document.createElement('div'));
+                            const authorizationStartIconDiv                   = authorizationStartDiv.appendChild(document.createElement('div'));
                             authorizationStartIconDiv.className             = "icon";
                             switch (chargingSession.authorizationStart.type)
                             {
@@ -621,7 +599,7 @@ export default class ChargyApp {
 
                             }
 
-                            var authorizationStartIdDiv                     = authorizationStartDiv.appendChild(document.createElement('div'));
+                            const authorizationStartIdDiv                     = authorizationStartDiv.appendChild(document.createElement('div'));
                             authorizationStartIdDiv.className               = "id";
                             authorizationStartIdDiv.innerHTML = chargingSession.authorizationStart["@id"];
 
@@ -630,10 +608,10 @@ export default class ChargyApp {
                         if (chargingSession.authorizationStop != null)
                         {
 
-                            var authorizationStopDiv            = tableDiv.appendChild(document.createElement('div'));
+                            const authorizationStopDiv            = tableDiv.appendChild(document.createElement('div'));
                                 authorizationStopDiv.className  = "authorizationStop";
 
-                            var authorizationStopIconDiv                   = authorizationStopDiv.appendChild(document.createElement('div'));
+                            const authorizationStopIconDiv                   = authorizationStopDiv.appendChild(document.createElement('div'));
                             authorizationStopIconDiv.className             = "icon";
                             switch (chargingSession.authorizationStop.type)
                             {
@@ -653,7 +631,7 @@ export default class ChargyApp {
 
                             }
 
-                            var authorizationStopIdDiv                     = authorizationStopDiv.appendChild(document.createElement('div'));
+                            const authorizationStopIdDiv                     = authorizationStopDiv.appendChild(document.createElement('div'));
                             authorizationStopIdDiv.className               = "id";
                             authorizationStopIdDiv.innerHTML = chargingSession.authorizationStop["@id"];
 
@@ -675,16 +653,16 @@ export default class ChargyApp {
                             chargingSession.chargingStationId || chargingSession.chargingStation ||
                             chargingSession.chargingPoolId    || chargingSession.chargingPool) {
 
-                            var address:iface.IAddress            = null;
+                            let address:iface.IAddress            = null;
 
-                            var locationInfoDiv                   = tableDiv.appendChild(document.createElement('div'));
+                            const locationInfoDiv                   = tableDiv.appendChild(document.createElement('div'));
                             locationInfoDiv.className             = "locationInfos";
 
-                            var locationIconDiv                   = locationInfoDiv.appendChild(document.createElement('div'));
+                            const locationIconDiv                   = locationInfoDiv.appendChild(document.createElement('div'));
                             locationIconDiv.className             = "icon";
                             locationIconDiv.innerHTML             = '<i class="fas fa-map-marker-alt"></i>';
 
-                            var locationDiv                       = locationInfoDiv.appendChild(document.createElement('div'));
+                            const locationDiv                       = locationInfoDiv.appendChild(document.createElement('div'));
                             locationDiv.classList.add("text");
 
                             if (chargingSession.EVSEId || chargingSession.EVSE) {
@@ -780,9 +758,9 @@ export default class ChargyApp {
 
                     //#region Show verification status
 
-                    let verificationStatusDiv = chargingSessionDiv.appendChild(document.createElement('div'));
+                    const verificationStatusDiv = chargingSessionDiv.appendChild(document.createElement('div'));
                     verificationStatusDiv.className = "verificationStatus";
-                    verificationStatusDiv.innerHTML = await checkSessionCrypto(chargingSession);
+                    verificationStatusDiv.innerHTML = checkSessionCrypto(chargingSession);
 
                     if (isWarningSession(chargingSession))
                         verificationStatusDiv.classList.add("warning");
@@ -1323,8 +1301,8 @@ export default class ChargyApp {
         powerButton.textContent        = this.chargy.GetLocalizedMessage("chargingProgressPowerLinkLabel");
 
         measurementsButton.onclick = showRows;
-        energyButton.onclick       = () => showChart("energy", energyButton);
-        powerButton.onclick        = () => showChart("power", powerButton);
+        energyButton.onclick       = () => { showChart("energy", energyButton); };
+        powerButton.onclick        = () => { showChart("power", powerButton); };
         chartDiv.style.display     = "none";
 
         switch (this.measurementValuesViewMode) {
@@ -1344,9 +1322,9 @@ export default class ChargyApp {
 
         this.currentChargingSession = chargingSession;
 
-        var me = this;
+        const me = this;
 
-        async function checkMeasurementCrypto(measurementValue: chargeTransparencyRecord.IMeasurementValue)
+        function checkMeasurementCrypto(measurementValue: chargeTransparencyRecord.IMeasurementValue)
         {
 
             const result = measurementValue.result ??
@@ -1398,12 +1376,12 @@ export default class ChargyApp {
             if (chargingSession.measurements)
             {
 
-                for (var measurement of chargingSession.measurements)
+                for (const measurement of chargingSession.measurements)
                 {
 
                     measurement.chargingSession      = chargingSession;
 
-                    let MeasurementInfoDiv           = this.app.measurementInfosPage.querySelector<HTMLDivElement>('#measurementInfo');
+                    const MeasurementInfoDiv           = this.app.measurementInfosPage.querySelector<HTMLDivElement>('#measurementInfo');
                     MeasurementInfoDiv.innerHTML     = '';
                     // chargyLib.CreateDiv(this.evseTarifInfosDiv,  "measurementInfo");
 
@@ -1465,7 +1443,7 @@ export default class ChargyApp {
                     if (measurement.values && measurement.values.length > 0)
                     {
 
-                        let MeasurementValuesDiv         = this.app.measurementInfosPage.querySelector<HTMLDivElement>('#measurementValues');
+                        const MeasurementValuesDiv         = this.app.measurementInfosPage.querySelector<HTMLDivElement>('#measurementValues');
                         MeasurementValuesDiv.innerHTML   = '';
                         chargyLib.CreateDiv(MeasurementValuesDiv, "headline2",
                                             this.chargy.GetLocalizedMessage("Meter Values"));
@@ -1488,18 +1466,18 @@ export default class ChargyApp {
 
                         let previousDisplayValue         = undefined;
 
-                        for (var measurementValue of measurement.values)
+                        for (const measurementValue of measurement.values)
                         {
 
                             measurementValue.measurement     = measurement;
 
-                            let MeasurementValueDiv          = chargyLib.CreateDiv(MeasurementValueRowsDiv, "measurementValue");
+                            const MeasurementValueDiv          = chargyLib.CreateDiv(MeasurementValueRowsDiv, "measurementValue");
                             MeasurementValueDiv.onclick      = this.captureMeasurementCryptoDetails(measurementValue);
 
-                            var timestamp                    = chargyLib.parseUTC(measurementValue.timestamp);
+                            const timestamp                    = chargyLib.parseUTC(measurementValue.timestamp);
 
-                            let timestampDiv                 = chargyLib.CreateDiv(MeasurementValueDiv, "timestamp",
-                                                                         timestamp.format('HH:mm:ss') + this.chargy.GetLocalizedMessage("timeSuffix"));
+                            chargyLib.CreateDiv(MeasurementValueDiv, "timestamp",
+                                                 timestamp.format('HH:mm:ss') + this.chargy.GetLocalizedMessage("timeSuffix"));
 
 
                             // Show the meter's native value and unit. A prescribed
@@ -1527,8 +1505,8 @@ export default class ChargyApp {
                             );
 
                             // Show signature status
-                            let verificationStatusDiv        = chargyLib.CreateDiv(MeasurementValueDiv, "verificationStatus",
-                                                                         await checkMeasurementCrypto(measurementValue));
+                            chargyLib.CreateDiv(MeasurementValueDiv, "verificationStatus",
+                                                 checkMeasurementCrypto(measurementValue));
 
                             previousDisplayValue             = displayValue.value;
 
@@ -1578,9 +1556,9 @@ export default class ChargyApp {
 
     public captureChargingSession(cs: chargeTransparencyRecord.IChargingSession) {
 
-        var me = this;
+        const me = this;
 
-        return function(this: HTMLDivElement, ev: MouseEvent) {
+        return function(this: HTMLDivElement, _ev: MouseEvent) {
 
             //#region Highlight the selected charging session...
 
@@ -1597,7 +1575,7 @@ export default class ChargyApp {
             if (me.app.chargingSessionsPage.style.display != 'none')
             {
                 me.app.showPage(me.app.measurementInfosPage);
-                me.showChargingSessionDetails(cs);
+                void me.showChargingSessionDetails(cs);
             }
 
         };
@@ -1617,14 +1595,14 @@ export default class ChargyApp {
         this.currentMeasurementValue = measurementValue;
 
         const cryptoDiv             = this.app.cryptoDetailsPage;
-        const errorDiv              = cryptoDiv.querySelector('#error')                       as HTMLDivElement;
-        const introDiv              = cryptoDiv.querySelector('#intro')                       as HTMLDivElement;
-        const cryptoDataDiv         = cryptoDiv.querySelector('#cryptoData')                  as HTMLDivElement;
-        const bufferValue           = cryptoDiv.querySelector('#buffer .value')               as HTMLDivElement;
-        const hashedBufferValue     = cryptoDiv.querySelector('#hashedBuffer .value')         as HTMLDivElement;
-        const publicKeyValue        = cryptoDiv.querySelector('#publicKey .value')            as HTMLDivElement;
-        const signatureExpectedValue = cryptoDiv.querySelector('#signatureExpected .value')  as HTMLDivElement;
-        const signatureCheckValue   = cryptoDiv.querySelector('#signatureCheck')              as HTMLDivElement;
+        const errorDiv              = cryptoDiv.querySelector<HTMLDivElement>('#error');
+        const introDiv              = cryptoDiv.querySelector<HTMLDivElement>('#intro');
+        const cryptoDataDiv         = cryptoDiv.querySelector<HTMLDivElement>('#cryptoData');
+        const bufferValue           = cryptoDiv.querySelector<HTMLDivElement>('#buffer .value');
+        const hashedBufferValue     = cryptoDiv.querySelector<HTMLDivElement>('#hashedBuffer .value');
+        const publicKeyValue        = cryptoDiv.querySelector<HTMLDivElement>('#publicKey .value');
+        const signatureExpectedValue = cryptoDiv.querySelector<HTMLDivElement>('#signatureExpected .value');
+        const signatureCheckValue   = cryptoDiv.querySelector<HTMLDivElement>('#signatureCheck');
 
         const doError = (text: string): void => {
             errorDiv.innerHTML     = '<i class="fas fa-times-circle"></i> ' + text;
@@ -1696,8 +1674,8 @@ export default class ChargyApp {
     //#region Capture the correct measurement value and its context!
 
     public captureMeasurementCryptoDetails(measurementValue: chargeTransparencyRecord.IMeasurementValue) {
-        var me = this;
-        return function(this: HTMLDivElement, ev: MouseEvent) {
+        const me = this;
+        return function(this: HTMLDivElement, _ev: MouseEvent) {
                    me.app.showPage(me.app.cryptoDetailsPage);
                    void me.showMeasurementCryptoDetails(measurementValue);
                };

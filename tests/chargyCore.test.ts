@@ -7,7 +7,7 @@ import {
     SessionVerificationResult
 }                            from "@open-charging-cloud/chargy-core";
 import coreI18n              from "@open-charging-cloud/chargy-core/i18n.json";
-import asn1                   from "asn1.js";
+import * as asn1              from "asn1.js";
 import base32Decode           from "base32-decode";
 import elliptic               from "elliptic";
 import moment                 from "moment";

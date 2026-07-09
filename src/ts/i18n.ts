@@ -48,5 +48,5 @@ export function resolveInitialUILanguage(storedLanguage:  string|null,
 }
 
 export function createI18nDictionary(): chargyLib.I18NDictionary {
-    return Object.assign({}, coreI18n, mobileAppI18n) as chargyLib.I18NDictionary;
+    return Object.assign({}, coreI18n, mobileAppI18n);
 }

@@ -8,7 +8,7 @@ import {
     IsAChargeTransparencyRecord
 }                                from '@open-charging-cloud/chargy-core';
 import coreI18n                   from '@open-charging-cloud/chargy-core/i18n.json';
-import asn1                       from 'asn1.js';
+import * as asn1                  from 'asn1.js';
 import base32Decode               from 'base32-decode';
 import elliptic                   from 'elliptic';
 import moment                     from 'moment';
@@ -58,8 +58,8 @@ describe('charging session presentation', () => {
         const chargingSession = (report as ChargeTransparencyRecord.IChargeTransparencyRecord).chargingSessions?.[0];
         expect(chargingSession?.verificationResult?.status)
             .toBe(ChargyInterfaces.SessionVerificationResult.InplausibleMeasurement);
-        expect(isWarningSession(chargingSession!)).toBe(true);
-        expect(getSessionWarnings(chargingSession!)).toEqual([
+        expect(isWarningSession(chargingSession)).toBe(true);
+        expect(getSessionWarnings(chargingSession)).toEqual([
             expect.objectContaining({
                 level:   ChargyInterfaces.WarningLevel.low,
                 message: expect.objectContaining({

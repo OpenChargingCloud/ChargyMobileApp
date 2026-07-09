@@ -31,13 +31,13 @@ describe("browser file helpers", () => {
     test("reads text from a rich clipboard item without a second clipboard request", async () => {
         let textReads = 0;
         const clipboard = {
-            read: async () => [{
+            read: () => Promise.resolve([{
                 types: [ "text/plain" ],
-                getType: async () => new Blob([ "<record />" ], { type: "text/plain" })
-            }],
-            readText: async () => {
+                getType: () => Promise.resolve(new Blob([ "<record />" ], { type: "text/plain" }))
+            }]),
+            readText: () => {
                 textReads++;
-                return "unused";
+                return Promise.resolve("unused");
             }
         };
 

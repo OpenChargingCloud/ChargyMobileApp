@@ -19,7 +19,7 @@ function measurement(unit: string, scale = 0): ChargeTransparencyRecord.IMeasure
         scale,
         energyMeterId: 'meter',
         values:        []
-    } as ChargeTransparencyRecord.IMeasurement;
+    };
 }
 
 function value(rawValue: string,
@@ -30,7 +30,7 @@ function value(rawValue: string,
         value:                  new Decimal(rawValue),
         value_displayPrefix:    prefix,
         value_displayPrecision: precision
-    } as ChargeTransparencyRecord.IMeasurementValue;
+    };
 }
 
 describe('measurement presentation', () => {
