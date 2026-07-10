@@ -84,9 +84,10 @@ export async function hydratePdfAttachments(
     if (!(attachments instanceof Map))
         return attachments;
 
+    const attachmentMap = attachments as Map<string, unknown>;
     const hydratedAttachments = new Map<string, unknown>();
 
-    for (const [ id, attachmentUnknown ] of attachments.entries()) {
+    for (const [ id, attachmentUnknown ] of attachmentMap.entries()) {
         if (attachmentUnknown != null &&
             typeof attachmentUnknown === "object" &&
             attachmentBytes((attachmentUnknown as PdfAttachment).content) == null) {

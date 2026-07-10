@@ -19,6 +19,7 @@ import {
     Chargy,
     ChargyInterfaces         as iface,
     ChargeTransparencyRecord as chargeTransparencyRecord,
+    ChargeTransparencyLiveLink as liveLink,
     PublicKeyInfo            as publicKeyInfo,
     SimpleURL                as simpleURL
 }                                      from '@open-charging-cloud/chargy-core';
@@ -47,8 +48,10 @@ import {
 }                                      from './measurementPresentation';
 import { expandPdfAttachments }        from './pdfAttachments';
 
-// @ts-ignore
+// @ts-expect-error Leaflet is provided globally by the runtime bundle.
 const leaflet: any = L;
+
+const chargyAsn1 = asn1 as ConstructorParameters<typeof Chargy>[4];
 
 interface MobileApp {
     importantInfo:        HTMLDivElement;
@@ -99,7 +102,8 @@ export default class ChargyApp {
     private currentMeasurementValue: chargeTransparencyRecord.IMeasurementValue | null = null;
     private currentPublicKeyLookup: publicKeyInfo.IPublicKeyLookup | null = null;
     private currentSimpleURL: simpleURL.IURL | null = null;
-    private refreshChargingSessionsPage: (() => Promise<void>) | null = null;
+    private currentLiveLink: liveLink.IChargeTransparencyLiveLink | null = null;
+    private refreshChargingSessionsPage: (() => void | Promise<void>) | null = null;
     private mapMarkers: any[] = [];
 
     chargingSessions = new Array<chargeTransparencyRecord.IChargingSession>();
@@ -130,7 +134,7 @@ export default class ChargyApp {
                                              [ language ],
                                              elliptic,
                                              moment,
-                                             asn1,
+                                             chargyAsn1,
                                              base32Decode,
                                              () => undefined
                                          );
@@ -168,9 +172,15 @@ export default class ChargyApp {
             return;
         }
 
+        if (this.app.publicKeyInfoPage.style.display !== 'none' &&
+            this.currentLiveLink != null) {
+            this.showLiveLink(this.currentLiveLink);
+            return;
+        }
+
         if (this.app.measurementInfosPage.style.display !== 'none' &&
             this.currentChargingSession != null) {
-            await this.showChargingSessionDetails(this.currentChargingSession);
+            this.showChargingSessionDetails(this.currentChargingSession);
             return;
         }
 
@@ -183,7 +193,7 @@ export default class ChargyApp {
     //#region Global error handling...
 
     doGlobalError(text:      string,
-                  context?:  any)
+                  context?:  any): void
     {
 
         const importantInfo                = document.getElementById("importantInfo")     as HTMLDivElement;
@@ -226,8 +236,17 @@ export default class ChargyApp {
             {
                 this.currentPublicKeyLookup = null;
                 this.currentSimpleURL = null;
-                this.refreshChargingSessionsPage = () => processChargeTransparencyRecord(result);
+                this.currentLiveLink = null;
+                this.refreshChargingSessionsPage = (): void => {
+                    processChargeTransparencyRecord(result);
+                };
                 await this.refreshChargingSessionsPage();
+                return true;
+            }
+
+            if (liveLink.IsAChargeTransparencyLiveLink(result))
+            {
+                this.showLiveLink(result);
                 return true;
             }
 
@@ -264,7 +283,7 @@ export default class ChargyApp {
 
         return false;
 
-        async function processChargeTransparencyRecord(CTR: chargeTransparencyRecord.IChargeTransparencyRecord)
+        function processChargeTransparencyRecord(CTR: chargeTransparencyRecord.IChargeTransparencyRecord): void
         {
 
             //#region Data
@@ -284,7 +303,7 @@ export default class ChargyApp {
 
             //#endregion
 
-            function checkSessionCrypto(chargingSession: chargeTransparencyRecord.IChargingSession)
+            function checkSessionCrypto(chargingSession: chargeTransparencyRecord.IChargingSession): string
             {
 
                 const result = chargingSession.verificationResult ?? {
@@ -809,6 +828,7 @@ export default class ChargyApp {
 
         this.currentPublicKeyLookup = { publicKeys };
         this.currentSimpleURL = null;
+        this.currentLiveLink = null;
         this.app.showPage(this.app.publicKeyInfoPage);
 
         const page          = this.app.publicKeyInfoPage;
@@ -879,6 +899,7 @@ export default class ChargyApp {
     {
         this.currentSimpleURL = urlInfo;
         this.currentPublicKeyLookup = null;
+        this.currentLiveLink = null;
         this.app.showPage(this.app.publicKeyInfoPage);
 
         const page          = this.app.publicKeyInfoPage;
@@ -913,6 +934,50 @@ export default class ChargyApp {
         if (urlInfo.serviceData !== undefined)
             this.appendPublicKeyInfoRow(table, 'fa-code', 'urlServiceDataLabel', JSON.stringify(urlInfo.serviceData, null, 2), true);
     }
+
+    //#region showLiveLink
+
+    private showLiveLink(liveLinkInfo: liveLink.IChargeTransparencyLiveLink): void
+    {
+        this.currentLiveLink = liveLinkInfo;
+        this.currentPublicKeyLookup = null;
+        this.currentSimpleURL = null;
+        this.app.showPage(this.app.publicKeyInfoPage);
+
+        const page = this.app.publicKeyInfoPage;
+        this.setInfoPageTitle(page, 'liveLinkDetailsTitle');
+        const content = page.querySelector<HTMLDivElement>('#publicKeys');
+        if (content == null)
+            return;
+
+        content.replaceChildren();
+
+        const card = chargyLib.CreateDiv(content, 'publicKeyCard');
+        const title = chargyLib.CreateDiv(card, 'title');
+        title.innerText = this.chargy.GetLocalizedText(liveLinkInfo.description) ??
+                          this.chargy.GetLocalizedMessage('liveLinkLabel');
+
+        const table = chargyLib.CreateDiv(card, 'publicKeyTable');
+        if (liveLinkInfo.timestamp != null)
+            this.appendPublicKeyInfoRow(table, 'fa-clock', 'liveLinkTimestampLabel', liveLinkInfo.timestamp);
+        if (liveLinkInfo.geoLocation != null)
+            this.appendPublicKeyInfoRow(
+                table,
+                'fa-map-marker-alt',
+                'liveLinkLocationLabel',
+                `${liveLinkInfo.geoLocation.lat}, ${liveLinkInfo.geoLocation.lng}`
+            );
+        if (liveLinkInfo.connector != null)
+            this.appendPublicKeyInfoRow(table, 'fa-plug', 'liveLinkConnectorLabel', JSON.stringify(liveLinkInfo.connector));
+        if (liveLinkInfo.transports != null)
+            this.appendPublicKeyInfoRow(table, 'fa-network-wired', 'liveLinkTransportsLabel', JSON.stringify(liveLinkInfo.transports), true);
+        if (liveLinkInfo.imageURLs != null)
+            this.appendPublicKeyInfoRow(table, 'fa-images', 'liveLinkImagesLabel', liveLinkInfo.imageURLs.join('\n'), true);
+        if (liveLinkInfo.signatures != null)
+            this.appendPublicKeyInfoRow(table, 'fa-file-signature', 'liveLinkSignaturesLabel', liveLinkInfo.signatures.length.toString());
+    }
+
+    //#endregion
 
     //#endregion
 
@@ -1317,14 +1382,14 @@ export default class ChargyApp {
 
     //#region showChargingSessionDetails
 
-    public async showChargingSessionDetails(chargingSession: chargeTransparencyRecord.IChargingSession)
+    public showChargingSessionDetails(chargingSession: chargeTransparencyRecord.IChargingSession): void
     {
 
         this.currentChargingSession = chargingSession;
 
         const me = this;
 
-        function checkMeasurementCrypto(measurementValue: chargeTransparencyRecord.IMeasurementValue)
+        function checkMeasurementCrypto(measurementValue: chargeTransparencyRecord.IMeasurementValue): string
         {
 
             const result = measurementValue.result ??
@@ -1554,7 +1619,7 @@ export default class ChargyApp {
 
     //#region Capture the correct charging session and its context!
 
-    public captureChargingSession(cs: chargeTransparencyRecord.IChargingSession) {
+    public captureChargingSession(cs: chargeTransparencyRecord.IChargingSession): (this: HTMLDivElement, ev: MouseEvent) => void {
 
         const me = this;
 
@@ -1575,7 +1640,7 @@ export default class ChargyApp {
             if (me.app.chargingSessionsPage.style.display != 'none')
             {
                 me.app.showPage(me.app.measurementInfosPage);
-                void me.showChargingSessionDetails(cs);
+                me.showChargingSessionDetails(cs);
             }
 
         };
@@ -1673,7 +1738,7 @@ export default class ChargyApp {
 
     //#region Capture the correct measurement value and its context!
 
-    public captureMeasurementCryptoDetails(measurementValue: chargeTransparencyRecord.IMeasurementValue) {
+    public captureMeasurementCryptoDetails(measurementValue: chargeTransparencyRecord.IMeasurementValue): (this: HTMLDivElement, ev: MouseEvent) => void {
         const me = this;
         return function(this: HTMLDivElement, _ev: MouseEvent) {
                    me.app.showPage(me.app.cryptoDetailsPage);

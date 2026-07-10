@@ -17,6 +17,8 @@ import {
     isWarningSession
 }                                from '../src/ts/sessionPresentation';
 
+type ChargyAsn1 = ConstructorParameters<typeof Chargy>[4];
+
 describe('charging session presentation', () => {
 
     test('presents implausibly high but validly signed ALFEN data as a warning', async () => {
@@ -43,7 +45,7 @@ describe('charging session presentation', () => {
             [ 'de', 'en' ],
             elliptic,
             moment,
-            asn1,
+            asn1 as ChargyAsn1,
             base32Decode,
             () => undefined
         );

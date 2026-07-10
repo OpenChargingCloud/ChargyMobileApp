@@ -35,6 +35,38 @@
         "de": "Service-Daten",
         "en": "Service data"
     },
+    "liveLinkDetailsTitle": {
+        "de": "Transparenz-Live-Link",
+        "en": "Transparency live link"
+    },
+    "liveLinkLabel": {
+        "de": "Live-Link",
+        "en": "Live link"
+    },
+    "liveLinkTimestampLabel": {
+        "de": "Zeitstempel",
+        "en": "Timestamp"
+    },
+    "liveLinkLocationLabel": {
+        "de": "Position",
+        "en": "Location"
+    },
+    "liveLinkConnectorLabel": {
+        "de": "Anschluss",
+        "en": "Connector"
+    },
+    "liveLinkTransportsLabel": {
+        "de": "Übertragungswege",
+        "en": "Transports"
+    },
+    "liveLinkImagesLabel": {
+        "de": "Bilder",
+        "en": "Images"
+    },
+    "liveLinkSignaturesLabel": {
+        "de": "Signaturen",
+        "en": "Signatures"
+    },
     "publicKeyDetailsTitle": {
         "de": "PublicKey-Informationen",
         "en": "Public key information"

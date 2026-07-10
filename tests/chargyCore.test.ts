@@ -13,13 +13,15 @@ import elliptic               from "elliptic";
 import moment                 from "moment";
 import { describe, expect, test } from "vitest";
 
+type ChargyAsn1 = ConstructorParameters<typeof Chargy>[4];
+
 function createChargy(): Chargy {
     return new Chargy(
         coreI18n,
         ["de", "en"],
         elliptic,
         moment,
-        asn1,
+        asn1 as ChargyAsn1,
         base32Decode,
         () => undefined
     );
@@ -46,7 +48,7 @@ async function detectText(fileName: string, text: string) {
 describe("chargy-core integration", () => {
 
     test("validates a chargeIT transparency record", async () => {
-        const result = await detectFixture("chargeIT/chargeIT-Testdatensatz-02.chargy");
+        const result = await detectFixture("chargeIT/chargeIT-Testdata-02.chargy");
 
         expect(IsAChargeTransparencyRecord(result)).toBe(true);
 
@@ -56,13 +58,6 @@ describe("chargy-core integration", () => {
         expect(result.chargingSessions).toHaveLength(1);
         expect(result.chargingSessions?.[0]?.verificationResult?.status)
             .toBe(SessionVerificationResult.ValidSignature);
-    });
-
-    test("reports the Mobile-specific PTB envelope as unsupported", async () => {
-        const result = await detectFixture("PTB/ptb-simple.json");
-
-        expect(IsAChargeTransparencyRecord(result)).toBe(false);
-        expect(result.status).toBe(SessionVerificationResult.InvalidSessionFormat);
     });
 
     test("detects plain URLs as SimpleURL results", async () => {

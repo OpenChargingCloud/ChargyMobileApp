@@ -86,7 +86,7 @@ export default class App {
 
     _chargyApp: ChargyApp;
 
-    start() {
+    start(): void {
         this.UILanguage = this.getInitialUILanguage();
         document.addEventListener('deviceready', () => { this.onDeviceReady(); },  false);
         document.addEventListener('resume',      () => { this.onDeviceResume(); }, false);
@@ -98,7 +98,7 @@ export default class App {
 
     }
 
-    showPage(page: HTMLDivElement) {
+    showPage(page: HTMLDivElement): void {
 
       this.hideAllPages();
 
@@ -129,7 +129,7 @@ export default class App {
 
     }
 
-    refreshMap(fitBounds?: any) {
+    refreshMap(fitBounds?: any): void {
 
         if (this.map == null)
             return;
@@ -144,11 +144,11 @@ export default class App {
 
     }
 
-    hidePage(page: HTMLDivElement) {
+    hidePage(page: HTMLDivElement): void {
         page.style.display = 'none';
     }
 
-    hideAllPages() {
+    hideAllPages(): void {
 
         this.startPage.style.display                  = 'none';
         this.chargingSessionsPage.style.display       = 'none';
@@ -502,10 +502,10 @@ export default class App {
 
     //#region Create the map
 
-    //@ts-ignore
+    // @ts-expect-error Leaflet is provided globally by the runtime bundle.
     this.map = L.map('map').setView([49.7325504,10.1424442], 13);
 
-    //@ts-ignore
+    // @ts-expect-error Leaflet is provided globally by the runtime bundle.
     
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 18,
@@ -934,7 +934,7 @@ export default class App {
   //#region Global error handling...
 
   doGlobalError(text:      string,
-                context?:  any)
+                context?:  unknown): void
   {
 
     //this.hideAllPages();
@@ -951,7 +951,7 @@ export default class App {
 
   //#endregion
 
-  async processFile(file: Blob, fileName: string) {
+  async processFile(file: Blob, fileName: string): Promise<void> {
     await this._chargyApp.detectContentFormat({
       name: fileName,
       type: file.type,
@@ -1072,7 +1072,7 @@ export default class App {
 
   //#region Read and parse CTR file
 
-  async readAndParseFiles(files: FileList | readonly File[]) {
+  async readAndParseFiles(files: FileList | readonly File[]): Promise<void> {
     const filesToLoad = Array.from(files);
 
     if (filesToLoad.length === 0)
@@ -1107,7 +1107,7 @@ export default class App {
 
   //#region Process pasted CTR file
 
-  async PasteFile() {
+  async PasteFile(): Promise<void> {
 
     this.importantInfo.style.display  = 'none';
     this.importantInfo.innerHTML      = '';

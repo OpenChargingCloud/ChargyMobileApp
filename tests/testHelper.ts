@@ -1,12 +1,13 @@
 import { expect, vi }     from 'vitest';
 import { Chargy }         from '@open-charging-cloud/chargy-core';
+import coreI18n           from '@open-charging-cloud/chargy-core/i18n.json';
 import { readFileSync }   from "node:fs";
 import { DOMParser }      from "@oozcitak/dom";
 import {
     createTestChargy,
-    parseI18NDictionary,
     parseValidationRules
 } from "./chargyTestRuntime";
+import { expandPdfAttachments } from "../src/ts/pdfAttachments";
 import {
     IsAChargeTransparencyRecord,
     IsAChargeTransparencyLiveLink,
@@ -113,7 +114,7 @@ function archiveMimeType(fileName: string): string {
 
 function createVerificationChargy(validationRules?: IValidationRules): Chargy {
 
-    const i18n = parseI18NDictionary(readFileSync(new URL("../i18n.json", import.meta.url), "utf8"));
+    const i18n = coreI18n;
 
     return validationRules === undefined
                ? createTestChargy(Chargy, { i18n })
@@ -268,7 +269,9 @@ async function verifyChargeData(fileName:          string,
             : input
     };
 
-    return createVerificationChargy(validationRules).DetectAndConvertContentFormat([ fileInfo ]);
+    return createVerificationChargy(validationRules).DetectAndConvertContentFormat(
+        await expandPdfAttachments([ fileInfo ])
+    );
 
 }
 
@@ -278,7 +281,9 @@ async function verifyChargeDataFiles(fileInfos:         IFileInfo[],
     : Promise<DetectionResult>
 
 {
-    return createVerificationChargy(validationRules).DetectAndConvertContentFormat(fileInfos);
+    return createVerificationChargy(validationRules).DetectAndConvertContentFormat(
+        await expandPdfAttachments(fileInfos)
+    );
 }
 
 function formatChargeDataVerificationReport(report: DetectionResult): string
