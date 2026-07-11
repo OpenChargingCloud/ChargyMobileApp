@@ -17,6 +17,34 @@ Chargy was inspired by [TRuDI](https://www.ptb.de/cms/ptb/fachabteilungen/abt2/f
 7. Chargy is __*accessible*__. For public sector bodies Chargy fully supports the [EU directive 2016/2102](https://eur-lex.europa.eu/legal-content/EN/TXT/PDF/?uri=CELEX:32016L2102) on the accessibility of websites and mobile applications and provides a context-sensitive feedback-mechanism and methods for dispute resolution.
 
 
+## Supported Charge Transparency Data Formats
+
+Currently supported formats include:
+
+- **Alfen** charge transparency data
+- **Bauer** energy meter data (2 format variants)
+- **ChargePoint** transparency data (2 format variants)
+- **EDL40** and **ISA-EDL40 SML** data
+- **EMH** energy meter data
+- **Mennekes** XML
+- **OCMF**, versions v1.1 to v1.4
+  - Bonner Eichrechtstage **Tariff Text** Extensions
+  - EdDSA support: Ed25519 and Ed448
+  - Post-Quantum Cryptography support: ML-DSA-44, ML-DSA-65, ML-DSA-87
+- **Porsche Charging Data Format (PCDF)**
+
+Supported representations include:
+
+- **Plain Files** containing a single charge transparency data set.
+- **chargeIT Container Format**, a JSON-based container format for a single charging session (2 format variants).
+- **Chargy Container Format**, a JSON-based container format for multiple charging sessions.
+- **SAFE XML Container Format**, an XML-based container format for a single charging session, optionally enriched with additional Chargy metadata about the charging session.
+- **PTB Container Format**, a JSON-based container format for a single charging session.
+- **Archive formats** such as ***tar, ZIP, tar.gz***, and similar formats that combine or compress multiple charge transparency files.
+- **QR-Code images**, such as ***PNG, JPG, JPEG or SVG files***, where the QR-Code represents a charge transparency data set.
+- **PDF/A-3** files transporting a charge transparency file as an embedded additional data stream.
+
+
 ## Compiling from source
 
 This application is based on [Apache Cordova](https://cordova.apache.org), a cross platform Open Source framework for creating mobile applications with Java-/TypeScript, HTML, and (S)CSS.    
