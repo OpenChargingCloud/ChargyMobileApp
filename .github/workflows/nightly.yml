@@ -1,0 +1,218 @@
+name: Nightly
+
+# CI gates repository changes against the locked dependency tree. Nightly also
+# checks moving inputs: runner images, newly published dependencies, and npm
+# advisories. Scheduled workflows run from the default branch and GitHub may
+# disable them after 60 days without repository activity.
+on:
+  schedule:
+    # Avoid the busy top-of-hour period on the Actions scheduler.
+    - cron: '43 2 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nightly-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  full-suite:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            node: '22.13'
+            leg: ubuntu-node-22.13
+          - os: ubuntu-latest
+            node: '26'
+            leg: ubuntu-node-26
+          - os: windows-latest
+            node: '24'
+            leg: windows-node-24
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    env:
+      TZ: UTC
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck application
+        run: npm run typecheck
+
+      - name: Typecheck tests
+        run: npm run test:typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Compile TypeScript
+        run: npm run compile:ts
+
+      - name: Compile Sass
+        run: npm run compile:sass
+
+      - name: Create Webpack bundle
+        run: npm run bundle
+
+      - name: Test
+        run: npm test -- --reporter=default --reporter=junit --outputFile.junit=artifacts/tests-${{ matrix.leg }}.xml
+
+      - name: Prepare Cordova browser app
+        run: npm run build
+
+      - name: Upload test results
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: nightly-results-${{ matrix.leg }}
+          path: artifacts/*.xml
+          if-no-files-found: ignore
+
+  # Resolve all version ranges without using package-lock.json. This catches an
+  # upstream breaking release before a normal lockfile refresh pulls it in.
+  # It is informational because a failure can be caused entirely upstream.
+  floating-dependencies:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    continue-on-error: true
+    env:
+      TZ: UTC
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '26'
+
+      - name: Install newest permitted dependencies
+        run: npm install --no-package-lock
+
+      - name: Report resolved versions
+        run: |
+          {
+            echo '## Dependency versions with package-lock.json ignored'
+            echo
+            echo 'Ranges were resolved to the newest published releases.'
+            echo
+            echo '| Scope | Package | Range | Locked | Resolved |'
+            echo '| --- | --- | --- | --- | --- |'
+          } >> "$GITHUB_STEP_SUMMARY"
+          node -e '
+            const fs = require("fs");
+            const pkg = JSON.parse(fs.readFileSync("package.json", "utf8"));
+            const lock = JSON.parse(fs.readFileSync("package-lock.json", "utf8"));
+            const groups = [
+              ["runtime", pkg.dependencies || {}],
+              ["development", pkg.devDependencies || {}]
+            ];
+            for (const [scope, dependencies] of groups) {
+              for (const [name, range] of Object.entries(dependencies)) {
+                let resolved = "(missing)";
+                try {
+                  resolved = JSON.parse(fs.readFileSync("node_modules/" + name + "/package.json", "utf8")).version;
+                } catch {}
+                const locked = (lock.packages && lock.packages["node_modules/" + name] || {}).version || "?";
+                const mark = locked !== resolved ? " **changed**" : "";
+                console.log("| " + scope + " | " + name + " | " + range + " | " + locked + " | " + resolved + mark + " |");
+              }
+            }
+          ' >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Typecheck application
+        run: npm run typecheck
+
+      - name: Typecheck tests
+        run: npm run test:typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Compile TypeScript
+        run: npm run compile:ts
+
+      - name: Compile Sass
+        run: npm run compile:sass
+
+      - name: Create Webpack bundle
+        run: npm run bundle
+
+      - name: Test
+        run: npm test -- --reporter=default --reporter=junit --outputFile.junit=artifacts/tests-floating.xml
+
+      - name: Prepare Cordova browser app
+        run: npm run build
+
+      - name: Upload test results
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: nightly-results-floating
+          path: artifacts/*.xml
+          if-no-files-found: ignore
+
+  # Advisory data changes independently of the repository, so audit belongs in
+  # the scheduled report rather than in the merge gate.
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    continue-on-error: true
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '26'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Audit
+        run: |
+          npm audit --omit=dev --json > audit-prod.json || true
+          npm audit --json > audit-all.json || true
+          node -e '
+            const fs = require("fs");
+            const render = (file, title) => {
+              let report;
+              try {
+                report = JSON.parse(fs.readFileSync(file, "utf8"));
+              } catch {
+                return "### " + title + "\n\nReport could not be read.\n";
+              }
+              const counts = report.metadata && report.metadata.vulnerabilities || {};
+              const rows = Object.values(report.vulnerabilities || {}).map(v =>
+                "| " + v.name + " | " + v.severity + " | " + (v.fixAvailable ? "yes" : "**no**") + " |"
+              );
+              return "### " + title + "\n\n"
+                + "critical " + (counts.critical || 0) + " · high " + (counts.high || 0)
+                + " · moderate " + (counts.moderate || 0) + " · low " + (counts.low || 0) + "\n\n"
+                + (rows.length
+                    ? "| Package | Severity | Fix available |\n| --- | --- | --- |\n" + rows.join("\n") + "\n"
+                    : "Nothing reported.\n");
+            };
+            console.log("## npm audit\n");
+            console.log(render("audit-prod.json", "Runtime dependencies"));
+            console.log(render("audit-all.json", "Including build-time dependencies"));
+          ' >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload audit reports
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: nightly-audit
+          path: audit-*.json

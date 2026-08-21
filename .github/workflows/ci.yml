@@ -1,0 +1,86 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  # Manual runs from the Actions tab.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  # Keep a verdict for every pushed commit, but cancel superseded PR runs.
+  group: ci-${{ github.event_name == 'pull_request' && github.ref || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  verify:
+    # Test the declared minimum, the current development version, and an
+    # intermediate Node release on Windows for platform-sensitive paths.
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            node: '22.13'
+            leg: ubuntu-node-22.13
+          - os: ubuntu-latest
+            node: '26'
+            leg: ubuntu-node-26
+          - os: windows-latest
+            node: '24'
+            leg: windows-node-24
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    env:
+      TZ: UTC
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Keep the verification phases separate so the Actions UI immediately
+      # identifies which part of the application broke.
+      - name: Typecheck application
+        run: npm run typecheck
+
+      - name: Typecheck tests
+        run: npm run test:typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Compile TypeScript
+        run: npm run compile:ts
+
+      - name: Compile Sass
+        run: npm run compile:sass
+
+      - name: Create Webpack bundle
+        run: npm run bundle
+
+      - name: Test
+        run: npm test -- --reporter=default --reporter=junit --outputFile.junit=artifacts/tests-${{ matrix.leg }}.xml
+
+      # This also exercises the Cordova before_prepare hook and verifies that a
+      # fresh checkout can produce the browser platform.
+      - name: Prepare Cordova browser app
+        run: npm run build
+
+      - name: Upload test results
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-results-${{ matrix.leg }}
+          path: artifacts/*.xml
+          if-no-files-found: ignore

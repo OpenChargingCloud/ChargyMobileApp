@@ -9,8 +9,10 @@ generated dependencies or Cordova projects are inconsistent, follow the
 
 The build is defined by:
 
-- `package.json` for JavaScript dependencies, scripts, Cordova platforms, and
-  Cordova plugins
+- `package.json` for JavaScript dependency ranges, scripts, Cordova platforms,
+  and Cordova plugins
+- `package-lock.json` for the dependency versions reproduced by local and CI
+  builds
 - `config.xml` for Cordova application and platform settings
 - `src/` for the application sources
 - `cordova-plugins/chargy-clipboard/` for the local clipboard plugin
@@ -48,12 +50,12 @@ npm --version
 
 ## Install and verify
 
-Clone the repository and install all declared dependencies:
+Clone the repository and install the locked dependency tree:
 
 ```shell
 git clone https://github.com/OpenChargingCloud/ChargyMobileApp.git
 cd ChargyMobileApp
-npm install
+npm ci
 ```
 
 Run the complete platform-independent verification:
@@ -61,6 +63,10 @@ Run the complete platform-independent verification:
 ```shell
 npm run verify
 ```
+
+Use `npm install` instead when dependencies are intentionally added or
+updated, and commit the resulting `package-lock.json` together with the
+`package.json` change.
 
 This checks the application and test TypeScript projects, compiles TypeScript
 and Sass, creates the Webpack bundle, and runs the Vitest suite.
@@ -77,6 +83,18 @@ npm test
 npm run test:watch
 npm run lint
 ```
+
+## Continuous integration
+
+`.github/workflows/ci.yml` runs for pushes and pull requests against `master`,
+and can also be started manually. It verifies Node.js 22.13 and 26 on Ubuntu
+plus Node.js 24 on Windows, uploads JUnit test results, and prepares the Cordova
+browser application from a fresh dependency installation.
+
+`.github/workflows/nightly.yml` repeats that matrix every night. Additional
+informational jobs test the newest versions permitted by the dependency ranges
+without using the lockfile and summarize current npm advisories. The nightly
+workflow can also be started manually from the GitHub Actions tab.
 
 ## Build and run in a browser
 

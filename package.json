@@ -39,7 +39,7 @@
   "author": "Achim Friedland <achim.friedland@graphdefined.com>",
   "license": "AGPL-3.0-or-later",
   "dependencies": {
-    "@open-charging-cloud/chargy-core": "^0.11.3",
+    "@open-charging-cloud/chargy-core": "^0.12.0",
     "asn1.js": "^5.4.1",
     "base32-decode": "^1.0.0",
     "buffer": "^6.0.3",
@@ -49,21 +49,21 @@
     "leaflet": "^1.9.4",
     "leaflet.awesome-markers": "^2.0.5",
     "moment": "^2.30.1",
-    "pdfjs-dist": "^6.0.227"
+    "pdfjs-dist": "^6.2.108"
   },
   "devDependencies": {
-    "@cyclonedx/cyclonedx-npm": "^6.0.0",
+    "@cyclonedx/cyclonedx-npm": "^6.0.1",
     "@eslint/js": "^10.0.1",
     "@types/elliptic": "^6.4.18",
-    "@types/leaflet": "^1.9.21",
+    "@types/leaflet": "^1.9.22",
     "@types/leaflet.awesome-markers": "^2.0.29",
-    "@types/node": "^26.1.1",
+    "@types/node": "^26.2.0",
     "ajv": "^8.20.0",
     "ajv-formats": "^3.0.1",
     "ajv-formats-draft2019": "^1.6.1",
     "chargy-clipboard": "file:cordova-plugins/chargy-clipboard",
     "cordova": "^13.0.0",
-    "cordova-android": "^15.0.0",
+    "cordova-android": "^15.1.0",
     "cordova-browser": "^7.0.0",
     "cordova-ios": "^8.1.1",
     "cordova-plugin-android-permissions": "1.1.5",
@@ -75,14 +75,14 @@
     "cordova-plugin-geolocation": "^5.0.0",
     "cordova-plugin-inappbrowser": "^7.0.0",
     "cordova-plugin-network-information": "^3.1.0",
-    "eslint": "^10.6.0",
+    "eslint": "^10.8.1",
     "minimizer-webpack-plugin": "^5.6.1",
-    "sass": "^1.101.0",
+    "sass": "^1.103.1",
     "typescript": "^6.0.3",
-    "typescript-eslint": "^8.63.0",
-    "vitest": "^4.1.10",
-    "webpack": "^5.108.4",
-    "webpack-cli": "^7.2.1"
+    "typescript-eslint": "^8.67.0",
+    "vitest": "^4.1.11",
+    "webpack": "^5.109.2",
+    "webpack-cli": "^7.2.2"
   },
   "cordova": {
     "plugins": {
