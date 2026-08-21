@@ -1,5 +1,8 @@
 # Chargy Mobile App
 
+[![CI](https://github.com/OpenChargingCloud/ChargyMobileApp/actions/workflows/ci.yml/badge.svg)](https://github.com/OpenChargingCloud/ChargyMobileApp/actions/workflows/ci.yml)
+[![Nightly](https://github.com/OpenChargingCloud/ChargyMobileApp/actions/workflows/nightly.yml/badge.svg)](https://github.com/OpenChargingCloud/ChargyMobileApp/actions/workflows/nightly.yml)
+
 Chargy is a transparency software for secure and transparent e-mobility charging processes, as defined by the German "Eichrecht". The software allows you to verify the cryptographic signatures of energy measurements within charge detail records and comes with a couple of useful extentions to simplify the entire process for endusers and operators.
 
 Chargy was inspired by [TRuDI](https://www.ptb.de/cms/ptb/fachabteilungen/abt2/fb-23/ag-234/info-center-234/trudi.html) an Open Source Software project for transparency of smart meters.
