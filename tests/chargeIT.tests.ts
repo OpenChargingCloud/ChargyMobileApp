@@ -46,22 +46,22 @@ describe('chargeIT BSM Tests', () => {
 
     test("bsm-ws36a-good", async () => {
         await expectVerificationReport(
-            "chargeIT/BSM/bsm-ws36a-good.json",
-            "chargeIT/BSM/bsm-ws36a-good.expected.txt"
+            "chargeIT/bsm/bsm-ws36a-good.json",
+            "chargeIT/bsm/bsm-ws36a-good.expected.txt"
         );
     });
 
     test("ocmf", async () => {
         await expectVerificationReport(
-            "chargeIT/BSM/ocmf.xml",
-            "chargeIT/BSM/ocmf.expected.txt"
+            "chargeIT/bsm/ocmf.xml",
+            "chargeIT/bsm/ocmf.expected.txt"
         );
     });
 
     test("ocmf_withoutIF", async () => {
         await expectVerificationReport(
-            "chargeIT/BSM/ocmf_withoutIF.xml",
-            "chargeIT/BSM/ocmf_withoutIF.expected.txt"
+            "chargeIT/bsm/ocmf_withoutIF.xml",
+            "chargeIT/bsm/ocmf_withoutIF.expected.txt"
         );
     });
 
