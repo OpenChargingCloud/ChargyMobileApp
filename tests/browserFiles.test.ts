@@ -13,7 +13,7 @@ import {
 
 describe("browser file helpers", () => {
     test("uses the native Cordova bridge for mobile clipboard access", async () => {
-        const exec = (success: (value: string) => void,
+        const exec = (success: (value: unknown) => void,
                       _failure: (error: unknown) => void,
                       service: string,
                       action: string) => {
@@ -26,6 +26,38 @@ describe("browser file helpers", () => {
             kind: "text",
             text: "{\"format\":\"test\"}"
         });
+    });
+
+    test("reads structured text from the native Cordova bridge", async () => {
+        const exec = (success: (value: unknown) => void) => {
+            success({ kind: "text", text: "<record />" });
+        };
+
+        await expect(readCordovaClipboardContent(exec)).resolves.toEqual({
+            kind: "text",
+            text: "<record />"
+        });
+    });
+
+    test("reads a copied file from the native Cordova bridge", async () => {
+        const exec = (success: (value: unknown) => void) => {
+            success({
+                kind: "file",
+                base64: btoa("{\"format\":\"test\"}"),
+                fileName: "record.json",
+                mimeType: "application/json"
+            });
+        };
+
+        const content = await readCordovaClipboardContent(exec);
+
+        expect(content.kind).toBe("file");
+        if (content.kind !== "file")
+            return;
+
+        expect(content.fileName).toBe("record.json");
+        expect(content.blob.type).toBe("application/json");
+        await expect(content.blob.text()).resolves.toBe("{\"format\":\"test\"}");
     });
 
     test("reads text from a rich clipboard item without a second clipboard request", async () => {
