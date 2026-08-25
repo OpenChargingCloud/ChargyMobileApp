@@ -7,6 +7,10 @@ import { readQRCodeTextFromImage }                      from '@open-charging-clo
 import { normalizeXMLText }                             from '@open-charging-cloud/chargy-core';
 
 
+// QR rasterization and decoding is CPU-bound and can exceed Vitest's default
+// five-second timeout on a cold Windows CI runner.
+const qrImageTestTimeout = 15_000;
+
 describe('ALFEN Tests', () => {
 
 
@@ -22,21 +26,21 @@ describe('ALFEN Tests', () => {
             "ALFEN/ALFEN-Testdata-03_SAFEXMLContainer_asQRCode.png",
             "ALFEN/ALFEN-Testdata-03_SAFEXMLContainer_asQRCode.expected.txt"
         );
-    });
+    }, qrImageTestTimeout);
 
     test("ALFEN Testdata 03 - SAFE XML-Container as QR Code JPEG", async () => {
         await expectBinaryVerificationReport(
             "ALFEN/ALFEN-Testdata-03_SAFEXMLContainer_asQRCode.jpg",
             "ALFEN/ALFEN-Testdata-03_SAFEXMLContainer_asQRCode.expected.txt"
         );
-    });
+    }, qrImageTestTimeout);
 
     test("ALFEN Testdata 03 - SAFE XML-Container as QR Code SVG", async () => {
         await expectBinaryVerificationReport(
             "ALFEN/ALFEN-Testdata-03_SAFEXMLContainer_asQRCode.svg",
             "ALFEN/ALFEN-Testdata-03_SAFEXMLContainer_asQRCode.expected.txt"
         );
-    });
+    }, qrImageTestTimeout);
 
 
     // with Chargy Extensions...
@@ -65,7 +69,7 @@ describe('ALFEN Tests', () => {
 
         expect(normalizeXMLText(qrText)).toBe(normalizeXMLText(expectedXML));
 
-    });
+    }, qrImageTestTimeout);
 
 
     // Signed, yet still implausible...

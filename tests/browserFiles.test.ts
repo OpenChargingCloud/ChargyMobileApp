@@ -11,6 +11,10 @@ import {
     readCordovaClipboardContent
 } from "../src/ts/clipboard";
 
+// QR rasterization and decoding is CPU-bound and can exceed Vitest's default
+// five-second timeout on a cold Windows CI runner.
+const qrImageTestTimeout = 15_000;
+
 describe("browser file helpers", () => {
     test("uses the native Cordova bridge for mobile clipboard access", async () => {
         const exec = (success: (value: unknown) => void,
@@ -152,5 +156,5 @@ describe("browser file helpers", () => {
         );
 
         expect(normalizeXMLText(qrText)).toBe(normalizeXMLText(expectedXML));
-    });
+    }, qrImageTestTimeout);
 });

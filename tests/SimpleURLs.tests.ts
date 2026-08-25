@@ -10,6 +10,10 @@ import {
 import { describe, expect, test, vi } from "vitest";
 import { createTestChargy } from "./chargyTestRuntime";
 
+// QR rasterization and decoding is CPU-bound and can exceed Vitest's default
+// five-second timeout on a cold Windows CI runner.
+const qrImageTestTimeout = 15_000;
+
 function readFixture(fileName: string): Uint8Array {
     return new Uint8Array(readFileSync(new URL(`fixtures/SimpleURLs/${fileName}`, import.meta.url)));
 }
@@ -158,6 +162,6 @@ describe("Simple URLs", () => {
             "@context": URLContext,
             "url":      "https://chargy.charging.cloud/"
         });
-    });
+    }, qrImageTestTimeout);
 
 });
