@@ -36,6 +36,9 @@ module.exports = {
         minimize: true,
         minimizer: [
             new MinimizerPlugin({
+                // Terser 5.50 mangles PDF.js 6.2 private fields inconsistently
+                // inside its dynamic WASM imports, which makes the worker invalid.
+                exclude: /pdf[_-]worker/i,
                 minimizerOptions: {
                     format: {
                         ascii_only: true

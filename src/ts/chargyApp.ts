@@ -46,7 +46,6 @@ import {
     getMeasurementValueInKWh,
     shouldShowMeasurementChart
 }                                      from './measurementPresentation';
-import { expandPdfAttachments }        from './pdfAttachments';
 
 // @ts-expect-error Leaflet is provided globally by the runtime bundle.
 const leaflet: any = L;
@@ -228,9 +227,7 @@ export default class ChargyApp {
                     ? [fileInfos]
                     : fileInfos;
 
-            const result = await this.chargy.DetectAndConvertContentFormat(
-                await expandPdfAttachments(normalizedFileInfos)
-            );
+            const result = await this.chargy.DetectAndConvertContentFormat(normalizedFileInfos);
 
             if (chargeTransparencyRecord.IsAChargeTransparencyRecord(result))
             {

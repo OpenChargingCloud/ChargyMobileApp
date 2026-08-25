@@ -7,7 +7,6 @@ import {
     createTestChargy,
     parseValidationRules
 } from "./chargyTestRuntime";
-import { expandPdfAttachments } from "../src/ts/pdfAttachments";
 import {
     IsAChargeTransparencyRecord,
     IsAChargeTransparencyLiveLink,
@@ -269,9 +268,7 @@ async function verifyChargeData(fileName:          string,
             : input
     };
 
-    return createVerificationChargy(validationRules).DetectAndConvertContentFormat(
-        await expandPdfAttachments([ fileInfo ])
-    );
+    return createVerificationChargy(validationRules).DetectAndConvertContentFormat([ fileInfo ]);
 
 }
 
@@ -281,9 +278,7 @@ async function verifyChargeDataFiles(fileInfos:         IFileInfo[],
     : Promise<DetectionResult>
 
 {
-    return createVerificationChargy(validationRules).DetectAndConvertContentFormat(
-        await expandPdfAttachments(fileInfos)
-    );
+    return createVerificationChargy(validationRules).DetectAndConvertContentFormat(fileInfos);
 }
 
 function formatChargeDataVerificationReport(report: DetectionResult): string

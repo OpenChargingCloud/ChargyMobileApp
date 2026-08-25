@@ -12,6 +12,9 @@ npm-debug.log
 node_modules
 sbom*.cdx.json
 
+# Local assistant settings
+.claude/settings.local.json
+
 # Cordova
 platforms
 plugins
