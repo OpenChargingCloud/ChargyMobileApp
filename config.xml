@@ -18,6 +18,38 @@
     <allow-intent href="mailto:*" />
     <allow-intent href="geo:*" />
     <platform name="android">
+        <resource-file src="res/android/values/chargy_icon_colors.xml"
+                       target="/app/src/main/res/values/chargy_icon_colors.xml" />
+        <icon density="ldpi"
+              src="res/android/legacy/ldpi.png"
+              foreground="res/android/adaptive/ldpi-foreground.png"
+              background="@color/chargy_icon_background"
+              monochrome="res/android/adaptive/ldpi-monochrome.png" />
+        <icon density="mdpi"
+              src="res/android/legacy/mdpi.png"
+              foreground="res/android/adaptive/mdpi-foreground.png"
+              background="@color/chargy_icon_background"
+              monochrome="res/android/adaptive/mdpi-monochrome.png" />
+        <icon density="hdpi"
+              src="res/android/legacy/hdpi.png"
+              foreground="res/android/adaptive/hdpi-foreground.png"
+              background="@color/chargy_icon_background"
+              monochrome="res/android/adaptive/hdpi-monochrome.png" />
+        <icon density="xhdpi"
+              src="res/android/legacy/xhdpi.png"
+              foreground="res/android/adaptive/xhdpi-foreground.png"
+              background="@color/chargy_icon_background"
+              monochrome="res/android/adaptive/xhdpi-monochrome.png" />
+        <icon density="xxhdpi"
+              src="res/android/legacy/xxhdpi.png"
+              foreground="res/android/adaptive/xxhdpi-foreground.png"
+              background="@color/chargy_icon_background"
+              monochrome="res/android/adaptive/xxhdpi-monochrome.png" />
+        <icon density="xxxhdpi"
+              src="res/android/legacy/xxxhdpi.png"
+              foreground="res/android/adaptive/xxxhdpi-foreground.png"
+              background="@color/chargy_icon_background"
+              monochrome="res/android/adaptive/xxxhdpi-monochrome.png" />
         <allow-intent href="market:*" />
         <config-file target="AndroidManifest.xml" parent="/*">
             <uses-permission android:name="android.permission.CAMERA" />
@@ -25,6 +57,7 @@
         </config-file>
     </platform>
     <platform name="ios">
+        <icon src="res/ios/icon-1024.png" width="1024" height="1024" />
         <allow-intent href="itms:*" />
         <allow-intent href="itms-apps:*" />
         <edit-config target="NSCameraUsageDescription" file="*-Info.plist" mode="merge">
