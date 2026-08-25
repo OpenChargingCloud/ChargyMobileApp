@@ -63,8 +63,7 @@ function decodeBase64(base64: string): ArrayBuffer {
 }
 
 function parseNativeClipboardContent(value: unknown): ClipboardContent {
-    // Older versions of the native plug-in, and the Android implementation,
-    // return the clipboard text directly.
+    // Older versions of the native plug-in returned clipboard text directly.
     if (typeof value === "string")
         return requireClipboardText(value);
 

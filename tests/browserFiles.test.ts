@@ -60,6 +60,38 @@ describe("browser file helpers", () => {
         await expect(content.blob.text()).resolves.toBe("{\"format\":\"test\"}");
     });
 
+    test.each([
+        {
+            fileName: "record.pdf",
+            mimeType: "application/pdf",
+            bytes: [ 0x25, 0x50, 0x44, 0x46 ]
+        },
+        {
+            fileName: "record.png",
+            mimeType: "image/png",
+            bytes: [ 0x89, 0x50, 0x4e, 0x47 ]
+        }
+    ])("preserves native $mimeType clipboard files", async ({ fileName, mimeType, bytes }) => {
+        const exec = (success: (value: unknown) => void) => {
+            success({
+                kind: "file",
+                base64: btoa(String.fromCharCode(...bytes)),
+                fileName,
+                mimeType
+            });
+        };
+
+        const content = await readCordovaClipboardContent(exec);
+
+        expect(content.kind).toBe("file");
+        if (content.kind !== "file")
+            return;
+
+        expect(content.fileName).toBe(fileName);
+        expect(content.blob.type).toBe(mimeType);
+        expect(Array.from(new Uint8Array(await content.blob.arrayBuffer()))).toEqual(bytes);
+    });
+
     test("reads text from a rich clipboard item without a second clipboard request", async () => {
         let textReads = 0;
         const clipboard = {
