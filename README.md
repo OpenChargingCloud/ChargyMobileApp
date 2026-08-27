@@ -51,7 +51,7 @@ Supported representations include:
 - **PDF/A-3** files transporting a charge transparency file as an embedded additional data stream.
 
 
-## Building from source
+## Building from Source
 
 Chargy Mobile is an [Apache Cordova](https://cordova.apache.org) application
 for Android and iOS. A browser target is available for development and testing.
@@ -62,6 +62,11 @@ follow the [build guide](documentation/BUILD.md).
 If a regular build fails because installed dependencies, generated web assets,
 Cordova platforms, or plugins are inconsistent, follow the
 [rebuild and recovery guide](documentation/REBUILD.md).
+
+Before release updates do not forget to:
+```
+npx cordova prepare android
+```
 
 
 ## Funding

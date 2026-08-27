@@ -5,6 +5,7 @@ checkout and for day-to-day development. If a normal build fails because
 generated dependencies or Cordova projects are inconsistent, follow the
 [rebuild and recovery guide](REBUILD.md).
 
+
 ## Project configuration
 
 The build is defined by:
@@ -22,6 +23,7 @@ The build is defined by:
 Cordova, TypeScript, Sass, Webpack, Vitest, platform packages, and plugins are
 installed locally through npm. Global installations of these tools are not
 required.
+
 
 ## Toolchain
 
@@ -47,6 +49,7 @@ Check the active Node.js and npm versions before installing dependencies:
 node --version
 npm --version
 ```
+
 
 ## Install and verify
 
@@ -84,6 +87,7 @@ npm run test:watch
 npm run lint
 ```
 
+
 ## Continuous integration
 
 `.github/workflows/ci.yml` runs for pushes and pull requests against `master`,
@@ -95,6 +99,7 @@ browser application from a fresh dependency installation.
 informational jobs test the newest versions permitted by the dependency ranges
 without using the lockfile and summarize current npm advisories. The nightly
 workflow can also be started manually from the GitHub Actions tab.
+
 
 ## Build and run in a browser
 
@@ -122,6 +127,7 @@ npm run browser
 
 The browser target is intended for development and testing. Native Cordova
 APIs must also be tested on Android and iOS devices.
+
 
 ## Build Android
 
@@ -168,6 +174,7 @@ Release builds additionally require signing configuration. Keep signing keys
 outside the repository, for example below the ignored `resources/signing/`
 directory.
 
+
 ## Build iOS
 
 iOS builds are supported only on macOS. The current `cordova-ios@8` toolchain
@@ -193,6 +200,7 @@ npx cordova run ios
 Device builds and App Store archives require an Apple development team,
 certificates, and provisioning configured in Xcode.
 
+
 ## Generated files
 
 The directories `.build/`, `platforms/`, and `plugins/`, and all generated
@@ -200,6 +208,7 @@ content below `www/`, are build outputs. Keep source changes in `src/`,
 `config.xml`, `package.json`, or the local plugin. Changes made directly to
 generated Android, iOS, plugin, or web files can be overwritten by the next
 Cordova prepare.
+
 
 ## Dependency maintenance
 
