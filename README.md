@@ -8,6 +8,10 @@ Chargy is a transparency software for secure and transparent e-mobility charging
 Chargy was inspired by [TRuDI](https://www.ptb.de/cms/ptb/fachabteilungen/abt2/fb-23/ag-234/info-center-234/trudi.html) an Open Source Software project for transparency of smart meters.
 
 
+You can find the app within the following app stores:
+- Google PlayStore: [Chargy Transparenz Software](https://play.google.com/store/apps/details?id=cloud.charging.open.chargy.mobile)
+
+
 ## Benefits of Chargy
 
 1. Chargy comes with __*meta data*__. True charging transparency is more than just signed smart meter values. Chargy allows you to group multiple signed smart meter values to entire charging sessions and to add additional meta data like EVSE information, geo coordinates, tariffs, ... within your backend in order to improve the user experience for the ev drivers.
