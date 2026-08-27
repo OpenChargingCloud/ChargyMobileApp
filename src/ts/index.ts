@@ -75,9 +75,20 @@ export default class App {
     private qrCodeScannerCancelButton:    HTMLButtonElement;
     private qrCodeScannerStream:          MediaStream|null = null;
     private qrCodeScannerAnimationFrame:  number|null      = null;
+    private qrCodeScannerIsAvailable:     boolean          = false;
+    private qrCodeScannerAvailabilityTitle: string         = '';
+    private qrCodeScannerIsOpening:       boolean          = false;
+    private qrCodeScannerRequestId:       number           = 0;
     private qrCodeScannerIsProcessing:    boolean          = false;
+    private qrCodeScannerLastScanTime:    number           = 0;
+    private qrCodeScannerScanCount:       number           = 0;
     private qrCodeScannerLastText:        string|null      = null;
     private qrCodeScannerLastURL:         URL|null         = null;
+
+    private readonly qrCodeScannerScanIntervalMs:           number = 125;
+    private readonly qrCodeScannerRegularMaxDimension:      number = 1280;
+    private readonly qrCodeScannerDetailedMaxDimension:     number = 2048;
+    private readonly qrCodeScannerDetailedScanFrequency:    number = 8;
 
 
     chargingSessionsPage_MovementStartX  = null;
@@ -244,7 +255,23 @@ export default class App {
         this.setupBrowserDragAndDrop();
 
         const pasteButton                 = <HTMLButtonElement> document.getElementById('pasteButton');
-        pasteButton.onclick             = () => { void this.PasteFile(); };
+        pasteButton.onclick             = async () => {
+            if (pasteButton.disabled)
+                return;
+
+            pasteButton.disabled = true;
+            pasteButton.setAttribute('aria-busy', 'true');
+
+            try
+            {
+                await this.PasteFile();
+            }
+            finally
+            {
+                pasteButton.disabled = false;
+                pasteButton.setAttribute('aria-busy', 'false');
+            }
+        };
 
         this.qrScanButton                        = document.getElementById('qrScanButton')                        as HTMLButtonElement;
         this.qrCodeScannerDiv                    = document.getElementById('qrCodeScanner')                       as HTMLDivElement;
@@ -691,8 +718,21 @@ export default class App {
   private setQRCodeScannerButtonAvailability(isAvailable: boolean,
                                              title:       string): void
   {
-    this.qrScanButton.disabled = !isAvailable;
-    this.qrScanButton.title    = title;
+    this.qrCodeScannerIsAvailable       = isAvailable;
+    this.qrCodeScannerAvailabilityTitle = title;
+    this.refreshQRCodeScannerButtonState();
+  }
+
+  private refreshQRCodeScannerButtonState(): void
+  {
+    if (this.qrScanButton == null)
+      return;
+
+    const scannerIsActive = this.qrCodeScannerIsOpening || this.qrCodeScannerStream != null;
+
+    this.qrScanButton.disabled = !this.qrCodeScannerIsAvailable || scannerIsActive;
+    this.qrScanButton.title    = this.qrCodeScannerAvailabilityTitle;
+    this.qrScanButton.setAttribute('aria-busy', this.qrCodeScannerIsOpening ? 'true' : 'false');
   }
 
   private async requestAndroidCameraPermission(): Promise<boolean>
@@ -719,38 +759,68 @@ export default class App {
   private async openQRCodeScanner(): Promise<void>
   {
 
-    if (this.qrScanButton.disabled)
+    if (!this.qrCodeScannerIsAvailable ||
+         this.qrCodeScannerIsOpening   ||
+         this.qrCodeScannerStream != null)
       return;
+
+    const requestId = ++this.qrCodeScannerRequestId;
+    this.qrCodeScannerIsOpening = true;
+    this.refreshQRCodeScannerButtonState();
 
     this.resetQRCodeScannerDialog(this.t('cameraPermissionRequested'));
     this.qrCodeScannerDiv.style.display = 'flex';
 
-    if (!await this.requestAndroidCameraPermission())
-    {
-      this.closeQRCodeScanner();
-      this.doGlobalError(this.t('cameraAccessDeniedSettings'));
-      return;
-    }
-
-    this.setQRCodeScannerStatus(this.t('cameraStarting'));
-
     try
     {
+      if (!await this.requestAndroidCameraPermission())
+      {
+        if (requestId !== this.qrCodeScannerRequestId)
+          return;
+
+        this.closeQRCodeScanner();
+        this.doGlobalError(this.t('cameraAccessDeniedSettings'));
+        return;
+      }
+
+      if (requestId !== this.qrCodeScannerRequestId)
+        return;
+
+      this.setQRCodeScannerStatus(this.t('cameraStarting'));
+
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: false,
         video: {
-          facingMode: { ideal: 'environment' }
+          facingMode: { ideal: 'environment' },
+          width:      { ideal: 1920 },
+          height:     { ideal: 1080 },
+          frameRate:  { ideal: 24 }
         }
       });
+
+      if (requestId !== this.qrCodeScannerRequestId ||
+          this.qrCodeScannerDiv.style.display !== 'flex')
+      {
+        for (const track of stream.getTracks())
+          track.stop();
+        return;
+      }
 
       this.qrCodeScannerStream          = stream;
       this.qrCodeScannerVideo.srcObject = stream;
 
       await this.qrCodeScannerVideo.play();
+
+      if (requestId !== this.qrCodeScannerRequestId)
+        return;
+
       this.resumeQRCodeScanner();
     }
     catch (exception)
     {
+      if (requestId !== this.qrCodeScannerRequestId)
+        return;
+
       const exceptionName = exception instanceof DOMException
                               ? exception.name
                               : '';
@@ -763,11 +833,22 @@ export default class App {
         exception
       );
     }
+    finally
+    {
+      if (requestId === this.qrCodeScannerRequestId)
+      {
+        this.qrCodeScannerIsOpening = false;
+        this.refreshQRCodeScannerButtonState();
+      }
+    }
 
   }
 
   private closeQRCodeScanner(): void
   {
+
+    this.qrCodeScannerRequestId++;
+    this.qrCodeScannerIsOpening = false;
 
     if (this.qrCodeScannerAnimationFrame != null)
     {
@@ -793,20 +874,25 @@ export default class App {
       this.qrCodeScannerDiv.style.display = 'none';
 
     this.qrCodeScannerIsProcessing = false;
+    this.qrCodeScannerLastScanTime = 0;
+    this.qrCodeScannerScanCount    = 0;
     this.qrCodeScannerLastText     = null;
     this.qrCodeScannerLastURL      = null;
+    this.refreshQRCodeScannerButtonState();
 
   }
 
   private resumeQRCodeScanner(): void
   {
     this.qrCodeScannerIsProcessing = false;
+    this.qrCodeScannerLastScanTime = 0;
+    this.qrCodeScannerScanCount    = 0;
     this.qrCodeScannerLastText     = null;
     this.qrCodeScannerLastURL      = null;
     this.resetQRCodeScannerDialog(this.t('cameraReady'));
 
     if (this.qrCodeScannerAnimationFrame == null)
-      this.scanQRCodeFrame();
+      this.qrCodeScannerAnimationFrame = requestAnimationFrame(timestamp => { this.scanQRCodeFrame(timestamp); });
   }
 
   private resetQRCodeScannerDialog(statusText: string): void
@@ -823,56 +909,73 @@ export default class App {
     this.qrCodeScannerStatusDiv.textContent = statusText;
   }
 
-  private scanQRCodeFrame(): void
+  private readQRCodeFromVideoFrame(maxDimension: number): string|undefined
   {
+    const sourceWidth  = this.qrCodeScannerVideo.videoWidth;
+    const sourceHeight = this.qrCodeScannerVideo.videoHeight;
+    const scale        = Math.min(1, maxDimension / Math.max(sourceWidth, sourceHeight));
+    const targetWidth  = Math.max(1, Math.round(sourceWidth  * scale));
+    const targetHeight = Math.max(1, Math.round(sourceHeight * scale));
+    const context      = this.qrCodeScannerCanvas.getContext('2d', { willReadFrequently: true });
+
+    if (context == null)
+      return undefined;
+
+    if (this.qrCodeScannerCanvas.width !== targetWidth)
+      this.qrCodeScannerCanvas.width = targetWidth;
+
+    if (this.qrCodeScannerCanvas.height !== targetHeight)
+      this.qrCodeScannerCanvas.height = targetHeight;
+
+    context.drawImage(
+      this.qrCodeScannerVideo,
+      0,
+      0,
+      targetWidth,
+      targetHeight
+    );
+
+    const imageData = context.getImageData(0, 0, targetWidth, targetHeight);
+    return readQRCodeTextFromImageData({
+      data:   imageData.data,
+      width:  imageData.width,
+      height: imageData.height
+    });
+  }
+
+  private scanQRCodeFrame(timestamp: number): void
+  {
+    this.qrCodeScannerAnimationFrame = null;
 
     if (this.qrCodeScannerDiv.style.display !== 'flex')
-    {
-      this.qrCodeScannerAnimationFrame = null;
       return;
-    }
 
     if (!this.qrCodeScannerIsProcessing &&
+         timestamp - this.qrCodeScannerLastScanTime >= this.qrCodeScannerScanIntervalMs &&
          this.qrCodeScannerVideo.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA &&
          this.qrCodeScannerVideo.videoWidth  > 0 &&
          this.qrCodeScannerVideo.videoHeight > 0)
     {
-      const context = this.qrCodeScannerCanvas.getContext('2d', { willReadFrequently: true });
+      this.qrCodeScannerLastScanTime = timestamp;
+      this.qrCodeScannerScanCount++;
 
-      if (context != null)
+      let qrText = this.readQRCodeFromVideoFrame(this.qrCodeScannerRegularMaxDimension);
+
+      if (qrText == null &&
+          this.qrCodeScannerScanCount % this.qrCodeScannerDetailedScanFrequency === 0)
       {
-        this.qrCodeScannerCanvas.width  = this.qrCodeScannerVideo.videoWidth;
-        this.qrCodeScannerCanvas.height = this.qrCodeScannerVideo.videoHeight;
+        qrText = this.readQRCodeFromVideoFrame(this.qrCodeScannerDetailedMaxDimension);
+      }
 
-        context.drawImage(
-          this.qrCodeScannerVideo,
-          0,
-          0,
-          this.qrCodeScannerCanvas.width,
-          this.qrCodeScannerCanvas.height
-        );
-
-        const imageData = context.getImageData(
-          0,
-          0,
-          this.qrCodeScannerCanvas.width,
-          this.qrCodeScannerCanvas.height
-        );
-        const qrText = readQRCodeTextFromImageData({
-          data:   imageData.data,
-          width:  imageData.width,
-          height: imageData.height
-        });
-
-        if (qrText != null && qrText !== this.qrCodeScannerLastText)
-        {
-          this.qrCodeScannerLastText = qrText;
-          void this.handleScannedQRCodeText(qrText);
-        }
+      if (qrText != null && qrText !== this.qrCodeScannerLastText)
+      {
+        this.qrCodeScannerLastText = qrText;
+        void this.handleScannedQRCodeText(qrText);
       }
     }
 
-    this.qrCodeScannerAnimationFrame = requestAnimationFrame(() => { this.scanQRCodeFrame(); });
+    if (this.qrCodeScannerDiv.style.display === 'flex')
+      this.qrCodeScannerAnimationFrame = requestAnimationFrame(nextTimestamp => { this.scanQRCodeFrame(nextTimestamp); });
 
   }
 

@@ -96,10 +96,10 @@
                             einer Datei laden, über die Zwischenablage einfügen oder als QR-Code scannen...</div>
 
             <div id="buttonsDiv">
-                <button id="fileInputButton"><i class="far fa-folder-open"></i><br /><span data-i18n-key="recordLabel">Datensatz</span><br /><span data-i18n-key="loadLabel">laden</span></button>
+                <button id="fileInputButton" type="button"><i class="far fa-folder-open"></i><br /><span data-i18n-key="recordLabel">Datensatz</span><br /><span data-i18n-key="loadLabel">laden</span></button>
                 <input id="fileInput" type="file" multiple style="display: none"/>
-                <button id="qrScanButton" disabled title="Keine Kamera verfügbar"><i class="fas fa-qrcode"></i><br /><span data-i18n-key="qrCodeLabel">QR-Code</span><br /><span data-i18n-key="scanLabel">scannen</span></button>
-                <button id="pasteButton"><i class="fas fa-paste"></i><br /><span data-i18n-key="recordLabel">Datensatz</span><br /><span data-i18n-key="pasteLabel">einfügen</span></button>
+                <button id="qrScanButton" type="button" disabled aria-busy="false" title="Keine Kamera verfügbar"><i class="fas fa-qrcode"></i><br /><span data-i18n-key="qrCodeLabel">QR-Code</span><br /><span data-i18n-key="scanLabel">scannen</span></button>
+                <button id="pasteButton" type="button" aria-busy="false"><i class="fas fa-paste"></i><br /><span data-i18n-key="recordLabel">Datensatz</span><br /><span data-i18n-key="pasteLabel">einfügen</span></button>
             </div>
 
             <div id="loadingErrors">
@@ -403,7 +403,7 @@
                 </div>
 
                 <div id="scannerViewport">
-                    <video id="qrCodeScannerVideo" autoplay muted playsinline></video>
+                    <video id="qrCodeScannerVideo" autoplay muted playsinline webkit-playsinline></video>
                     <canvas id="qrCodeScannerCanvas"></canvas>
                     <div id="scannerFrame"></div>
                 </div>

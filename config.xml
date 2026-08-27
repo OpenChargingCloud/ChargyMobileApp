@@ -60,6 +60,7 @@
         <icon src="res/ios/icon-1024.png" width="1024" height="1024" />
         <allow-intent href="itms:*" />
         <allow-intent href="itms-apps:*" />
+        <preference name="AllowInlineMediaPlayback" value="true" />
         <edit-config target="NSCameraUsageDescription" file="*-Info.plist" mode="merge">
             <string>Chargy benötigt Zugriff auf die Kamera, um QR-Codes mit Transparenzdatensätzen zu scannen.</string>
         </edit-config>

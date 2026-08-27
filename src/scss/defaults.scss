@@ -295,6 +295,15 @@ body {
         background:         custom.$start-button-background;
         box-shadow:         none;
         align-self:         center;
+        cursor:             pointer;
+        touch-action:       manipulation;
+        -webkit-user-select: none;
+        user-select:        none;
+        -webkit-tap-highlight-color: rgba(81, 154, 208, 0.28);
+        transition:         color 100ms ease-out,
+                            background-color 100ms ease-out,
+                            opacity 100ms ease-out,
+                            transform 80ms ease-out;
 
         i {
             font-size:          custom.$start-button-icon-font-size;
@@ -303,17 +312,32 @@ body {
 
       }
 
-      button:hover {
+      @media (hover: hover) and (pointer: fine) {
+        button:hover:not(:disabled) {
+            color:              custom.$start-button-hover-color;
+            background:         custom.$start-button-hover-background;
+        }
+      }
+
+      button:active:not(:disabled) {
           color:              custom.$start-button-hover-color;
           background:         custom.$start-button-hover-background;
+          transform:          scale(0.96);
+      }
+
+      button[aria-busy='true'] {
+          cursor:             progress;
+          opacity:            0.72;
       }
 
       button:disabled,
-      button:disabled:hover {
+      button:disabled:hover,
+      button:disabled:active {
           color:              #777777;
           background:         #d8d8d8;
           cursor:             not-allowed;
           opacity:            0.65;
+          transform:          none;
       }
 
     }
@@ -1272,4 +1296,3 @@ body::-webkit-scrollbar {
         min-height: 100vh;
     }
 }
-
