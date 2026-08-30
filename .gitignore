@@ -14,6 +14,7 @@ sbom*.cdx.json
 
 # Local assistant settings
 .claude/settings.local.json
+.claude/launch.json
 
 # Cordova
 platforms
