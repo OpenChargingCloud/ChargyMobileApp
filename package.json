@@ -1,7 +1,7 @@
 {
   "name": "cloud.charging.open.chargy.mobile",
   "displayName": "ChargyMobileApp",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "description": "Transparenzsoftware für die Elektromobilität",
   "main": "index.js",
   "scripts": {
