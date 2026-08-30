@@ -48,10 +48,16 @@ export default class App {
     public startPage:                   HTMLDivElement;
     public chargingSessionsPage:        HTMLDivElement;
     public publicKeyInfoPage:            HTMLDivElement;
+    public liveLinkPage:                HTMLDivElement;
+    public settingsPage:                HTMLDivElement;
     public measurementInfosPage:        HTMLDivElement;
     public cryptoDetailsPage:           HTMLDivElement;
     public issueTrackerPage:            HTMLDivElement;
     public aboutPage:                   HTMLDivElement;
+
+    // Where the crypto details page leads back to: the measurement infos page
+    // for an archived session, the live link page for a live link's value.
+    public cryptoDetailsReturnPage:     HTMLDivElement | null = null;
 
     public map: any;
 
@@ -59,6 +65,7 @@ export default class App {
     private languageButton:              HTMLButtonElement;
     private languageMenuDiv:             HTMLDivElement;
     private languageFlagImage:           HTMLImageElement;
+    private settingsButton:              HTMLButtonElement;
     private aboutButton:                 HTMLButtonElement;
 
     private qrScanButton:                 HTMLButtonElement;
@@ -138,6 +145,15 @@ export default class App {
         if (page == this.chargingSessionsPage)
             this.refreshMap();
 
+        // Leaving the live link view stops its background reloading and closes
+        // a trust question still open. The crypto details of one of its meter
+        // values still belong to that view, so they keep the polling alive.
+        if (page !== this.liveLinkPage &&
+            page !== this.cryptoDetailsPage)
+        {
+            this._chargyApp?.onLiveLinkViewLeft();
+        }
+
     }
 
     refreshMap(fitBounds?: any): void {
@@ -164,6 +180,8 @@ export default class App {
         this.startPage.style.display                  = 'none';
         this.chargingSessionsPage.style.display       = 'none';
         this.publicKeyInfoPage.style.display           = 'none';
+        this.liveLinkPage.style.display               = 'none';
+        this.settingsPage.style.display               = 'none';
         this.measurementInfosPage.style.display       = 'none';
         this.cryptoDetailsPage.style.display          = 'none';
         this.issueTrackerPage.style.display           = 'none';
@@ -179,6 +197,13 @@ export default class App {
             return;
         }
 
+        // Dismissing the trust dialog answers with whatever has been decided
+        // so far, exactly like its own back arrow.
+        if (this._chargyApp?.isLiveLinkTrustDialogOpen()) {
+            this._chargyApp.dismissLiveLinkTrustDialog();
+            return;
+        }
+
         if (this.languageMenuDiv?.classList.contains('open')) {
             this.languageMenuDiv.classList.remove('open');
             this.languageButton.setAttribute('aria-expanded', 'false');
@@ -186,7 +211,7 @@ export default class App {
         }
 
         if (this.cryptoDetailsPage.style.display !== 'none') {
-            this.showPage(this.measurementInfosPage);
+            this.showPage(this.cryptoDetailsReturnPage ?? this.measurementInfosPage);
             return;
         }
 
@@ -195,8 +220,17 @@ export default class App {
             return;
         }
 
+        // One level back within the settings page, not out of it: from the
+        // trusted origins sub-page to the settings menu.
+        if (this.settingsPage.style.display !== 'none' &&
+            this._chargyApp?.settingsPageGoBack() === true) {
+            return;
+        }
+
         if (this.chargingSessionsPage.style.display !== 'none' ||
             this.publicKeyInfoPage.style.display     !== 'none' ||
+            this.liveLinkPage.style.display        !== 'none' ||
+            this.settingsPage.style.display        !== 'none' ||
             this.aboutPage.style.display           !== 'none' ||
             this.issueTrackerPage.style.display    !== 'none') {
             this.showPage(this.startPage);
@@ -218,16 +252,30 @@ export default class App {
         this.startPage                  = document.getElementById("startPage")                  as HTMLDivElement;
         this.chargingSessionsPage       = document.getElementById("chargingSessionsPage")       as HTMLDivElement;
         this.publicKeyInfoPage           = document.getElementById("publicKeyInfoPage")           as HTMLDivElement;
+        this.liveLinkPage               = document.getElementById("liveLinkPage")               as HTMLDivElement;
+        this.settingsPage               = document.getElementById("settingsPage")               as HTMLDivElement;
         this.measurementInfosPage       = document.getElementById("measurementInfosPage")       as HTMLDivElement;
         this.cryptoDetailsPage          = document.getElementById("cryptoDetailsPage")          as HTMLDivElement;
         this.issueTrackerPage           = document.getElementById("issueTrackerPage")           as HTMLDivElement;
         this.aboutPage                  = document.getElementById("aboutPage")                  as HTMLDivElement;
 
         (document.getElementById('publicKeyBackButton') as HTMLButtonElement).onclick = () => { this.showPage(this.startPage); };
+        (document.getElementById('liveLinkBackButton')  as HTMLButtonElement).onclick = () => { this.showPage(this.startPage); };
+
+        (document.getElementById('settingsBackButton')  as HTMLButtonElement).onclick = () => {
+            if (this._chargyApp?.settingsPageGoBack() !== true)
+                this.showPage(this.startPage);
+        };
 
         document.addEventListener('backbutton', (event: Event) => { this.handleBackButton(event); }, false);
 
         this._chargyApp                 = new ChargyApp(this, this.UILanguage);
+
+        this.settingsButton             = document.getElementById('settingsButton')             as HTMLButtonElement;
+        this.settingsButton.onclick     = () => {
+            this._chargyApp.showSettingsMenu();
+            this.showPage(this.settingsPage);
+        };
 
         this.languageButton             = document.getElementById('languageButton')             as HTMLButtonElement;
         this.languageMenuDiv            = document.getElementById('languageMenu')               as HTMLDivElement;
@@ -511,12 +559,12 @@ export default class App {
 
         if (distance > me.cryptoDetailsPage.clientWidth / 2)
         {
-            app.showPage(app.measurementInfosPage);
+            app.showPage(app.cryptoDetailsReturnPage ?? app.measurementInfosPage);
             e.preventDefault();
             e.stopPropagation();
         }
 
-    };    
+    };
 
     this.cryptoDetailsPage.addEventListener('mousedown',  getCryptoDetailsPagePosition,     false);
     this.cryptoDetailsPage.addEventListener('touchstart', getCryptoDetailsPagePosition,     false);
@@ -1139,7 +1187,7 @@ export default class App {
 
   private formatHash(hash: string): string { return hash.match(/.{1,8}/g)?.join(' ') ?? hash; }
 
-  private openExternalURL(url: string): void {
+  public openExternalURL(url: string): void {
     let externalURL: URL;
 
     try {

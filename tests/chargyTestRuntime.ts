@@ -68,6 +68,20 @@ export function parseI18NDictionary(json: string): I18NDictionary {
     return parsed as I18NDictionary;
 }
 
+export function mergeI18NDictionaries(...dictionaries: I18NDictionary[]): I18NDictionary {
+    const merged: I18NDictionary = {};
+
+    for (const dictionary of dictionaries)
+        Object.assign(merged, dictionary);
+
+    return merged;
+}
+
+export function parseJSONRecord(json: string): Record<string, unknown> {
+    const parsed: unknown = JSON.parse(json);
+    return parsed as Record<string, unknown>;
+}
+
 export function parseValidationRules(json: string): IValidationRules {
     const parsed: unknown = JSON.parse(json);
     return parsed;

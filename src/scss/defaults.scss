@@ -22,6 +22,214 @@
     -webkit-tap-highlight-color: rgba(0,0,0,0); /* make transparent link selection, adjust last value opacity 0 to 1.0 */
 }
 
+// The three building blocks of a charging session's details. They are used by
+// the measurement infos page and, since a live link shows the meter values it
+// carries right below its card, by the live link page as well.
+
+@mixin measurement-info-block {
+
+    display:            block;
+    padding-top:        2vh;
+
+    .headline {
+        color:              #2e71a2;
+        font-weight:        bold;
+        padding-bottom:     1.2vh;
+    }
+
+    .energyMeterInfos {
+
+        display:            table;
+
+        .headline2 {
+            margin-top:         0.6vh;
+            font-weight:        bold;
+        }
+
+        > div:not(.headline2) {
+
+            display:            table-row;
+
+            > div:first-child {
+                display:            table-cell;
+                padding-left:       12px;
+                padding-right:      20px;
+                white-space:        nowrap;
+            }
+
+            > div:last-child {
+                display:            table-cell;
+            }
+
+        }
+
+    }
+
+}
+
+@mixin measurement-values-block {
+
+    display:            block;
+    padding:            2vh 0;
+    width:              100%;
+
+    .headline2 {
+        margin-top:         0.6vh;
+        font-weight:        bold;
+    }
+
+    .measurementValueViews {
+        display:            flex;
+        align-items:        center;
+        justify-content:    center;
+        gap:                10px;
+        flex-wrap:          wrap;
+        margin:             0.35vh 0 0.45vh 0;
+
+        .viewLink {
+            min-height:         0;
+            padding:            0;
+            border:             0;
+            border-radius:      0;
+            background:         transparent;
+            color:              #34668a;
+            font:               inherit;
+            font-weight:        bold;
+            text-decoration:    underline;
+            cursor:             pointer;
+        }
+
+        .viewLink.activated,
+        .viewLink:disabled {
+            color:              rgba(44, 74, 96, 0.45);
+            background:         transparent;
+            text-decoration:    none;
+            cursor:             default;
+        }
+
+    }
+
+    .measurementValueRows {
+        display:            table;
+        width:              100%;
+        cursor:             zoom-in;
+    }
+
+    .measurementValue {
+
+        display:            table-row;
+
+        .timestamp {
+            display:            table-cell;
+            padding:            1vh 3vw 1vh 0vw;
+            white-space:        nowrap
+        }
+
+        .value1,
+        .value2 {
+            display:            table-cell;
+            text-align:         right;
+            padding-right:      1vw;
+            white-space:        nowrap
+        }
+
+        .unit1,
+        .unit2 {
+            display:            table-cell;
+            padding-right:      2vw;
+            white-space:        nowrap
+        }
+
+        .value2,
+        .unit2 {
+            color:              rgba(44, 74, 96, 0.75);
+        }
+
+        .verificationStatus {
+            display:            table-cell;
+            padding:            0 1vw;
+            width:              100%;
+            white-space:        nowrap
+        }
+
+    }
+
+    .chargingProgressChart {
+        margin-top:         1.2vh;
+        width:              100%;
+
+        .chartFrame {
+            position:       relative;
+            height:         220px;
+            min-height:     180px;
+            margin-top:     0.5vh;
+        }
+
+        canvas {
+            width:          100% !important;
+            height:         100% !important;
+        }
+
+    }
+
+}
+
+@mixin session-validation-warnings-block {
+
+    margin-top:         1.2vh;
+    width:              100%;
+    padding-bottom:     2vh;
+
+    .headline2 {
+        margin-top:     0.6vh;
+        font-weight:    bold;
+    }
+
+    .warningRows {
+        display:        table;
+        width:          100%;
+        margin-top:     0.3vh;
+    }
+
+    .warningRow {
+        display:        table-row;
+
+        .level,
+        .text {
+            display:        table-cell;
+            padding:        3px 8px;
+            vertical-align: top;
+        }
+
+        .level {
+            width:             1%;
+            white-space:       nowrap;
+            font-weight:       bold;
+            color:             #7b5e0d;
+            background-color:  #f3c33c;
+            border-radius:     6px;
+            font-size:         90%;
+            vertical-align:    middle;
+        }
+
+        .text {
+            overflow-wrap:     anywhere;
+        }
+
+        &.medium .level {
+            color:             #7c4300;
+            background-color:  #f0a33a;
+        }
+
+        &.high .level {
+            color:             #7d1717;
+            background-color:  #ef8f8f;
+        }
+
+    }
+
+}
+
 body {
 
   -webkit-touch-callout: default;             /* prevent callout to copy image, etc when tap to hold */
@@ -656,6 +864,132 @@ body {
 
   }
 
+  #liveLinkTrustDialog {
+
+    display:                none;
+    position:               fixed;
+    inset:                  0;
+    z-index:                9000;
+    padding:                5vh 5vw;
+    box-sizing:             border-box;
+    background-color:       rgba(0, 0, 0, 0.45);
+    font-family:            sans-serif;
+    font-size:              115%;
+
+    .trustDialog {
+
+      display:                flex;
+      flex-direction:         column;
+      gap:                    12px;
+      box-sizing:             border-box;
+      width:                  100%;
+      max-width:              560px;
+      max-height:             90vh;
+      margin:                 auto;
+      padding:                20px;
+      overflow-y:             auto;
+      border-radius:          6px;
+      background-color:       #f5f5f5;
+      box-shadow:             2px 0 16px 0 rgba(0, 0, 0, 0.3);
+      color:                  #2c4a60;
+
+      #liveLinkTrustHeadline {
+        font-size:              115%;
+        font-weight:            bold;
+      }
+
+      #liveLinkTrustDocument {
+        font-weight:            bold;
+        overflow-wrap:          anywhere;
+      }
+
+      #liveLinkTrustDocument:empty {
+        display:                none;
+      }
+
+      #liveLinkTrustOrigins {
+
+        .trustOrigin {
+
+          padding:                10px 0;
+          border-top:             1px solid #e2e8ee;
+
+          .origin {
+            font-family:            monospace;
+            font-size:              120%;
+            margin:                 6px 0 12px 0;
+            word-break:             break-all;
+          }
+
+          .trustOriginButtons {
+
+            display:                flex;
+            gap:                    8px;
+            flex-wrap:              wrap;
+
+            button.trustChoice {
+              padding:                8px 12px;
+              border:                 1px solid #517692;
+              border-radius:          6px;
+              background:             #ffffff;
+              color:                  #2a4356;
+              font-size:              95%;
+              cursor:                 pointer;
+            }
+
+            // The chosen decision stays highlighted after the click, so a
+            // multi-origin dialog shows at a glance what is still open.
+            button.trustChoice.always.chosen {
+              background:             #517692;
+              color:                  #ffffff;
+              border-color:           #517692;
+            }
+
+            button.trustChoice.once.chosen {
+              background:             #eaf1f6;
+              border-color:           #517692;
+              font-weight:            bold;
+            }
+
+            button.trustChoice.deny.chosen {
+              background:             #ab1e1e;
+              color:                  #ffffff;
+              border-color:           #ab1e1e;
+            }
+
+          }
+
+        }
+
+        .trustOrigin:first-child {
+          border-top:             none;
+        }
+
+      }
+
+      #liveLinkTrustHint {
+        font-size:              80%;
+        color:                  #6e8195;
+      }
+
+      .trustFooter {
+
+        #liveLinkTrustBackButton {
+          margin:                 4px;
+          padding:                0;
+          border:                 0;
+          outline:                0;
+          color:                  #519ad0;
+          background-color:       transparent;
+          font-size:              280%;
+        }
+
+      }
+
+    }
+
+  }
+
   #chargingSessionsPage {
 
     #subpage {
@@ -943,6 +1277,409 @@ body {
     }
   }
 
+  #liveLinkPage {
+
+    box-sizing:         border-box;
+    padding:            10px 8px 72px;
+    font-family:        Arial;
+    color:              #2c4a60;
+
+    #liveLinkBackButton {
+      position:           fixed;
+      left:               8px;
+      bottom:             8px;
+      border:             0;
+      color:              #519ad0;
+      background:         transparent;
+      font-size:          300%;
+    }
+
+    #liveLinkContent {
+      max-width:          920px;
+      margin:             0 auto;
+      font-size:          125%;
+    }
+
+    h1 {
+      margin:             0 4px 10px;
+      font-size:          115%;
+    }
+
+    #liveLinkCard {
+
+      .description {
+        padding:            0 4px 5px 4px;
+        font-size:          110%;
+        font-weight:        bold;
+        overflow-wrap:      anywhere;
+      }
+
+      .created {
+        padding:            0 4px 8px 4px;
+        font-size:          85%;
+        color:              #5a7184;
+      }
+
+      .chargingSession.chargeTransparencyLiveLink {
+
+        position:           relative;
+        padding:            7px 11px;
+        background-color:   #d6e4ef;
+        border-radius:      6px;
+
+        .date {
+          font-weight:        bold;
+          padding:            2px 0px 3px 0px;
+          font-size:          105%;
+        }
+
+        .table {
+
+          display:            table;
+          border-collapse:    separate;
+          border-spacing:     4px 4px;
+
+          .productInfos,
+          .contractInfos,
+          .chargingStationInfos,
+          .locationInfos,
+          .transportInfos,
+          .trustInfos,
+          .imageInfos,
+          .signatureInfos {
+
+            display:            table-row;
+
+            .icon {
+              display:            table-cell;
+              padding:            6px 7px 0px 3px;
+              text-align:         center;
+              vertical-align:     top;
+              color:              #416b8a;
+            }
+
+            .text {
+              display:            table-cell;
+              color:              #212427;
+              white-space:        pre-line;
+              overflow-wrap:      anywhere;
+            }
+
+          }
+
+          .imageInfos a,
+          .liveLinkTransport a {
+            display:            block;
+            color:              #34668a;
+            overflow-wrap:      anywhere;
+          }
+
+          .liveLinkTransport {
+
+            padding-bottom:     4px;
+
+            .type {
+              font-weight:        bold;
+            }
+
+            .totp {
+              font-size:          85%;
+              color:              #5a7184;
+            }
+
+          }
+
+          .signatureInfos {
+
+            // What the document's own signatures came to: verified, partly
+            // verified, not verified, or never signed at all. The colour
+            // follows the same vocabulary as the rest of the application -
+            // a plain check when everything is in order, amber when
+            // something cannot be judged, red when a signature demonstrably
+            // does not match.
+            .signatureStatus {
+
+              &.warning {
+                color:              #7a5a00;
+              }
+
+              &.invalid {
+                color:              #ab1e1e;
+              }
+
+            }
+
+            .signatureWarning {
+              font-size:          85%;
+              color:              #5a7184;
+              padding-top:        2px;
+            }
+
+          }
+
+          .trustInfos {
+
+            .status {
+              display:            inline;
+            }
+
+            button.trustChange {
+              border:             none;
+              background:         none;
+              padding:            0 0 0 8px;
+              color:              #34668a;
+              font:               inherit;
+              font-weight:        bold;
+              cursor:             pointer;
+              text-decoration:    underline;
+            }
+
+          }
+
+        }
+
+        .verificationStatus {
+
+          position:           absolute;
+          top:                14px;
+          right:              12px;
+          text-align:         center;
+          font-size:          70%;
+          max-width:          9em;
+
+          i {
+            display:            block;
+            font-size:          250%;
+            padding-bottom:     4px;
+          }
+
+        }
+
+        .verificationStatus.warning {
+          color:              #a36f00;
+        }
+
+      }
+
+    }
+
+    #liveLinkMeasurementInfo {
+      @include measurement-info-block;
+    }
+
+    #liveLinkMeasurementValues {
+      @include measurement-values-block;
+    }
+
+    #liveLinkValidationWarnings {
+      @include session-validation-warnings-block;
+    }
+
+  }
+
+  #settingsPage {
+
+    box-sizing:         border-box;
+    padding:            10px 8px 72px;
+    font-family:        Arial;
+    color:              #2c4a60;
+    font-size:          115%;
+
+    #settingsBackButton {
+      position:           fixed;
+      left:               8px;
+      bottom:             8px;
+      border:             0;
+      color:              #519ad0;
+      background:         transparent;
+      font-size:          300%;
+    }
+
+    #settingsContent {
+      max-width:          920px;
+      margin:             0 auto;
+    }
+
+    h1 {
+      margin:             0 4px 14px;
+      font-size:          125%;
+    }
+
+    .settingsEntry {
+
+      display:            flex;
+      align-items:        center;
+      gap:                14px;
+      box-sizing:         border-box;
+      width:              100%;
+      padding:            12px 14px;
+      border:             1px solid #d4dde4;
+      border-radius:      8px;
+      background:         #ffffff;
+      color:              inherit;
+      font:               inherit;
+      text-align:         left;
+      cursor:             pointer;
+
+      > i:first-child {
+        font-size:          130%;
+        color:              #517692;
+      }
+
+      .text {
+
+        flex-grow:          1;
+
+        .title {
+          font-weight:        bold;
+        }
+
+        .description {
+          font-size:          85%;
+          color:              #6e8195;
+          margin-top:         2px;
+        }
+
+      }
+
+      .fa-chevron-right {
+        color:              #9fb2c0;
+      }
+
+    }
+
+    .settingsEntry:active {
+      background:         #eaf1f6;
+    }
+
+    #settingsTrustedOrigins {
+
+      display:            none;
+
+      #text {
+        margin-bottom:      10px;
+      }
+
+      #trustedOriginsList {
+
+        .trustedOrigin {
+
+          display:            flex;
+          align-items:        center;
+          box-sizing:         border-box;
+          width:              100%;
+          padding:            8px 14px;
+          border-radius:      8px;
+          background:         #ffffff;
+          border:             1px solid #e2e8ee;
+          margin-bottom:      6px;
+
+          .infos {
+
+            flex-grow:          1;
+            min-width:          0;
+
+            // Holds the operator label, not a URL: the origins themselves
+            // are stored hashed and cannot be shown.
+            .origin {
+              font-weight:        bold;
+              overflow-wrap:      anywhere;
+            }
+
+            .details {
+
+              display:            flex;
+              gap:                16px;
+              flex-wrap:          wrap;
+              font-size:          85%;
+              color:              #6e8195;
+              margin-top:         2px;
+
+              .fa-check-circle {
+                color:              #298143;
+              }
+
+              .fa-times-circle {
+                color:              #ab1e1e;
+              }
+
+            }
+
+          }
+
+          // Unlike on a desktop there is no hover to reveal it under, so the
+          // delete button is simply always visible.
+          button.delete {
+
+            flex:               0 0 auto;
+            width:              34px;
+            height:             34px;
+            border:             none;
+            border-radius:      50%;
+            background:         #ab1e1e;
+            color:              #ffffff;
+            cursor:             pointer;
+
+          }
+
+          button.delete:active {
+            background:         #8a1717;
+          }
+
+        }
+
+      }
+
+      #noTrustedOrigins {
+        color:              #6e8195;
+        font-style:         italic;
+      }
+
+      #trustRetention {
+
+        margin-top:         22px;
+        padding-top:        14px;
+        border-top:         1px solid #d5dee6;
+
+        label.toggle {
+
+          cursor:             pointer;
+
+          input[type="checkbox"] {
+            margin-right:       6px;
+            vertical-align:     -1px;
+            cursor:             pointer;
+          }
+
+        }
+
+        input[type="number"] {
+          width:              64px;
+          margin:             0 6px;
+          padding:            3px 6px;
+          border:             1px solid #517692;
+          border-radius:      4px;
+          font-size:          100%;
+        }
+
+        input[type="number"]:disabled {
+          border-color:       #d5dee6;
+          color:              #9aa8b5;
+          background:         #f5f5f5;
+        }
+
+        .description {
+          margin-top:         8px;
+          font-size:          90%;
+          color:              #6e8195;
+        }
+
+      }
+
+    }
+
+  }
+
   #measurementInfosPage {
 
       display: none;
@@ -960,208 +1697,15 @@ body {
           //overflow-y:         scroll;
 
           #measurementInfo {
-
-              display:            block;
-              padding-top:        2vh;
-
-              .headline {
-                  color:              #2e71a2;
-                  font-weight:        bold;
-                  padding-bottom:     1.2vh;
-              }
-
-              .energyMeterInfos {
-
-                  display:            table;
-
-                  .headline2 {
-                      margin-top:         0.6vh;
-                      font-weight:        bold;
-                  }
-
-                  > div:not(.headline2) {
-
-                      display:            table-row;
-
-                      > div:first-child {
-                          display:            table-cell;
-                          padding-left:       12px;
-                          padding-right:      20px;
-                          white-space:        nowrap;
-                      }
-
-                      > div:last-child {
-                          display:            table-cell;
-                      }
-
-                  }
-
-              }
-
+              @include measurement-info-block;
           }
 
           #measurementValues {
-
-              display:            block;
-              padding:            2vh 0;
-              width:              100%;
-
-              .headline2 {
-                  margin-top:         0.6vh;
-                  font-weight:        bold;
-              }
-
-              .measurementValueViews {
-                  display:            flex;
-                  align-items:        center;
-                  justify-content:    center;
-                  gap:                10px;
-                  flex-wrap:          wrap;
-                  margin:             0.35vh 0 0.45vh 0;
-
-                  .viewLink {
-                      min-height:         0;
-                      padding:            0;
-                      border:             0;
-                      border-radius:      0;
-                      background:         transparent;
-                      color:              #34668a;
-                      font:               inherit;
-                      font-weight:        bold;
-                      text-decoration:    underline;
-                      cursor:             pointer;
-                  }
-
-                  .viewLink.activated,
-                  .viewLink:disabled {
-                      color:              rgba(44, 74, 96, 0.45);
-                      background:         transparent;
-                      text-decoration:    none;
-                      cursor:             default;
-                  }
-
-              }
-
-              .measurementValueRows {
-                  display:            table;
-                  width:              100%;
-                  cursor:             zoom-in;
-              }
-
-              .measurementValue {
-
-                  display:            table-row;
-                  //font-size:          120%;
-
-                  .timestamp {
-                      display:            table-cell;
-                      padding:            1vh 3vw 1vh 0vw;
-                      white-space:        nowrap
-                  }
-
-                  .value1,
-                  .value2 {
-                      display:            table-cell;
-                      text-align:         right;
-                      padding-right:      1vw;
-                      white-space:        nowrap
-                  }
-
-                  .unit1,
-                  .unit2 {
-                      display:            table-cell;
-                      padding-right:      2vw;
-                      white-space:        nowrap
-                  }
-
-                  .value2,
-                  .unit2 {
-                      color:              rgba(44, 74, 96, 0.75);
-                  }
-
-                  .verificationStatus {
-                      display:            table-cell;
-                      padding:            0 1vw;
-                      width:              100%;
-                      white-space:        nowrap
-                  }
-
-              }
-
-              .chargingProgressChart {
-                  margin-top:         1.2vh;
-                  width:              100%;
-
-                  .chartFrame {
-                      position:       relative;
-                      height:         220px;
-                      min-height:     180px;
-                      margin-top:     0.5vh;
-                  }
-
-                  canvas {
-                      width:          100% !important;
-                      height:         100% !important;
-                  }
-
-              }
-
+              @include measurement-values-block;
           }
 
           #sessionValidationWarnings {
-
-              margin-top:         1.2vh;
-              width:              100%;
-              padding-bottom:     2vh;
-
-              .headline2 {
-                  margin-top:     0.6vh;
-                  font-weight:    bold;
-              }
-
-              .warningRows {
-                  display:        table;
-                  width:          100%;
-                  margin-top:     0.3vh;
-              }
-
-              .warningRow {
-                  display:        table-row;
-
-                  .level,
-                  .text {
-                      display:        table-cell;
-                      padding:        3px 8px;
-                      vertical-align: top;
-                  }
-
-                  .level {
-                      width:             1%;
-                      white-space:       nowrap;
-                      font-weight:       bold;
-                      color:             #7b5e0d;
-                      background-color:  #f3c33c;
-                      border-radius:     6px;
-                      font-size:         90%;
-                      vertical-align:    middle;
-                  }
-
-                  .text {
-                      overflow-wrap:     anywhere;
-                  }
-
-                  &.medium .level {
-                      color:             #7c4300;
-                      background-color:  #f0a33a;
-                  }
-
-                  &.high .level {
-                      color:             #7d1717;
-                      background-color:  #ef8f8f;
-                  }
-
-              }
-
+              @include session-validation-warnings-block;
           }
 
       }

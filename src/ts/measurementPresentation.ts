@@ -18,7 +18,8 @@
 import Decimal from 'decimal.js';
 import {
     ChargeTransparencyRecord,
-    ChargyInterfaces
+    ChargyInterfaces,
+    parseUTC
 } from '@open-charging-cloud/chargy-core';
 
 export interface MeasurementDisplayValue {
@@ -131,4 +132,56 @@ export function getMeasurementValueInKWh(measurement:      ChargeTransparencyRec
 
 export function shouldShowMeasurementChart(numberOfValues: number): boolean {
     return numberOfValues > 2;
+}
+
+/**
+ * The readings in the order the meter took them, each one only once.
+ *
+ * Documents overlap: the classic OCMF transaction document repeats the
+ * start reading next to the end reading, an OCMF file may carry the same
+ * document twice, and some meters send every reading again and again -
+ * KEBA sends 190 of them where 17 readings were taken. Sorted by timestamp
+ * those repetitions come to lie next to each other, and a reading that
+ * repeats the one before it, same instant and same value, is not a new
+ * reading: it gets no row of its own, no bar and no interval.
+ *
+ * The measurement itself is left alone. Its values are the attestations,
+ * and a reading attested twice was attested twice - only the presentation
+ * shows it once. Two readings that share a timestamp but differ in value
+ * are both kept, and readings sharing a timestamp keep their relative
+ * order, which matters for meters whose clock was never set and that stamp
+ * every reading with the same instant.
+ */
+export function distinctValuesInTimeOrder(measurementValues: Array<ChargeTransparencyRecord.IMeasurementValue>)
+    : Array<ChargeTransparencyRecord.IMeasurementValue> {
+
+    const inTimeOrder    = measurementValues.
+                               map(measurementValue => ({
+                                   measurementValue,
+                                   timestamp:  parseUTC(measurementValue.timestamp).valueOf()
+                               })).
+                               sort((entry1, entry2) => entry1.timestamp - entry2.timestamp);
+
+    const distinctValues = new Array<ChargeTransparencyRecord.IMeasurementValue>();
+
+    let previousTimestamp: number  | undefined;
+    let previousValue:     Decimal | undefined;
+
+    for (const entry of inTimeOrder) {
+
+        if (previousTimestamp === entry.timestamp &&
+            previousValue?.equals(entry.measurementValue.value) === true)
+        {
+            continue;
+        }
+
+        distinctValues.push(entry.measurementValue);
+
+        previousTimestamp = entry.timestamp;
+        previousValue     = entry.measurementValue.value;
+
+    }
+
+    return distinctValues;
+
 }

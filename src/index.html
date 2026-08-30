@@ -23,8 +23,17 @@
         <meta charset="utf-8">
         <meta
           http-equiv="Content-Security-Policy"
-          content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: content: https://tile.openstreetmap.org; font-src 'self' data:; connect-src 'self' https://tile.openstreetmap.org; media-src 'self'; object-src 'none'; base-uri 'self';"
+          content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: content: https:; font-src 'self' data:; connect-src 'self' https: wss:; media-src 'self'; object-src 'none'; base-uri 'self';"
         />
+<!-- connect-src pins the schemes and leaves the host decision to the
+     application FOR LIVE-LINK TRANSPORTS: one of those URLs is fetched only
+     when externalURLs.conf allows it, it is same-origin, or the user has
+     approved its origin (trust on first use). Narrowing connect-src is what
+     the WEBVIEW enforces; it does not by itself suppress the trust dialog
+     (the app never reads the CSP) - listing an operator's hosts in
+     externalURLs.conf is what avoids the dialog for them. -->
+<!-- img-src https: because a live link may carry operator image URLs;
+     the map tiles of https://tile.openstreetmap.org are covered by it too. -->
         <meta name="format-detection" content="telephone=no">
         <meta name="msapplication-tap-highlight" content="no">
         <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width">
@@ -62,6 +71,7 @@
                         </button>
                     </div>
                 </div>
+                <button id="settingsButton" data-i18n-title-key="settingsLabel" title="Einstellungen"><i class="fas fa-cog"></i></button>
                 <button id="aboutButton"><i class="far fa-question-circle"></i></button>
             </div>
         </div>
@@ -128,6 +138,52 @@
                 <div id="publicKeys"></div>
             </div>
             <button id="publicKeyBackButton" class="pageBackButton" aria-label="Zurück"><i class="fas fa-arrow-alt-circle-left"></i></button>
+        </div>
+
+        <div id="liveLinkPage" class="pages">
+            <div id="liveLinkContent">
+                <h1 data-i18n-key="liveLinkDetailsTitle">Transparenz-Live-Link</h1>
+                <div id="liveLinkCard"></div>
+                <div id="liveLinkMeasurementInfo"></div>
+                <div id="liveLinkMeasurementValues"></div>
+                <div id="liveLinkValidationWarnings"></div>
+            </div>
+            <button id="liveLinkBackButton" class="pageBackButton" aria-label="Zurück"><i class="fas fa-arrow-alt-circle-left"></i></button>
+        </div>
+
+        <div id="settingsPage" class="pages">
+            <div id="settingsContent">
+
+                <h1 data-i18n-key="settingsLabel">Einstellungen</h1>
+
+                <div id="settingsMenu">
+                    <button id="settingsTrustedOriginsEntry" class="settingsEntry">
+                        <i class="fas fa-satellite-dish"></i>
+                        <div class="text">
+                            <div class="title" data-i18n-key="settingsTrustedOriginsTitle">Server f&uuml;r Live-Daten</div>
+                            <div class="description" data-i18n-key="settingsTrustedOriginsDescription">Welchen Servern das Nachladen laufender Ladevorg&auml;nge erlaubt oder verboten wurde.</div>
+                        </div>
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+
+                <div id="settingsTrustedOrigins">
+                    <div id="text" data-i18n-key="trustedOriginsLabel">F&uuml;r das Nachladen von Live-Daten gemerkte Entscheidungen:</div>
+                    <div id="trustedOriginsList"></div>
+                    <div id="noTrustedOrigins" data-i18n-key="noTrustedOriginsLabel">Bisher wurde keine Entscheidung gemerkt.</div>
+                    <div id="trustRetention">
+                        <label class="toggle">
+                            <input type="checkbox" id="trustRetentionEnabled">
+                            <span data-i18n-key="trustRetentionTitle">Ungenutzte Entscheidungen vergessen nach</span>
+                        </label>
+                        <input type="number" id="trustRetentionMonths" min="1" max="120" step="1" value="6">
+                        <span data-i18n-key="trustRetentionMonthsLabel">Monaten</span>
+                        <div class="description" data-i18n-key="trustRetentionDescription">Jede Nutzung verl&auml;ngert die Frist &mdash; nur Entscheidungen, die so lange nicht gebraucht wurden, verfallen und werden beim n&auml;chsten Mal erneut erfragt. Das r&auml;umt auch Eintr&auml;ge f&uuml;r Server auf, die ein Betreiber l&auml;ngst abgeschaltet hat.</div>
+                    </div>
+                </div>
+
+            </div>
+            <button id="settingsBackButton" class="pageBackButton" aria-label="Zurück"><i class="fas fa-arrow-alt-circle-left"></i></button>
         </div>
 
         <div id="measurementInfosPage" class="pages">
@@ -421,6 +477,19 @@
 
                 <div class="scannerFooter">
                     <button id="qrCodeScannerCancelButton" aria-label="QR-Code-Scanner schließen" data-i18n-aria-label-key="qrCodeScannerCloseLabel"><i class="fas fa-arrow-alt-circle-left"></i></button>
+                </div>
+            </div>
+        </div>
+
+        <div id="liveLinkTrustDialog" role="dialog" aria-modal="true" aria-labelledby="liveLinkTrustHeadline">
+            <div class="trustDialog">
+                <div id="liveLinkTrustHeadline" data-i18n-key="liveLinkTrustTitle">Live-Daten laden?</div>
+                <div id="liveLinkTrustDocument"></div>
+                <div id="liveLinkTrustQuestion" data-i18n-key="liveLinkTrustQuestion">Dieser Transparenz-Live-Link beschreibt einen laufenden Ladevorgang und m&ouml;chte dessen aktuelle Messwerte von folgenden Servern laden:</div>
+                <div id="liveLinkTrustOrigins"></div>
+                <div id="liveLinkTrustHint" data-i18n-key="liveLinkTrustHint">&bdquo;Immer erlauben&ldquo; und &bdquo;Nicht erlauben&ldquo; werden f&uuml;r diese Server gemerkt und k&ouml;nnen jederzeit ge&auml;ndert werden.</div>
+                <div class="trustFooter">
+                    <button id="liveLinkTrustBackButton" aria-label="Zurück" data-i18n-aria-label-key="trustDialogCloseLabel"><i class="fas fa-arrow-alt-circle-left"></i></button>
                 </div>
             </div>
         </div>

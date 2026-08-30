@@ -287,8 +287,8 @@ function formatChargeDataVerificationReport(report: DetectionResult): string
     if (IsAChargeTransparencyLiveLink(report))
         return [
             "format: charge-transparency-live-link",
-            "timestamp: "  +  (report.timestamp ?? ""),
-            "transports: " + ((report.transports?.length ?? 0).toString())
+            "created: "        +  (report.created ?? ""),
+            "liveTransports: " + ((report.liveTransports?.length ?? 0).toString())
         ].join("\n");
 
     if (IsAURL(report))
