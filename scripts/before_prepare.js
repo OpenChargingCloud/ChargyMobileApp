@@ -156,6 +156,35 @@ module.exports = function(ctx) {
 		copyDirectory('webfonts');
 		copyLeafletAssets();
 
+		// A test bench build (see src/ts/buildFlags.ts and webpack.config.cjs)
+		// may allow plaintext live link transports. The application rule is a
+		// compile-time constant injected by webpack; the WebView additionally
+		// enforces the Content-Security-Policy of index.html, so the copied
+		// CSP has to widen with the same switch - an application that would
+		// allow http:// while the WebView still refuses it would look exactly
+		// like a bug. The same environment variables drive both, and a
+		// production build (NODE_ENV=production) never widens anything.
+		const insecureTransportsRequested = process.env.CHARGY_ALLOW_INSECURE_TRANSPORTS === '1' &&
+		                                    process.env.NODE_ENV !== 'production';
+
+		if (insecureTransportsRequested)
+		{
+
+			const indexHtmlPath = path.join(wwwTarget, 'index.html');
+			const indexHtml     = fs.readFileSync(indexHtmlPath, 'utf8');
+			const strictCSP     = "connect-src 'self' https: wss:;";
+			const widenedCSP    = "connect-src 'self' https: wss: http: ws:;";
+
+			if (indexHtml.includes(strictCSP))
+			{
+				console.warn("\n  !!  insecureTransports: widening the Content-Security-Policy of www/index.html. Do not deploy this build.  !!\n");
+				fs.writeFileSync(indexHtmlPath, indexHtml.replace(strictCSP, widenedCSP));
+			}
+
+		}
+		else if (process.env.CHARGY_ALLOW_INSECURE_TRANSPORTS === '1')
+			console.warn("\n  !!  insecureTransports ignored: a production build never allows this.  !!\n");
+
 
 // TypeScript
 

@@ -140,9 +140,19 @@
 
     "liveTransports": [
                          {
-                             "type":    "https",
-                             "url":     "https://api1.example.com/chargingSessions/OCMF-Test-01/transparency/live?token=abcdef",
-                             "refresh":  10
+                             "type":         "https",
+                             "urls":         [ "https://api1.example.com/chargingSessions/OCMF-Test-01/transparency/live?token=abcdef" ],
+                             "refresh":       10,
+                             "customHeaders": {
+
+                                 "X-Key1":  "headerValue1",
+
+                                 "X-TOTP":  {
+                                                "valueProvider":  "TOTP",
+                                                "parameters":   { "sharedSecret": "abcdefghijklmnopqrstuvwxyz1234567890" }
+                                            }
+
+                             }
                          },
                          {
                              "type": "websocket",
@@ -159,8 +169,8 @@
                                  }
                              ],
                              "totp": {
-                                 "initialSharedSecret": "abcdefghijklmnopqrstuvwxyz1234567890",
-                                 "timeStep":             10
+                                 "sharedSecret": "abcdefghijklmnopqrstuvwxyz1234567890",
+                                 "timeStep":      10
                              }
                          },
                          {
@@ -170,8 +180,8 @@
                                  "https://api2.example.com/chargingSessions/OCMF-Test-01/transparency/live"
                              ],
                              "totp": {
-                                 "initialSharedSecret": "abcdefghijklmnopqrstuvwxyz1234567890",
-                                 "timeStep":             10
+                                 "sharedSecret": "abcdefghijklmnopqrstuvwxyz1234567890",
+                                 "timeStep":      10
                              }
                          }
     ],
@@ -187,7 +197,7 @@
                 "encodings": [ "JSON", "JCS", "UTF-8" ]
             },
             "encodings": [ "Ecdsa-Sig-Value", "DER", "hex" ],
-            "value": "3045022100C1714FDC4912FF4F118935A941B966A550C6D636CBB6C5191C1467394CEAB5C50220638369A662024AA0B2C40D17EA51A5BFC27DF555A9DC76EABD03074146147DBD"
+            "value": "3045022067579CAD9CF952E5935ADA4F89E7E873E3645E05E9F55F398E01AFC5BD002667022100BBA8C20D2D89B00A7F5CC66635DF1ED6CCCEBFB7DBB6AFB99FF203AB8260029A"
         },
         {
             "keyId": "A2F94A58FB75E25BC2CECDF582819B6D44F3705D0C3BADD6391E9D536D5671E8",
@@ -197,7 +207,7 @@
                 "encodings": [ "JSON", "JCS", "UTF-8" ]
             },
             "encodings": [ "raw", "hex" ],
-            "value": "62C8A18D79E80A88E28AA7FE90D8F7DC9AFF8CABE43931ED0D25F2B99B9E6F5AAED162F70ED119D5A5CC46D95E2C03322D89D5DC483E61DF74204340C485A500"
+            "value": "7344449B52D611690D821EBD9A6D5A9D702A4B79A16EB9EE4CEB4C205AB15187D9E772A3285169574B9E10753DF1E9098C611850E152E3AAEFE94F4D5104ED07"
         }
     ]
 

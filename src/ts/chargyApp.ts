@@ -49,11 +49,21 @@ import {
 }                                      from './measurementPresentation';
 import {
     findExternalURLRule,
+    isWithinURLPrefixAfterQueryAppend,
     parseExternalURLConfig,
     parseExternalURLConfigMode,
     readResponseWithinLimit,
     type ExternalURLRule
 }                                      from './externalURLs';
+import {
+    allowInsecureTransports,
+    allowPrivateNetworkTransports
+}                                      from './buildFlags';
+import {
+    customRequestHeaders,
+    resolveRequestHeaders,
+    type ICustomHeader
+}                                      from './liveLinkHeaders';
 import {
     defaultTrustedPayloadBytes,
     emptyTrustedOriginsStore,
@@ -71,9 +81,11 @@ import {
     sanitizeTrustLabel,
     serializeTrustedOriginsStore,
     touchTrustedOrigin,
+    transportProtocolProblem,
     trustLabelForOrigin,
     trustedOriginExpiry,
     upsertTrustedOrigin,
+    type ITransportAllowances,
     type ITrustedOriginsStore
 }                                      from './liveLinkTrust';
 import {
@@ -114,6 +126,14 @@ interface MobileApp {
 // origin the user left undecided (dismissed) simply does not appear in the
 // result map - it is neither remembered nor polled this time.
 type LiveLinkOriginChoice = "once" | "always" | "deny";
+
+// What this build allows beyond the transport rules that hold everywhere. The
+// two switches are compile-time constants, so this is decided once, here, and
+// is the same for every document the application ever sees.
+const transportAllowances: ITransportAllowances = {
+    insecureTransports:        allowInsecureTransports,
+    privateNetworkTransports:  allowPrivateNetworkTransports
+};
 
 // Where a live link poll is allowed to go, and under which limits: a prefix
 // rule from externalURLs.conf carries its own payload limit and prefix, a
@@ -310,6 +330,21 @@ export default class ChargyApp {
         // stored in an outdated shape - worth doing once at startup, so stale
         // entries leave storage even in a session that never touches trust.
         this.loadTrustedOrigins();
+
+        //#region Say it when this build weakens a transport rule
+
+        // A build with one of these switches on is a test build, and whoever
+        // opens the console should be able to see that it is - the rule it
+        // relaxes is otherwise invisible until a document happens to exercise
+        // it. A production build never has them on, so this stays quiet where
+        // it matters.
+        if (allowInsecureTransports)
+            console.warn("This build allows unencrypted (http://, ws://) live link transports. It is a development build and must not be deployed.");
+
+        if (allowPrivateNetworkTransports)
+            console.warn("This build allows live link transports to hosts on the local network. It is a development build and must not be deployed.");
+
+        //#endregion
 
     }
 
@@ -1149,7 +1184,7 @@ export default class ChargyApp {
         descriptionDiv.innerText = this.chargy.GetLocalizedText(liveLinkInfo.description) ??
                                    this.chargy.GetLocalizedMessage('liveLinkLabel');
 
-        if (typeof(liveLinkInfo.created) === "string" && liveLinkInfo.created !== "")
+        if (liveLinkInfo.created !== "")
         {
             const timestampDiv     = chargyLib.CreateDiv(cardDiv, "created");
             timestampDiv.innerText = this.chargy.GetLocalizedMessage("Timestamp") + " " +
@@ -1164,14 +1199,19 @@ export default class ChargyApp {
         //#region What the live link knows about its charging session
 
         // A live link describes exactly one charging session, so it carries
-        // single objects where a charge transparency record carries lists.
-        // None of these properties is part of IChargeTransparencyLiveLink yet,
-        // hence the untyped reads.
-        const chargingStation    = chargyLib.asJSONObject(liveLinkInfo["chargingStation"]);
-        const evse               = chargyLib.asJSONObject(chargingStation?.["EVSE"]);
+        // single objects where a charge transparency record carries lists. The
+        // document names its charging station, its operator and its contract,
+        // so those are read through the interface.
+        //
+        // The station's single "EVSE" with its single "connector" is not what
+        // IChargingStation describes - that one knows the lists of a charge
+        // transparency record - so those two are read untyped, exactly as
+        // ChargyCore reads them when it collects the meter value keys.
+        const chargingStation    = liveLinkInfo.chargingStation;
+        const evse               = chargyLib.asJSONObject(chargyLib.asJSONObject(chargingStation)?.["EVSE"]);
         const connector          = chargyLib.asJSONObject(evse?.["connector"]);
-        const contract           = chargyLib.asJSONObject(liveLinkInfo["contract"]);
-        const geoLocation        = chargyLib.asJSONObject(chargingStation?.["geoLocation"]);
+        const contract           = liveLinkInfo.contract;
+        const geoLocation        = chargingStation?.geoLocation;
 
         const chargingSession    = meterValues?.chargingSessions?.[0];
         const measurement        = chargingSession?.measurements?.[0];
@@ -1221,7 +1261,7 @@ export default class ChargyApp {
 
         }
 
-        const contractId = chargyLib.asString(contract?.["@id"]);
+        const contractId = contract?.["@id"];
 
         if (contractId != null && contractId !== "")
             this.appendLiveLinkInfoRow(
@@ -1249,8 +1289,8 @@ export default class ChargyApp {
                 [ evseId ?? "", connectorText ].filter(line => line !== "").join("\n")
             );
 
-        const latitude  = chargyLib.asNumber(geoLocation?.["lat"]);
-        const longitude = chargyLib.asNumber(geoLocation?.["lng"]);
+        const latitude  = geoLocation?.lat;
+        const longitude = geoLocation?.lng;
 
         if (latitude != null && longitude != null)
             this.appendLiveLinkInfoRow(
@@ -1281,12 +1321,11 @@ export default class ChargyApp {
 
         //#region Whether live reloading is active, blocked or waiting for consent
 
-        // Only when there is something to reload: an https transport stating a
-        // refresh period. Filled in asynchronously, once conf, store or the
-        // user have spoken.
-        if (transports.some(transport => transport.type === "https"            &&
-                                         typeof transport.refresh === "number" &&
-                                         transport.refresh > 0))
+        // Only when there is something to reload: an https transport - one
+        // without a refresh period of its own is polled at the format's
+        // default, so it reloads too. Filled in asynchronously, once conf,
+        // store or the user have spoken.
+        if (transports.some(transport => transport.type === "https"))
         {
 
             const trustContentDiv        = document.createElement('div');
@@ -1305,11 +1344,19 @@ export default class ChargyApp {
 
         //#endregion
 
-        if (liveLinkInfo.imageURLs && liveLinkInfo.imageURLs.length > 0)
+        // Images no longer hang off the document itself: they belong to
+        // whoever they show - the operator's logo, the station's photo - and
+        // are read from there, the operator first.
+        const imageURLs = [
+                              ...(liveLinkInfo.chargingStationOperator?.imageURLs ?? []),
+                              ...(chargingStation?.imageURLs                      ?? [])
+                          ].filter(imageURL => typeof imageURL === "string" && imageURL !== "");
+
+        if (imageURLs.length > 0)
         {
             const imagesDiv = document.createElement('div');
 
-            for (const imageURL of liveLinkInfo.imageURLs)
+            for (const imageURL of imageURLs)
                 imagesDiv.appendChild(this.createLiveLinkAnchor(imageURL, imageURL));
 
             this.appendLiveLinkInfoRow(
@@ -1439,15 +1486,27 @@ export default class ChargyApp {
 
         const transport = this.liveLinkTransports(liveLinkInfo).find(
                               (candidate): candidate is liveLink.TransportHTTPS =>
-                                  candidate.type === "https"              &&
-                                  typeof candidate.refresh === "number"   &&
-                                  candidate.refresh > 0
+                                  candidate.type === "https"
                           );
 
-        const refresh   = transport?.refresh;
-
-        if (transport === undefined || refresh === undefined)
+        if (transport === undefined)
             return;
+
+        // An https transport is there to be asked, so a document that names one
+        // without saying how often is still polled - at the default period.
+        // Only a value that is no period at all falls back to it; a value that
+        // is one is clamped just below.
+        const refresh       = typeof transport.refresh === "number" &&
+                              Number.isFinite(transport.refresh)    &&
+                              transport.refresh > 0
+                                  ? transport.refresh
+                                  : liveLink.defaultRefreshSeconds;
+
+        // What the document wants sent along with every poll of this transport,
+        // and only of this transport: the headers belong to the endpoints it
+        // names, not to any other transport's. Read once here - what a value
+        // provider computes is read again before every single request.
+        const customHeaders = customRequestHeaders(transport.customHeaders);
 
         // Whatever the document says, a reloading client hammers no one: a
         // viral QR code must not turn every phone that scans it into a flood,
@@ -1530,6 +1589,19 @@ export default class ChargyApp {
                 continue;
             }
 
+            // The scheme is decided before any trust tier, and no tier may
+            // waive it: an externalURLs.conf prefix and the installation's own
+            // origin both skip the structural rules below, and neither of them
+            // gets to send a poll in the clear. Only a build that was told to
+            // allow http:// does.
+            const protocolProblem = transportProtocolProblem(transportURL, appIsLoopback, transportAllowances);
+
+            if (protocolProblem !== null)
+            {
+                console.log("Not reloading this charge transparency live link from '" + transportURL.origin + "': " + protocolProblem + ".");
+                continue;
+            }
+
             const rule = findExternalURLRule(transportURL, rules);
 
             if (rule !== null)
@@ -1557,7 +1629,7 @@ export default class ChargyApp {
 
             // The structural rules come before any consent: what fails them
             // is not even asked about.
-            const problem = pollTargetProblem(transportURL, appIsLoopback);
+            const problem = pollTargetProblem(transportURL, appIsLoopback, transportAllowances);
 
             if (problem !== null)
             {
@@ -1796,7 +1868,7 @@ export default class ChargyApp {
 
             try
             {
-                await this.reloadLiveLink(liveLinkInfo, targets, generation);
+                await this.reloadLiveLink(liveLinkInfo, targets, generation, customHeaders);
             }
             catch
             {
@@ -1855,42 +1927,42 @@ export default class ChargyApp {
                (cordova.platformId === 'android' || cordova.platformId === 'ios');
     }
 
-    // The well-formed transports of a live link. liveTransports is optional and
-    // comes from a document written elsewhere, so it may be missing, not an
-    // array, or hold entries that are not transports at all; every reader goes
-    // through here, so a broken transport is simply dropped and the rest still
-    // work instead of the whole live link failing over it.
-    private liveLinkTransports(liveLinkInfo: liveLink.IChargeTransparencyLiveLink): Array<liveLink.Transport>
+    // The well-formed transports of a live link. liveTransports comes from a
+    // document written elsewhere, so it may hold entries that are not
+    // transports at all; every reader goes through here, so a broken transport
+    // is simply dropped and the rest still work instead of the whole live link
+    // failing over it.
+    private liveLinkTransports(liveLinkInfo: liveLink.IChargeTransparencyLiveLink): Array<liveLink.LiveTransports>
     {
 
         return Array.isArray(liveLinkInfo.liveTransports)
                    ? liveLinkInfo.liveTransports.filter(
-                         (transport): transport is liveLink.Transport =>
-                             liveLink.isTransport(transport)
+                         (transport): transport is liveLink.LiveTransports =>
+                             liveLink.isLiveTransport(transport)
                      )
                    : [];
 
     }
 
-    // The URLs of a transport: the single "url" first, then the "urls" in the
-    // order of their priority.
-    private liveLinkTransportURLs(transport: liveLink.Transport): Array<string>
+    // The URLs of a transport, in the order of their priority. A transport
+    // states its endpoints in "urls" - a plain string, or one with a priority
+    // and a weight - and nowhere else: a transport written against the
+    // withdrawn singular "url" names no endpoint at all, so there is nothing
+    // here to show and nothing to poll.
+    private liveLinkTransportURLs(transport: liveLink.LiveTransports): Array<string>
     {
 
-        const urls = new Array<string>();
+        const urls       = new Array<string>();
 
-        if (transport.url != null && transport.url !== "")
-            urls.push(transport.url);
+        const sortedURLs = [ ...(transport.urls ?? []) ].sort(
+                               (url1, url2) => (typeof url1 === "string" ? 0 : url1.priority ?? 0) -
+                                               (typeof url2 === "string" ? 0 : url2.priority ?? 0)
+                           );
 
-        const additionalURLs = [ ...(transport.urls ?? []) ].sort(
-                                   (url1, url2) => (typeof url1 === "string" ? 0 : url1.priority ?? 0) -
-                                                   (typeof url2 === "string" ? 0 : url2.priority ?? 0)
-                               );
-
-        for (const additionalURL of additionalURLs)
+        for (const sortedURL of sortedURLs)
         {
 
-            const url = typeof additionalURL === "string" ? additionalURL : additionalURL.url;
+            const url = typeof sortedURL === "string" ? sortedURL : sortedURL.url;
 
             if (url !== "")
                 urls.push(url);
@@ -1904,9 +1976,10 @@ export default class ChargyApp {
     // Asks each URL in turn until one answers with a live link. A document that
     // describes a different session is ignored, and so is one that is not newer
     // than what is on screen.
-    private async reloadLiveLink(liveLinkInfo:  liveLink.IChargeTransparencyLiveLink,
-                                 targets:       Array<LiveLinkPollTarget>,
-                                 generation:    number): Promise<void>
+    private async reloadLiveLink(liveLinkInfo:   liveLink.IChargeTransparencyLiveLink,
+                                 targets:        Array<LiveLinkPollTarget>,
+                                 generation:     number,
+                                 customHeaders:  Array<ICustomHeader> = []): Promise<void>
     {
 
         for (const target of targets)
@@ -1916,7 +1989,7 @@ export default class ChargyApp {
 
             // Adding the timestamp must not move the URL out of the prefix or
             // origin it was allowed under.
-            if (target.prefix !== undefined && !requestURL.href.startsWith(target.prefix))
+            if (target.prefix !== undefined && !isWithinURLPrefixAfterQueryAppend(requestURL.href, target.prefix))
                 continue;
 
             if (requestURL.origin !== target.url.origin)
@@ -1927,12 +2000,44 @@ export default class ChargyApp {
             // request to a host that was never vetted - an internal address, a
             // different origin. A live link endpoint that wants to relocate has
             // to answer directly, not bounce the WebView somewhere unchecked.
+            // It also keeps the custom headers where they were meant to go.
+            //
+            // Those headers make a cross-origin request non-simple, so the
+            // endpoint has to allow them in its CORS preflight answer; one
+            // that does not is simply not reached, exactly as before.
             const response = await fetch(requestURL.href,
-                                         { cache: "no-store", credentials: "omit", redirect: "error" }).
-                                   catch(() => null);
+                                         {
+                                             cache:        "no-store",
+                                             credentials:  "omit",
+                                             redirect:     "error",
+                                             // Resolved here, not once for the
+                                             // series: a one-time password is
+                                             // only ever valid for the request
+                                             // it was computed for.
+                                             headers:      resolveRequestHeaders(customHeaders)
+                                         }).
+                                   catch(error => {
+                                       // A poll that cannot even be sent - a
+                                       // Content-Security-Policy that does not
+                                       // allow the scheme, a CORS answer that
+                                       // does not allow the custom headers, a
+                                       // server that is simply down - is not
+                                       // fatal: what is on screen stays. But it
+                                       // is silent, and a silent nothing is the
+                                       // hardest thing to diagnose, so it says
+                                       // so in the console.
+                                       console.log("Could not reload this charge transparency live link from '" + requestURL.origin + "': " + (error instanceof Error ? error.message : String(error)));
+                                       return null;
+                                   });
 
-            if (response?.ok !== true)
+            if (response === null)
                 continue;
+
+            if (!response.ok)
+            {
+                console.log("Could not reload this charge transparency live link from '" + requestURL.origin + "': HTTP " + response.status.toString() + ".");
+                continue;
+            }
 
             const text = new TextDecoder().decode(
                              await readResponseWithinLimit(response, target.maxPayloadBytes)
@@ -2646,7 +2751,7 @@ export default class ChargyApp {
 
     }
 
-    private createLiveLinkTransportDiv(transport: liveLink.Transport): HTMLDivElement {
+    private createLiveLinkTransportDiv(transport: liveLink.LiveTransports): HTMLDivElement {
 
         const transportDiv         = document.createElement('div');
         transportDiv.className     = "liveLinkTransport";
@@ -2654,9 +2759,6 @@ export default class ChargyApp {
         const transportTypeDiv     = transportDiv.appendChild(document.createElement('div'));
         transportTypeDiv.className = "type";
         transportTypeDiv.innerText = transport.type;
-
-        if (transport.url)
-            transportDiv.appendChild(this.createLiveLinkAnchor(transport.url, transport.url));
 
         if (transport.urls)
         {
@@ -2678,7 +2780,9 @@ export default class ChargyApp {
         {
             const totpDiv     = transportDiv.appendChild(document.createElement('div'));
             totpDiv.className = "totp";
-            totpDiv.innerText = "TOTP: " + transport.totp.timeStep.toString() + " s";
+            totpDiv.innerText = transport.totp.timeStep != null
+                                    ? "TOTP: " + transport.totp.timeStep.toString() + " s"
+                                    : "TOTP";
         }
 
         return transportDiv;

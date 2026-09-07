@@ -1149,6 +1149,10 @@ export default class App {
     const versions: Record<string, string> = {
       chargyMobileVersion: __APP_PACKAGE__.version,
       chargyCoreVersion: __CHARGY_CORE_VERSION__,
+      totp: version(__APP_PACKAGE__.dependencies['@open-charging-cloud/totp']),
+      vanaheimrCOSE: version(__APP_PACKAGE__.dependencies['@vanaheimr/cose']),
+      vanaheimrMetrologicalCBOR: version(__APP_PACKAGE__.dependencies['@vanaheimr/metrological-cbor']),
+      nobleHashes: version(__APP_PACKAGE__.dependencies['@noble/hashes']),
       typeScript: version(__APP_PACKAGE__.devDependencies.typescript), SASS: version(__APP_PACKAGE__.devDependencies.sass),
       cordova: version(__APP_PACKAGE__.devDependencies.cordova), momentJS: version(__APP_PACKAGE__.dependencies.moment),
       cordovaInAppBrowser: version(__APP_PACKAGE__.devDependencies['cordova-plugin-inappbrowser']),

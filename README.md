@@ -49,6 +49,23 @@ Supported representations include:
 - **Archive formats** such as ***tar, ZIP, tar.gz***, and similar formats that combine or compress multiple charge transparency files.
 - **QR-Code images**, such as ***PNG, JPG, JPEG or SVG files***, where the QR-Code represents a charge transparency data set.
 - **PDF/A-3** files transporting a charge transparency file as an embedded additional data stream.
+- **Charge Transparency Live Links**, a JSON-LD document describing a charging session that is still **running**: where its live data can be fetched, the public keys to verify it with, and the signed meter values measured so far. See [Charge Transparency Live Links](#charge-transparency-live-links) below.
+
+
+## Charge Transparency Live Links
+
+A charge transparency record describes a charging session that has **finished**. A charge transparency live link describes one that is still **running**: it carries what is already known — the station, the meter, the public keys, the signed meter values measured so far — and says where the next version of itself can be fetched.
+
+The mobile app reloads such a document while the session runs. Because the document comes from outside and may name any URL at all, four gates decide what is actually fetched:
+
+- **The scheme**: only `https` and `wss`, and only hosts on the public internet. No document, setting or user decision widens this; only a test bench build does (`CHARGY_ALLOW_INSECURE_TRANSPORTS=1`, see [`src/ts/buildFlags.ts`](src/ts/buildFlags.ts)).
+- **`externalURLs.conf`**: an origin listed in this optional file next to `index.html` is polled without asking anyone, and so is the installation's own origin.
+- **The user**, for everything else: asked once per origin and remembered — trust on first use, revocable in the settings, expiring after six months without use. The remembered decisions are stored the way OpenSSH stores a hashed `known_hosts`: salted hashes rather than the origins themselves, so a copy of the store does not reveal where its owner charges.
+- **The WebView's Content-Security-Policy**, which bounds the hosts the page may reach at all.
+
+The polling period is what the document asks for, clamped: no faster than every 5 seconds, no slower than once a day, and 10 seconds when the document does not say. Answers are size-capped, redirects are refused, and a transport may state HTTP headers to send with every request — a literal value, or a one-time password computed per request with [`@open-charging-cloud/totp`](https://www.npmjs.com/package/@open-charging-cloud/totp).
+
+The document format, what operators must provide (including the CORS preflight custom headers require), and what a client may do with these URLs are documented in [Charge Transparency Live](tests/fixtures/ChargeTransparencyLive/README.md).
 
 
 ## Building from Source

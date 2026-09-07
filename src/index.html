@@ -31,7 +31,11 @@
      approved its origin (trust on first use). Narrowing connect-src is what
      the WEBVIEW enforces; it does not by itself suppress the trust dialog
      (the app never reads the CSP) - listing an operator's hosts in
-     externalURLs.conf is what avoids the dialog for them. -->
+     externalURLs.conf is what avoids the dialog for them.
+     A test bench build (CHARGY_ALLOW_INSECURE_TRANSPORTS=1, see
+     src/ts/buildFlags.ts) additionally speaks plaintext transports; the
+     Cordova prepare hook widens the copied CSP by "http: ws:" to match, so
+     this file stays strict. A production build never widens anything. -->
 <!-- img-src https: because a live link may carry operator image URLs;
      the map tiles of https://tile.openstreetmap.org are covered by it too. -->
         <meta name="format-detection" content="telephone=no">
@@ -288,6 +292,18 @@
                     <div class="license"><button class="linkButton" href="https://github.com/OpenChargingCloud/ChargyWebApp/blob/master/LICENSE">Copyright &copy; 2018-2026 GraphDefined GmbH<br />AGPL v3 License</button></div>
                 </div>
                 <div class="lib">
+                    <div class="name">@open-charging-cloud/totp <span id="totp"></span></div>
+                    <div class="license"><button class="linkButton" href="https://github.com/OpenChargingCloud/TOTP.TS/blob/master/LICENSE">Copyright &copy; 2024-2026 GraphDefined GmbH<br />Apache License v2.0</button></div>
+                </div>
+                <div class="lib">
+                    <div class="name">@vanaheimr/cose <span id="vanaheimrCOSE"></span></div>
+                    <div class="license"><button class="linkButton" href="https://github.com/Vanaheimr/COSE.TS">Copyright &copy; 2026 GraphDefined GmbH<br />Apache License v2.0</button></div>
+                </div>
+                <div class="lib">
+                    <div class="name">@vanaheimr/metrological-cbor <span id="vanaheimrMetrologicalCBOR"></span></div>
+                    <div class="license"><button class="linkButton" href="https://github.com/Vanaheimr/MetrologicalCBOR.TS">Copyright &copy; 2026 GraphDefined GmbH<br />Apache License v2.0</button></div>
+                </div>
+                <div class="lib">
                     <div class="name">Chargy Core <span id="chargyCoreVersion"></span></div>
                     <div class="license"><button class="linkButton" href="https://github.com/OpenChargingCloud/ChargyCore.TS/blob/master/LICENSE">Copyright &copy; 2018-2026 GraphDefined GmbH<br />AGPL v3 License</button></div>
                 </div>
@@ -318,6 +334,10 @@
                 <div class="lib">
                     <div class="name">@noble/curves <span id="nobleCurves"></span></div>
                     <div class="license"><button class="linkButton" href="https://github.com/paulmillr/noble-curves/blob/main/LICENSE">Copyright &copy; 2022 Paul Miller<br />MIT License</button></div>
+                </div>
+                <div class="lib">
+                    <div class="name">@noble/hashes <span id="nobleHashes"></span></div>
+                    <div class="license"><button class="linkButton" href="https://github.com/paulmillr/noble-hashes/blob/main/LICENSE">Copyright &copy; 2022 Paul Miller<br />MIT License</button></div>
                 </div>
                 <div class="lib">
                     <div class="name">@noble/post-quantum <span id="noblePostQuantum"></span></div>

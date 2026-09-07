@@ -6,7 +6,7 @@ Fixtures for the charge transparency live link format
 | Fixture                            | |
 | ---------------------------------- | - |
 | `ChargeTransparencyLiveLink_1.json`| a full live link: the **final document** of the `OCMF-Test-01` series, byte-identical to `OCMF-Test-01__0019.json`. Generated, not hand-maintained. |
-| `ChargeTransparencyLiveLink_2.json`| the minimal form: context and live transports only |
+| `ChargeTransparencyLiveLink_2.json`| the minimal form: context, creation timestamp and live transports only |
 | `OCMF-Test-01/`                    | the generated 22 kW charging session it comes from, see its own README |
 
 This file collects the conventions that apply to **all** of them. Everything
@@ -369,10 +369,10 @@ the two limits are worth knowing before a producer exercises the freedom.
 
 A live link describes a charging session that is still running, so it says
 where the next version of itself can be had. `liveTransports` lists the ways,
-each with a `type` of `https`, `websocket` or `httpSSE`, and either a single
-`url` or a list of `urls` with a `priority` and a `weight` per entry. A
-`totp` gives the shared secret and the time step for the one-time password
-those endpoints expect.
+each with a `type` of `https`, `websocket` or `httpSSE` and a list of `urls`.
+An entry of that list is either the URL itself or an object carrying it
+alongside a `priority` and a `weight`. A `totp` gives the shared secret and the
+time step for the one-time password those endpoints expect.
 
 An `https` transport has to be asked, where the other two deliver on their own,
 so it may state how often to ask:
@@ -380,12 +380,123 @@ so it may state how often to ask:
 ```json
 {
     "type":    "https",
-    "url":     "https://api1.example.com/chargingSessions/OCMF-Test-01/transparency/live?token=abcdef",
+    "urls":    [ "https://api1.example.com/chargingSessions/OCMF-Test-01/transparency/live?token=abcdef" ],
     "refresh":  10
 }
 ```
 
-`refresh` is a number of **seconds**. Its absence means: do not poll.
+`refresh` is a number of **seconds**. **Its absence means 10 seconds**, not
+"do not poll": an `https` transport exists to be asked, and a document that
+names one without saying how often still wants its readers to see what the
+session does next. A value that is not a positive number is treated as absent.
+
+A client clamps what it is told rather than obeying it — the Chargy WebApp
+polls no faster than every 5 seconds and no slower than once a day, whatever
+the document says.
+
+**Every** transport may state the HTTP headers that belong on every request to
+it — an API key its endpoint expects, a tenant selector. An `https` poll, the
+opening request of an `httpSSE` stream and the handshake of a `websocket` are
+all HTTP requests, and all three can face an endpoint that expects a header:
+
+```json
+"customHeaders": {
+    "X-Key1":  "headerValue1",
+    "X-TOTP":  {
+                   "valueProvider":  "TOTP",
+                   "parameters":   { "sharedSecret": "abcdefghijklmnopqrstuvwxyz1234567890" }
+               }
+}
+```
+
+#### Header names
+
+A name is an HTTP field name, which RFC 9110 defines as a `token`: one or more
+of the characters
+
+    A-Z  a-z  0-9  ! # $ % & ' * + - . ^ _ ` | ~
+
+and nothing else — no spaces, no colons, no non-ASCII, no empty name. HTTP
+compares names case-insensitively, so a document that states `X-Key` and
+`x-key` states **one** header; which of the two wins is the client's rule, not
+this format's (the Chargy WebApp keeps the first).
+
+Some names are legal tokens and still never arrive: a browser refuses to let a
+page set `Host`, `Origin`, `Referer`, `Cookie`, `Content-Length`, `Connection`,
+`Date`, `Expect`, `Keep-Alive`, `TE`, `Trailer`, `Transfer-Encoding`,
+`Upgrade`, `Via`, `Accept-Encoding`, `Accept-Charset`, or anything beginning
+with `Proxy-` or `Sec-`. Stating one is asking for something that cannot
+happen. Operators should use their own names — `X-…`, `Authorization`, an API
+key header their backend defines.
+
+#### Header values
+
+**A value is always a string: the literal text to send.** A JSON object in a
+value position is never a value — it is always a **call to a value provider**,
+because some values cannot be written into a document at all: a one-time
+password would be stale the moment it was. Nothing else is a value; a number, a
+boolean, an array or `null` is a mistake, and the entry is dropped.
+
+```json
+"X-Key1":  "headerValue1",
+"X-TOTP":  { "valueProvider": "TOTP", "parameters": { "sharedSecret": "…" } }
+```
+
+| Property | Required | Format | Meaning |
+|----------|----------|--------|---------|
+| `valueProvider` | yes | string | Which provider computes the value. Compared case-insensitively. |
+| `parameters` | no | object | What that provider needs. Its shape belongs to the provider. |
+
+Version 1.0 defines this shape, not the providers themselves. A client that
+does not know a provider sends **no header** for it rather than the description
+of one, and the request goes out without it.
+
+#### The `TOTP` provider
+
+The one provider the Chargy WebApp implements. It computes the value with
+[`@open-charging-cloud/totp`](https://www.npmjs.com/package/@open-charging-cloud/totp),
+freshly for **every single request**:
+
+```json
+"X-TOTP": {
+    "valueProvider": "TOTP",
+    "parameters": {
+        "sharedSecret":  "abcdefghijklmnopqrstuvwxyz1234567890",
+        "validityTime":   30,
+        "totpLength":     12,
+        "alphabet":      "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
+        "hashAlgorithm": "sha256"
+    }
+}
+```
+
+| Parameter | Required | Meaning | Default |
+|-----------|----------|---------|---------|
+| `sharedSecret` | yes | Shared secret, at least 16 characters, no whitespace | — |
+| `validityTime` | no | Slot duration in seconds | `30` |
+| `totpLength` | no | Length of the generated token | `12` |
+| `alphabet` | no | Characters the token is built from | digits + lower + upper case |
+| `hashAlgorithm` | no | `sha256`, `sha384` or `sha512` | `sha256` |
+
+The **moment is not a parameter**: it is always the instant the request is
+made. A timestamp taken from a document would freeze the password at whatever
+instant it was written, which is the one thing a time-based password must never
+be. Of the three passwords the generator returns — previous, current, next —
+the current one is sent; the other two exist for a verifier that has to
+tolerate a clock difference, and sending them would be the client tolerating
+its own. A provider whose parameters do not hold up (no secret, a secret the
+generator refuses) contributes no header, and the request still goes out.
+
+#### What a client drops
+
+A client sends only what it can send. The Chargy WebApp drops the individual
+entries that fail any rule above — a name that is not a token or one the
+browser would refuse, a value that is not visible ASCII, an empty or
+implausibly long value, a second spelling of a name already taken, a provider
+it does not know — and caps how many headers one document may add to every
+request. One unusable entry costs its own header and nothing else: neither the
+other headers nor the request. The headers reach the URLs of the transport that
+stated them and nothing else, and no redirect carries them anywhere unvetted.
 
 The request says which version the client already has, as
 `lastUpdated=<timestamp>` next to whatever the URL already carries, so a server
@@ -414,6 +525,39 @@ user allows: this is the one thing no client can fix on its own side.
 `websocket` transports are not subject to CORS; a server that cares should
 check the `Origin` header itself.
 
+A transport that states `customHeaders` needs more than that one header. A
+custom header is not on the CORS safelist, so the browser asks before it sends
+anything: an `OPTIONS` request to the very same URL, carrying nothing of the
+actual request but its description — no cookies, and not the header it is
+asking about.
+
+    OPTIONS /chargingSessions/1234567890/transparency/live?token=abcdef HTTP/1.1
+    Host: api1.example.com
+    Origin: https://chargy.charging.cloud
+    Access-Control-Request-Method: GET
+    Access-Control-Request-Headers: x-key1
+
+The endpoint has to answer that with a 2xx and no redirect, and it must not
+require authentication for it — the preflight has nothing to authenticate with:
+
+    HTTP/1.1 204 No Content
+    Access-Control-Allow-Origin:  *
+    Access-Control-Allow-Methods: GET, OPTIONS
+    Access-Control-Allow-Headers: X-Key1
+    Access-Control-Max-Age:       600
+
+`Access-Control-Allow-Headers` has to name **every** header the document
+states, compared case-insensitively; `*` is valid here precisely because the
+request carries no credentials. `Access-Control-Max-Age` is what keeps a
+ten-second poll from paying for a preflight every single time — Chrome caps the
+value at 7200 seconds, Firefox at 86400. An endpoint that echoes the `Origin`
+instead of answering `*` owes a `Vary: Origin`, or a cache in between will hand
+the wrong permission to the next reader.
+
+And the answer to the actual `GET` still needs its own
+`Access-Control-Allow-Origin`: a preflight only permits the request to be sent,
+it does not make the response readable.
+
 ### What a client may do with these URLs
 
 The URLs arrive inside a document from outside, and the signatures do not make
@@ -433,6 +577,48 @@ client is therefore expected to guard the connection:
   at a time even when a single document lists several: approving the operator's
   server a reader recognises does not carry along an attacker's server listed
   beside it.
+
+None of this is configurable at runtime, and no document can ask for an
+exception: the rules are what the client is, not what it is set to.
+
+### What a test bench may do, and what it costs
+
+An endpoint under development is often none of those things — it speaks plain
+`http`, or it sits on the local network. The Chargy WebApp therefore takes that
+decision where such a decision belongs, at **build time**. Not at run time, and
+not by mode either: an ordinary development build is exactly as strict as a
+production one. Only a build that was explicitly asked for it —
+
+    npm run start:testbench
+
+— relaxes anything, and it relaxes exactly three things:
+
+- `http://` and `ws://` URLs are used at all (`--env insecureTransports`),
+- hosts on the local network are reached (`--env privateNetworkTransports`),
+- and the page's own Content-Security-Policy adds `http:` and `ws:` to its
+  `connect-src`, because the browser is a second gate in front of every rule
+  the application applies itself: without this the application would decide to
+  poll and the browser would refuse it.
+
+Everything else stays exactly as it is: the consent dialog per origin,
+`externalURLs.conf`, the clamped `refresh`, the capped answer size, the refused
+redirect, and the validation of the custom headers. An application served from
+`localhost` could always talk to `localhost`, with or without this build.
+
+**A production build compiles none of it in.** `npm run build:production`
+ignores both switches — the environment variable, the `--env` argument, and
+anything else that asks — prints a warning saying so, and keeps its
+`connect-src` at `'self' https: wss:`. What is shipped can never speak
+plaintext. Between a development and a production build the generated page does
+not differ here at all; between either of those and a test bench build it
+differs in one token list, the `connect-src`.
+
+The consequence belongs to whoever writes documents, not just to whoever builds
+clients: **a document whose transports name `http://`, `ws://` or a
+local-network host reloads on a test bench and nowhere else.** In every
+deployed client it is refused with a console line and nothing else — no dialog,
+no error on screen, because a document that cannot be reloaded is not a broken
+document. Such transports are a bench shape, never a published one.
 
 ### How the remembered decisions are stored
 

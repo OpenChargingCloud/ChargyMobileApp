@@ -3,9 +3,9 @@ import {
     Chargy,
     IsAURL,
     IsValidURL,
+    SimpleURL,
     URLContext,
-    type IFileInfo,
-    type IURL
+    type IFileInfo
 } from "@open-charging-cloud/chargy-core";
 import { describe, expect, test, vi } from "vitest";
 import { createTestChargy } from "./chargyTestRuntime";
@@ -115,7 +115,7 @@ describe("Simple URLs", () => {
     test("allows URL resolution to be replaced", async () => {
         const fetchMock = vi.fn<typeof fetch>();
         vi.stubGlobal("fetch", fetchMock);
-        const urlResolver = vi.fn((url: IURL): IURL => ({
+        const urlResolver = vi.fn((url: SimpleURL.IURL): SimpleURL.IURL => ({
             ...url,
             serviceTypes: [ "chargy" ],
             serviceData:  { source: "static lookup" }
