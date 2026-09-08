@@ -58,7 +58,11 @@ describe('charging session presentation', () => {
         expect(IsAChargeTransparencyRecord(report)).toBe(true);
 
         const chargingSession = (report as ChargeTransparencyRecord.IChargeTransparencyRecord).chargingSessions?.[0];
-        expect(chargingSession?.verificationResult?.status)
+
+        if (chargingSession === undefined)
+            throw new Error("'" + fileName + "' carries no charging session!");
+
+        expect(chargingSession.verificationResult?.status)
             .toBe(ChargyInterfaces.SessionVerificationResult.InplausibleMeasurement);
         expect(isWarningSession(chargingSession)).toBe(true);
         expect(getSessionWarnings(chargingSession)).toEqual([

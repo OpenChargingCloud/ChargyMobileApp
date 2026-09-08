@@ -386,7 +386,7 @@ export default class App {
 
       const distance = ('changedTouches' in e
                           ? e.changedTouches[0]
-                          : e).clientX - me.chargingSessionsPage_MovementStartX;
+                          : e).clientX - (me.chargingSessionsPage_MovementStartX ?? 0);
 
       const target = e.target as HTMLElement;
 
@@ -456,7 +456,7 @@ export default class App {
 
         const distance = ('changedTouches' in e
                           ? e.changedTouches[0]
-                          : e).clientX - me.measurementInfosPage_MovementStartX;
+                          : e).clientX - (me.measurementInfosPage_MovementStartX ?? 0);
 
         const target = e.target as HTMLElement;
 
@@ -526,7 +526,7 @@ export default class App {
 
         const distance = ('changedTouches' in e
                           ? e.changedTouches[0]
-                          : e).clientX - me.cryptoDetailsPage_MovementStartX;
+                          : e).clientX - (me.cryptoDetailsPage_MovementStartX ?? 0);
 
         const target = e.target as HTMLElement;
 
@@ -1153,7 +1153,7 @@ export default class App {
 
   private setupAboutPage(): void {
     const version = (value?: string) => value?.replace(/^[^0-9]*/, '') ?? '';
-    (document.getElementById('appVersion')).textContent = __APP_PACKAGE__.version;
+    (document.getElementById('appVersion') as HTMLSpanElement).textContent = __APP_PACKAGE__.version;
     const versions: Record<string, string> = {
       chargyMobileVersion: __APP_PACKAGE__.version,
       chargyCoreVersion: __CHARGY_CORE_VERSION__,
@@ -1180,7 +1180,7 @@ export default class App {
       for (const element of Array.from(document.querySelectorAll<HTMLSpanElement>(`#${id}`)))
         element.textContent = packageVersion;
 
-    (this.aboutPage.querySelector('#chargyCoreHash #value')).textContent = this.formatHash(__CHARGY_CORE_SHA512__);
+    (this.aboutPage.querySelector('#chargyCoreHash #value') as HTMLDivElement).textContent = this.formatHash(__CHARGY_CORE_SHA512__);
 
     for (const link of Array.from(this.aboutPage.querySelectorAll<HTMLElement>('[href]'))) {
       link.onclick = (event: MouseEvent) => {
@@ -1220,7 +1220,7 @@ export default class App {
   }
 
   private async calculateApplicationHash(): Promise<void> {
-    const target = this.aboutPage.querySelector<HTMLElement>('#applicationHash #value');
+    const target = this.aboutPage.querySelector('#applicationHash #value') as HTMLElement;
     if (target.dataset.ready === 'true') return;
     try {
       const files = ['index.html', 'css/chargy.css', 'js/bundle.js'];

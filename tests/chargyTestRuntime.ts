@@ -84,5 +84,5 @@ export function parseJSONRecord(json: string): Record<string, unknown> {
 
 export function parseValidationRules(json: string): IValidationRules {
     const parsed: unknown = JSON.parse(json);
-    return parsed;
+    return parsed as IValidationRules;
 }

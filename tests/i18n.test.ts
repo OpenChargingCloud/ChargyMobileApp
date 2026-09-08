@@ -11,11 +11,11 @@ describe('mobile app i18n', () => {
     test('merges ChargyCore messages with MobileApp overrides', () => {
         const i18n = createI18nDictionary();
 
-        expect(i18n.UnknownOrInvalidChargeTransparencyRecord.en)
+        expect(i18n.UnknownOrInvalidChargeTransparencyRecord?.en)
             .toBe('Unknown or invalid charge transparency record!');
-        expect(i18n.inputHelp.en)
+        expect(i18n.inputHelp?.en)
             .toContain('scan it as a QR code');
-        expect(i18n.mobileAppHeadline.de)
+        expect(i18n.mobileAppHeadline?.de)
             .toBe('Transparenz-Software');
     });
 
@@ -26,8 +26,8 @@ describe('mobile app i18n', () => {
 
         for (const key of new Set(keys)) {
             expect(i18n[key], `missing i18n key: ${key}`).toBeDefined();
-            expect(i18n[key].de, `missing German text: ${key}`).toBeTypeOf('string');
-            expect(i18n[key].en, `missing English text: ${key}`).toBeTypeOf('string');
+            expect(i18n[key]?.de, `missing German text: ${key}`).toBeTypeOf('string');
+            expect(i18n[key]?.en, `missing English text: ${key}`).toBeTypeOf('string');
         }
     });
 

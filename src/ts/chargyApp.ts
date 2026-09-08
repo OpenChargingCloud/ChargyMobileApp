@@ -249,7 +249,7 @@ export default class ChargyApp {
                  language: SupportedLanguage) {
 
         this.app                       = app;
-        this.chargingSessionReportDiv  = this.app.chargingSessionsPage.querySelector<HTMLDivElement>("#chargingSessionReport");
+        this.chargingSessionReportDiv  = this.app.chargingSessionsPage.querySelector("#chargingSessionReport") as HTMLDivElement;
         this.chargy                    = new Chargy(
                                              createI18nDictionary(),
                                              [ language ],
@@ -265,9 +265,9 @@ export default class ChargyApp {
         //#region The live link trust dialog
 
         this.liveLinkTrustDialogDiv    = document.getElementById('liveLinkTrustDialog')  as HTMLDivElement;
-        this.liveLinkTrustDocumentDiv  = this.liveLinkTrustDialogDiv.querySelector("#liveLinkTrustDocument");
-        this.liveLinkTrustOriginsDiv   = this.liveLinkTrustDialogDiv.querySelector("#liveLinkTrustOrigins");
-        this.liveLinkTrustBackButton   = this.liveLinkTrustDialogDiv.querySelector("#liveLinkTrustBackButton");
+        this.liveLinkTrustDocumentDiv  = this.liveLinkTrustDialogDiv.querySelector("#liveLinkTrustDocument")   as HTMLDivElement;
+        this.liveLinkTrustOriginsDiv   = this.liveLinkTrustDialogDiv.querySelector("#liveLinkTrustOrigins")    as HTMLDivElement;
+        this.liveLinkTrustBackButton   = this.liveLinkTrustDialogDiv.querySelector("#liveLinkTrustBackButton") as HTMLButtonElement;
 
         // The back arrow answers with whatever has been decided so far; the
         // rest of the origins stay undecided and are simply not polled.
@@ -277,13 +277,13 @@ export default class ChargyApp {
 
         //#region The settings page
 
-        this.settingsMenuDiv              = this.app.settingsPage.querySelector("#settingsMenu");
-        this.settingsTrustedOriginsDiv    = this.app.settingsPage.querySelector("#settingsTrustedOrigins");
-        this.settingsTrustedOriginsEntry  = this.app.settingsPage.querySelector("#settingsTrustedOriginsEntry");
-        this.trustedOriginsListDiv        = this.app.settingsPage.querySelector("#trustedOriginsList");
-        this.noTrustedOriginsDiv          = this.app.settingsPage.querySelector("#noTrustedOrigins");
-        this.trustRetentionEnabledInput   = this.app.settingsPage.querySelector("#trustRetentionEnabled");
-        this.trustRetentionMonthsInput    = this.app.settingsPage.querySelector("#trustRetentionMonths");
+        this.settingsMenuDiv              = this.app.settingsPage.querySelector("#settingsMenu")                as HTMLDivElement;
+        this.settingsTrustedOriginsDiv    = this.app.settingsPage.querySelector("#settingsTrustedOrigins")      as HTMLDivElement;
+        this.settingsTrustedOriginsEntry  = this.app.settingsPage.querySelector("#settingsTrustedOriginsEntry") as HTMLButtonElement;
+        this.trustedOriginsListDiv        = this.app.settingsPage.querySelector("#trustedOriginsList")          as HTMLDivElement;
+        this.noTrustedOriginsDiv          = this.app.settingsPage.querySelector("#noTrustedOrigins")            as HTMLDivElement;
+        this.trustRetentionEnabledInput   = this.app.settingsPage.querySelector("#trustRetentionEnabled")       as HTMLInputElement;
+        this.trustRetentionMonthsInput    = this.app.settingsPage.querySelector("#trustRetentionMonths")        as HTMLInputElement;
         this.trustRetentionMonthsInput.min = minimumRetentionMonths.toString();
         this.trustRetentionMonthsInput.max = maximumRetentionMonths.toString();
 
@@ -652,17 +652,17 @@ export default class ChargyApp {
             me.app.showPage(me.app.chargingSessionsPage);
 
             if (CTR.description) {
-                const descriptionDiv = me.app.chargingSessionsPage.querySelector<HTMLDivElement>('#description');
-                descriptionDiv.innerText = me.chargy.GetLocalizedText(CTR.description) ?? chargyLib.firstValue(CTR.description);
+                const descriptionDiv = me.app.chargingSessionsPage.querySelector('#description') as HTMLDivElement;
+                descriptionDiv.innerText = me.chargy.GetLocalizedText(CTR.description) ?? chargyLib.firstValue(CTR.description) ?? "";
             }
 
             if (CTR.begin) {
-                const beginDiv = me.app.chargingSessionsPage.querySelector<HTMLDivElement>('#begin');
+                const beginDiv = me.app.chargingSessionsPage.querySelector('#begin') as HTMLDivElement;
                 beginDiv.innerHTML = chargyLib.parseUTC(CTR.begin).format('dddd, D. MMMM YYYY');
             }
 
             if (CTR.end) {
-                const endDiv = me.app.chargingSessionsPage.querySelector<HTMLDivElement>('#end');
+                const endDiv = me.app.chargingSessionsPage.querySelector('#end') as HTMLDivElement;
                 endDiv.innerHTML   = chargyLib.parseUTC(CTR.end).format('dddd, D. MMMM YYYY');
             }
 
@@ -678,7 +678,7 @@ export default class ChargyApp {
 
             if (CTR.chargingSessions) {
 
-                const chargingSessionsDiv = me.app.chargingSessionsPage.querySelector<HTMLDivElement>('#chargingSessions');
+                const chargingSessionsDiv = me.app.chargingSessionsPage.querySelector('#chargingSessions') as HTMLDivElement;
                 chargingSessionsDiv.innerText = '';
 
                 for (const chargingSession of CTR.chargingSessions)
@@ -880,7 +880,7 @@ export default class ChargyApp {
                             chargingSession.chargingStationId || chargingSession.chargingStation ||
                             chargingSession.chargingPoolId    || chargingSession.chargingPool) {
 
-                            let address:iface.IAddress            = null;
+                            let address:iface.IAddress | null | undefined = null;
 
                             const locationInfoDiv                   = tableDiv.appendChild(document.createElement('div'));
                             locationInfoDiv.className             = "locationInfos";
@@ -895,30 +895,44 @@ export default class ChargyApp {
                             if (chargingSession.EVSEId || chargingSession.EVSE) {
 
                                 if (chargingSession.EVSE == null || typeof chargingSession.EVSE !== 'object')
-                                    chargingSession.EVSE = me.chargy.GetEVSE(chargingSession.EVSEId);
+                                    chargingSession.EVSE = (chargingSession.EVSEId != null
+                                                                ? me.chargy.GetEVSE(chargingSession.EVSEId)
+                                                                : null) ?? undefined;
 
-                                locationDiv.classList.add("EVSE");
-                                locationDiv.innerHTML             = (chargingSession.EVSE   != null && chargingSession.EVSE.description != null
-                                                                        ? chargyLib.firstValue(chargingSession.EVSE.description) + "<br />"
-                                                                        : "") +
-                                                                    (chargingSession.EVSEId != null
-                                                                        ? chargingSession.EVSEId
-                                                                        : chargingSession.EVSE["@id"]);
+                                // An EVSE id that resolves to nothing leaves the row without
+                                // anything to show, exactly as an unresolvable charging station
+                                // or pool does below.
+                                if (chargingSession.EVSE != null)
+                                {
 
-                                chargingSession.chargingStation   = chargingSession.EVSE.chargingStation;
-                                chargingSession.chargingStationId = chargingSession.EVSE.chargingStationId;
+                                    locationDiv.classList.add("EVSE");
+                                    locationDiv.innerHTML             = (chargingSession.EVSE.description != null
+                                                                            ? chargyLib.firstValue(chargingSession.EVSE.description) + "<br />"
+                                                                            : "") +
+                                                                        (chargingSession.EVSEId != null
+                                                                            ? chargingSession.EVSEId
+                                                                            : chargingSession.EVSE["@id"]);
 
-                                chargingSession.chargingPool      = chargingSession.EVSE.chargingStation.chargingPool;
-                                chargingSession.chargingPoolId    = chargingSession.EVSE.chargingStation.chargingPoolId;
+                                    chargingSession.chargingStation   = chargingSession.EVSE.chargingStation;
+                                    chargingSession.chargingStationId = chargingSession.EVSE.chargingStationId;
 
-                                address                           = chargingSession.EVSE.chargingStation.address;
+                                    chargingSession.chargingPool      = chargingSession.EVSE.chargingStation?.chargingPool;
+                                    chargingSession.chargingPoolId    = chargingSession.EVSE.chargingStation?.chargingPoolId;
+
+                                    address                           = chargingSession.EVSE.chargingStation?.address;
+
+                                }
+                                else
+                                    locationInfoDiv.remove();
 
                             }
 
                             else if (chargingSession.chargingStationId || chargingSession.chargingStation) {
 
                                 if (chargingSession.chargingStation == null || typeof chargingSession.chargingStation !== 'object')
-                                    chargingSession.chargingStation = me.chargy.GetChargingStation(chargingSession.chargingStationId);
+                                    chargingSession.chargingStation = (chargingSession.chargingStationId != null
+                                                                          ? me.chargy.GetChargingStation(chargingSession.chargingStationId)
+                                                                          : null) ?? undefined;
 
                                 if (chargingSession.chargingStation != null)
                                 {
@@ -945,7 +959,9 @@ export default class ChargyApp {
                             else if (chargingSession.chargingPoolId || chargingSession.chargingPool) {
 
                                 if (chargingSession.chargingPool == null || typeof chargingSession.chargingPool !== 'object')
-                                    chargingSession.chargingPool = me.chargy.GetChargingPool(chargingSession.chargingPoolId);
+                                    chargingSession.chargingPool = (chargingSession.chargingPoolId != null
+                                                                       ? me.chargy.GetChargingPool(chargingSession.chargingPoolId)
+                                                                       : null) ?? undefined;
 
                                 if (chargingSession.chargingPool != null)
                                 {
@@ -3248,9 +3264,9 @@ export default class ChargyApp {
 
         this.currentChargingSession = chargingSession;
 
-        const measurementInfoTarget    = targets?.info     ?? this.app.measurementInfosPage.querySelector<HTMLDivElement>('#measurementInfo');
-        const measurementValuesTarget  = targets?.values   ?? this.app.measurementInfosPage.querySelector<HTMLDivElement>('#measurementValues');
-        const validationWarningsTarget = targets?.warnings ?? this.app.measurementInfosPage.querySelector<HTMLDivElement>('#sessionValidationWarnings');
+        const measurementInfoTarget    = targets?.info     ?? this.app.measurementInfosPage.querySelector('#measurementInfo')            as HTMLDivElement;
+        const measurementValuesTarget  = targets?.values   ?? this.app.measurementInfosPage.querySelector('#measurementValues')          as HTMLDivElement;
+        const validationWarningsTarget = targets?.warnings ?? this.app.measurementInfosPage.querySelector('#sessionValidationWarnings')  as HTMLDivElement;
 
         const me = this;
 
@@ -3536,11 +3552,6 @@ export default class ChargyApp {
         const signatureExpectedValue = cryptoDiv.querySelector<HTMLDivElement>('#signatureExpected .value');
         const signatureCheckValue   = cryptoDiv.querySelector<HTMLDivElement>('#signatureCheck');
 
-        const doError = (text: string): void => {
-            errorDiv.innerHTML     = '<i class="fas fa-times-circle"></i> ' + text;
-            introDiv.style.display = 'none';
-        };
-
         if (!errorDiv               || !introDiv            || !cryptoDataDiv       ||
             !bufferValue            || !hashedBufferValue   || !publicKeyValue      ||
             !signatureExpectedValue || !signatureCheckValue)
@@ -3548,6 +3559,13 @@ export default class ChargyApp {
             console.error('The measurement crypto details page is incomplete.');
             return;
         }
+
+        // Defined after the guard above, so it closes over elements that are
+        // known to be there rather than over what they were before it ran.
+        const doError = (text: string): void => {
+            errorDiv.innerHTML     = '<i class="fas fa-times-circle"></i> ' + text;
+            introDiv.style.display = 'none';
+        };
 
         errorDiv.innerHTML     = '';
         introDiv.style.display = 'block';

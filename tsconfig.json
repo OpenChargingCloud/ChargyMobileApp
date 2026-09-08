@@ -15,7 +15,7 @@
         "resolveJsonModule": true,
         "ignoreDeprecations": "6.0",
         "strict": false,
-        "strictNullChecks": false,
+        "strictNullChecks": true,
         "noImplicitAny": true,
         "strictPropertyInitialization": false,
         "skipLibCheck": true,
