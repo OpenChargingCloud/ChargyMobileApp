@@ -28,6 +28,58 @@ export interface MeasurementDisplayValue {
     unit:  string;
 }
 
+/**
+ * What a measurement measures, as ChargyCore 0.15 reports it.
+ *
+ * Until then a measurement carried its name, OBIS code, unit and scale
+ * directly. Now it carries a list of phenomena, and those properties
+ * describe the phenomenon rather than the measurement - "phenomena" is
+ * typed as unknown[], so it is read defensively.
+ */
+type MeasurementPhenomenon = {
+    name?:         string;
+    obis?:         string;
+    unit?:         string;
+    unitEncoded?:  number;
+    valueType?:    string;
+    scale?:        number;
+};
+
+/**
+ * Copies what the first phenomenon says onto the measurement itself, so that
+ * everything reading a measurement keeps working whether the document was
+ * parsed into the old shape or the new one.
+ *
+ * Done once after parsing rather than at each of the dozen places that read
+ * these properties: a value that is missing here shows up as "undefined" in a
+ * label, and a missing scale turns Math.pow(10, scale) into NaN - both of
+ * which are far from where the property was actually read.
+ */
+export function applyMeasurementPhenomena(measurement: ChargeTransparencyRecord.IMeasurement): void {
+
+    const phenomenon = (measurement.phenomena?.[0] ?? undefined) as MeasurementPhenomenon | undefined;
+
+    if (phenomenon === undefined)
+        return;
+
+    measurement.name         = phenomenon.name        ?? measurement.name;
+    measurement.obis         = phenomenon.obis        ?? measurement.obis;
+    measurement.unit         = (phenomenon.unit as ChargyInterfaces.UnitSymbol | undefined) ?? measurement.unit;
+    measurement.unitEncoded  = phenomenon.unitEncoded ?? measurement.unitEncoded;
+    measurement.valueType    = phenomenon.valueType   ?? measurement.valueType;
+    measurement.scale        = phenomenon.scale       ?? measurement.scale;
+
+}
+
+/** The same for every measurement of a charge transparency record. */
+export function applyRecordPhenomena(ctr: ChargeTransparencyRecord.IChargeTransparencyRecord | null | undefined): void {
+
+    for (const chargingSession of ctr?.chargingSessions ?? [])
+        for (const measurement of chargingSession.measurements ?? [])
+            applyMeasurementPhenomena(measurement);
+
+}
+
 function isKiloWattHourUnit(unit: string | undefined): boolean {
     return unit === 'kWh' || unit === 'KILO_WATT_HOURS';
 }

@@ -41,6 +41,7 @@ import {
     isWarningSession
 }                                      from './sessionPresentation';
 import {
+    applyRecordPhenomena,
     distinctValuesInTimeOrder,
     getMeasurementDifferenceText,
     getMeasurementDisplayValue,
@@ -443,6 +444,11 @@ export default class ChargyApp {
 
             if (chargeTransparencyRecord.IsAChargeTransparencyRecord(result))
             {
+                // Since ChargyCore 0.15 a measurement describes what it
+                // measures through its phenomena; everything below reads the
+                // measurement itself.
+                applyRecordPhenomena(result);
+
                 this.clearLiveLinkState();
                 this.currentPublicKeyLookup = null;
                 this.currentSimpleURL = null;
@@ -455,10 +461,11 @@ export default class ChargyApp {
 
             if (liveLink.IsAChargeTransparencyLiveLink(result))
             {
-                this.showLiveLink(
-                    result,
-                    await this.chargy.TryToParseLiveLinkMeterValues(result) ?? null
-                );
+                const liveLinkMeterValues = await this.chargy.TryToParseLiveLinkMeterValues(result) ?? null;
+
+                applyRecordPhenomena(liveLinkMeterValues);
+
+                this.showLiveLink(result, liveLinkMeterValues);
                 return true;
             }
 
@@ -764,13 +771,18 @@ export default class ChargyApp {
                                 if (measurement.values && measurement.values.length > 0)
                                 {
 
-                                    const first  = Number(measurement.values[0].value);
-                                    const last   = Number(measurement.values[measurement.values.length-1].value);
-                                    let amount = parseFloat(((last - first) * Math.pow(10, measurement.scale)).toFixed(10));
+                                    // Computed on the Decimal the meter reading
+                                    // actually is, rather than through Number():
+                                    // these are metrological values, and their
+                                    // precision is the point of them.
+                                    const first  = measurement.values[0].value;
+                                    const last   = measurement.values[measurement.values.length-1].value;
+                                    let amount = parseFloat(last.minus(first).times(Math.pow(10, measurement.scale)).toFixed(10));
 
                                     switch (measurement.unit)
                                     {
 
+                                        case "kWh":
                                         case "KILO_WATT_HOURS":
                                             break;
 
