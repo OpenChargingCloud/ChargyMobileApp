@@ -265,9 +265,9 @@ export default class ChargyApp {
         //#region The live link trust dialog
 
         this.liveLinkTrustDialogDiv    = document.getElementById('liveLinkTrustDialog')  as HTMLDivElement;
-        this.liveLinkTrustDocumentDiv  = this.liveLinkTrustDialogDiv.querySelector("#liveLinkTrustDocument") as HTMLDivElement;
-        this.liveLinkTrustOriginsDiv   = this.liveLinkTrustDialogDiv.querySelector("#liveLinkTrustOrigins")  as HTMLDivElement;
-        this.liveLinkTrustBackButton   = this.liveLinkTrustDialogDiv.querySelector("#liveLinkTrustBackButton") as HTMLButtonElement;
+        this.liveLinkTrustDocumentDiv  = this.liveLinkTrustDialogDiv.querySelector("#liveLinkTrustDocument");
+        this.liveLinkTrustOriginsDiv   = this.liveLinkTrustDialogDiv.querySelector("#liveLinkTrustOrigins");
+        this.liveLinkTrustBackButton   = this.liveLinkTrustDialogDiv.querySelector("#liveLinkTrustBackButton");
 
         // The back arrow answers with whatever has been decided so far; the
         // rest of the origins stay undecided and are simply not polled.
@@ -277,13 +277,13 @@ export default class ChargyApp {
 
         //#region The settings page
 
-        this.settingsMenuDiv              = this.app.settingsPage.querySelector("#settingsMenu")               as HTMLDivElement;
-        this.settingsTrustedOriginsDiv    = this.app.settingsPage.querySelector("#settingsTrustedOrigins")     as HTMLDivElement;
-        this.settingsTrustedOriginsEntry  = this.app.settingsPage.querySelector("#settingsTrustedOriginsEntry") as HTMLButtonElement;
-        this.trustedOriginsListDiv        = this.app.settingsPage.querySelector("#trustedOriginsList")         as HTMLDivElement;
-        this.noTrustedOriginsDiv          = this.app.settingsPage.querySelector("#noTrustedOrigins")           as HTMLDivElement;
-        this.trustRetentionEnabledInput   = this.app.settingsPage.querySelector("#trustRetentionEnabled")      as HTMLInputElement;
-        this.trustRetentionMonthsInput    = this.app.settingsPage.querySelector("#trustRetentionMonths")       as HTMLInputElement;
+        this.settingsMenuDiv              = this.app.settingsPage.querySelector("#settingsMenu");
+        this.settingsTrustedOriginsDiv    = this.app.settingsPage.querySelector("#settingsTrustedOrigins");
+        this.settingsTrustedOriginsEntry  = this.app.settingsPage.querySelector("#settingsTrustedOriginsEntry");
+        this.trustedOriginsListDiv        = this.app.settingsPage.querySelector("#trustedOriginsList");
+        this.noTrustedOriginsDiv          = this.app.settingsPage.querySelector("#noTrustedOrigins");
+        this.trustRetentionEnabledInput   = this.app.settingsPage.querySelector("#trustRetentionEnabled");
+        this.trustRetentionMonthsInput    = this.app.settingsPage.querySelector("#trustRetentionMonths");
         this.trustRetentionMonthsInput.min = minimumRetentionMonths.toString();
         this.trustRetentionMonthsInput.max = maximumRetentionMonths.toString();
 
