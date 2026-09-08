@@ -98,9 +98,11 @@ export default class App {
     private readonly qrCodeScannerDetailedScanFrequency:    number = 8;
 
 
-    chargingSessionsPage_MovementStartX  = null;
-    measurementInfosPage_MovementStartX  = null;
-    cryptoDetailsPage_MovementStartX     = null;
+    // Where a back-swipe started, in viewport pixels, or null while none is
+    // in progress.
+    chargingSessionsPage_MovementStartX:  number | null = null;
+    measurementInfosPage_MovementStartX:  number | null = null;
+    cryptoDetailsPage_MovementStartX:     number | null = null;
 
     _chargyApp: ChargyApp;
 
@@ -111,7 +113,7 @@ export default class App {
         document.addEventListener('pause',       () => { this.onPause(); },        false);
 
         if (cordova.getAppVersion != null) {
-            cordova.getAppVersion.getVersionNumber((_version) => undefined);
+            cordova.getAppVersion.getVersionNumber((_version: string): void => undefined);
         }
 
     }
@@ -372,45 +374,47 @@ export default class App {
 
     //#region ChargingSessions Back-Swipe
 
-    function getChargingSessionsPagePosition(e) {
+    function getChargingSessionsPagePosition(e: MouseEvent | TouchEvent) {
 
-      me.chargingSessionsPage_MovementStartX = (e.changedTouches
+      me.chargingSessionsPage_MovementStartX = ('changedTouches' in e
                                                     ? e.changedTouches[0]
                                                     : e).clientX;
 
     };
 
-    function releaseChargingSessionsPagePosition(e) {
+    function releaseChargingSessionsPagePosition(e: MouseEvent | TouchEvent) {
 
-      const distance = (e.changedTouches
+      const distance = ('changedTouches' in e
                           ? e.changedTouches[0]
                           : e).clientX - me.chargingSessionsPage_MovementStartX;
 
-      if (e.target.id == "map")
+      const target = e.target as HTMLElement;
+
+      if (target.id == "map")
         return;
-      
-      if (e.target.parentElement    != null)
+
+      if (target.parentElement    != null)
       {
 
-        if (e.target.parentElement.id == "map")
+        if (target.parentElement.id == "map")
           return;
 
-        if (e.target.parentElement.parentElement != null)
+        if (target.parentElement.parentElement != null)
         {
 
-          if (e.target.parentElement.parentElement.id == "map")
+          if (target.parentElement.parentElement.id == "map")
             return;
 
-          if (e.target.parentElement.parentElement.parentElement != null)
+          if (target.parentElement.parentElement.parentElement != null)
           {
 
-            if (e.target.parentElement.parentElement.parentElement.id == "map")
+            if (target.parentElement.parentElement.parentElement.id == "map")
               return;
 
-            if (e.target.parentElement.parentElement.parentElement.parentElement != null)
+            if (target.parentElement.parentElement.parentElement.parentElement != null)
             {
 
-              if (e.target.parentElement.parentElement.parentElement.parentElement.id == "map")
+              if (target.parentElement.parentElement.parentElement.parentElement.id == "map")
                 return;
 
             }
@@ -440,45 +444,47 @@ export default class App {
 
     //#region measurementInfosPage Back-Swipe
 
-    function getmeasurementInfosPagePosition(e) {
+    function getmeasurementInfosPagePosition(e: MouseEvent | TouchEvent) {
 
-        me.measurementInfosPage_MovementStartX = (e.changedTouches
+        me.measurementInfosPage_MovementStartX = ('changedTouches' in e
                                                     ? e.changedTouches[0]
                                                     : e).clientX;
 
     };
 
-    function releasemeasurementInfosPagePosition(e) {
+    function releasemeasurementInfosPagePosition(e: MouseEvent | TouchEvent) {
 
-        const distance = (e.changedTouches
+        const distance = ('changedTouches' in e
                           ? e.changedTouches[0]
                           : e).clientX - me.measurementInfosPage_MovementStartX;
 
-        if (e.target.id == "map")
+        const target = e.target as HTMLElement;
+
+        if (target.id == "map")
         return;
-        
-        if (e.target.parentElement    != null)
+
+        if (target.parentElement    != null)
         {
 
-        if (e.target.parentElement.id == "map")
+        if (target.parentElement.id == "map")
             return;
 
-        if (e.target.parentElement.parentElement != null)
+        if (target.parentElement.parentElement != null)
         {
 
-            if (e.target.parentElement.parentElement.id == "map")
+            if (target.parentElement.parentElement.id == "map")
             return;
 
-            if (e.target.parentElement.parentElement.parentElement != null)
+            if (target.parentElement.parentElement.parentElement != null)
             {
 
-            if (e.target.parentElement.parentElement.parentElement.id == "map")
+            if (target.parentElement.parentElement.parentElement.id == "map")
                 return;
 
-            if (e.target.parentElement.parentElement.parentElement.parentElement != null)
+            if (target.parentElement.parentElement.parentElement.parentElement != null)
             {
 
-                if (e.target.parentElement.parentElement.parentElement.parentElement.id == "map")
+                if (target.parentElement.parentElement.parentElement.parentElement.id == "map")
                 return;
 
             }
@@ -508,45 +514,47 @@ export default class App {
 
     //#region cryptoDetailsPage Back-Swipe
 
-    function getCryptoDetailsPagePosition(e) {
+    function getCryptoDetailsPagePosition(e: MouseEvent | TouchEvent) {
 
-        me.cryptoDetailsPage_MovementStartX = (e.changedTouches
+        me.cryptoDetailsPage_MovementStartX = ('changedTouches' in e
                                                     ? e.changedTouches[0]
                                                     : e).clientX;
 
     };
 
-    function releaseCryptoDetailsPagePosition(e) {
+    function releaseCryptoDetailsPagePosition(e: MouseEvent | TouchEvent) {
 
-        const distance = (e.changedTouches
+        const distance = ('changedTouches' in e
                           ? e.changedTouches[0]
                           : e).clientX - me.cryptoDetailsPage_MovementStartX;
 
-        if (e.target.id == "map")
+        const target = e.target as HTMLElement;
+
+        if (target.id == "map")
         return;
-        
-        if (e.target.parentElement    != null)
+
+        if (target.parentElement    != null)
         {
 
-        if (e.target.parentElement.id == "map")
+        if (target.parentElement.id == "map")
             return;
 
-        if (e.target.parentElement.parentElement != null)
+        if (target.parentElement.parentElement != null)
         {
 
-            if (e.target.parentElement.parentElement.id == "map")
+            if (target.parentElement.parentElement.id == "map")
             return;
 
-            if (e.target.parentElement.parentElement.parentElement != null)
+            if (target.parentElement.parentElement.parentElement != null)
             {
 
-            if (e.target.parentElement.parentElement.parentElement.id == "map")
+            if (target.parentElement.parentElement.parentElement.id == "map")
                 return;
 
-            if (e.target.parentElement.parentElement.parentElement.parentElement != null)
+            if (target.parentElement.parentElement.parentElement.parentElement != null)
             {
 
-                if (e.target.parentElement.parentElement.parentElement.parentElement.id == "map")
+                if (target.parentElement.parentElement.parentElement.parentElement.id == "map")
                 return;
 
             }

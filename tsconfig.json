@@ -16,7 +16,7 @@
         "ignoreDeprecations": "6.0",
         "strict": false,
         "strictNullChecks": false,
-        "noImplicitAny": false,
+        "noImplicitAny": true,
         "strictPropertyInitialization": false,
         "skipLibCheck": true,
         "sourceMap": true,

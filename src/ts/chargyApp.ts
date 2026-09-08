@@ -2016,7 +2016,7 @@ export default class ChargyApp {
                                              // it was computed for.
                                              headers:      resolveRequestHeaders(customHeaders)
                                          }).
-                                   catch(error => {
+                                   catch((error: unknown): null => {
                                        // A poll that cannot even be sent - a
                                        // Content-Security-Policy that does not
                                        // allow the scheme, a CORS answer that
