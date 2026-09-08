@@ -36,6 +36,11 @@ vi.stubGlobal("window", {
 const currentDirectory = fileURLToPath(new URL(".",  import.meta.url));
 type DetectionResult   = ReturnType<Chargy["DetectAndConvertContentFormat"]>;
 
+// QR rasterization and decoding is CPU-bound and can exceed Vitest's default
+// five-second timeout on a cold Windows CI runner - the more so since these
+// fixtures carry a whole signed live link rather than a URL.
+const qrImageTestTimeout = 30_000;
+
 function readFixture(fileName: string): string {
     return readFileSync(join(currentDirectory, "fixtures", fileName), "utf8").trim();
 }
@@ -121,7 +126,7 @@ describe("Charge Transparency LiveLink", () => {
 
         expect(IsAChargeTransparencyLiveLink(result)).toBe(true);
 
-    });
+    }, qrImageTestTimeout);
 
     test("stays a live link, whether it carries meter values or not", async () => {
 
