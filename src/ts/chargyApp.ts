@@ -775,8 +775,12 @@ export default class ChargyApp {
                                     // actually is, rather than through Number():
                                     // these are metrological values, and their
                                     // precision is the point of them.
-                                    const first  = measurement.values[0].value;
-                                    const last   = measurement.values[measurement.values.length-1].value;
+                                    const first  = measurement.values[0]?.value;
+                                    const last   = measurement.values[measurement.values.length-1]?.value;
+
+                                    if (first === undefined || last === undefined)
+                                        continue;
+
                                     let amount = parseFloat(last.minus(first).times(Math.pow(10, measurement.scale)).toFixed(10));
 
                                     switch (measurement.unit)
@@ -3061,7 +3065,10 @@ export default class ChargyApp {
         const canvas                = chartFrame.appendChild(document.createElement('canvas'));
         const unit                  = chartData.unit;
         const lastTickIndex         = chartData.tickTimestamps.length - 1;
-        const lastTickTimestamp     = chartData.tickTimestamps[lastTickIndex];
+        // The chart data carries at least one interval, so it carries at least
+        // two ticks; the fallbacks are what the type says, not a case that
+        // arises.
+        const lastTickTimestamp     = chartData.tickTimestamps[lastTickIndex] ?? 0;
         const previousTickTimestamp = chartData.tickTimestamps[lastTickIndex - 1] ?? lastTickTimestamp;
         const rightAxisPadding      = Math.max(1, lastTickTimestamp - previousTickTimestamp) * 0.35;
 

@@ -42,6 +42,21 @@ declare const __NPM_PACKAGE_VERSIONS__: Record<string, string>;
 declare const __CHARGY_CORE_VERSION__: string;
 declare const __CHARGY_CORE_SHA512__: string;
 
+/**
+ * Where a back-swipe is, horizontally.
+ *
+ * The swipe handlers are registered for the mouse and for touch alike, so the
+ * position comes either from the event itself or from the touch that ended.
+ * A touch event without a changed touch is not a gesture this can measure;
+ * answering with 0 keeps the resulting distance below any threshold rather
+ * than inventing a swipe.
+ */
+function swipeClientX(e: MouseEvent | TouchEvent): number {
+  return ('changedTouches' in e
+              ? e.changedTouches[0]?.clientX
+              : e.clientX) ?? 0;
+}
+
 export default class App {
 
     public importantInfo:               HTMLDivElement;
@@ -376,17 +391,13 @@ export default class App {
 
     function getChargingSessionsPagePosition(e: MouseEvent | TouchEvent) {
 
-      me.chargingSessionsPage_MovementStartX = ('changedTouches' in e
-                                                    ? e.changedTouches[0]
-                                                    : e).clientX;
+      me.chargingSessionsPage_MovementStartX = swipeClientX(e);
 
     };
 
     function releaseChargingSessionsPagePosition(e: MouseEvent | TouchEvent) {
 
-      const distance = ('changedTouches' in e
-                          ? e.changedTouches[0]
-                          : e).clientX - (me.chargingSessionsPage_MovementStartX ?? 0);
+      const distance = swipeClientX(e) - (me.chargingSessionsPage_MovementStartX ?? 0);
 
       const target = e.target as HTMLElement;
 
@@ -446,17 +457,13 @@ export default class App {
 
     function getmeasurementInfosPagePosition(e: MouseEvent | TouchEvent) {
 
-        me.measurementInfosPage_MovementStartX = ('changedTouches' in e
-                                                    ? e.changedTouches[0]
-                                                    : e).clientX;
+        me.measurementInfosPage_MovementStartX = swipeClientX(e);
 
     };
 
     function releasemeasurementInfosPagePosition(e: MouseEvent | TouchEvent) {
 
-        const distance = ('changedTouches' in e
-                          ? e.changedTouches[0]
-                          : e).clientX - (me.measurementInfosPage_MovementStartX ?? 0);
+        const distance = swipeClientX(e) - (me.measurementInfosPage_MovementStartX ?? 0);
 
         const target = e.target as HTMLElement;
 
@@ -516,17 +523,13 @@ export default class App {
 
     function getCryptoDetailsPagePosition(e: MouseEvent | TouchEvent) {
 
-        me.cryptoDetailsPage_MovementStartX = ('changedTouches' in e
-                                                    ? e.changedTouches[0]
-                                                    : e).clientX;
+        me.cryptoDetailsPage_MovementStartX = swipeClientX(e);
 
     };
 
     function releaseCryptoDetailsPagePosition(e: MouseEvent | TouchEvent) {
 
-        const distance = ('changedTouches' in e
-                          ? e.changedTouches[0]
-                          : e).clientX - (me.cryptoDetailsPage_MovementStartX ?? 0);
+        const distance = swipeClientX(e) - (me.cryptoDetailsPage_MovementStartX ?? 0);
 
         const target = e.target as HTMLElement;
 

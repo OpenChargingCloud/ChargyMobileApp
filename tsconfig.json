@@ -17,6 +17,9 @@
         "strict": false,
         "strictNullChecks": true,
         "noImplicitAny": true,
+        "noUncheckedIndexedAccess": true,
+        // Cordova hands the DOM over at "deviceready", not at construction,
+        // so the page elements are assigned there rather than in a constructor.
         "strictPropertyInitialization": false,
         "skipLibCheck": true,
         "sourceMap": true,

@@ -22,7 +22,9 @@ describe('mobile app i18n', () => {
     test('provides German and English text for every annotated HTML key', () => {
         const i18n = createI18nDictionary();
         const html = readFileSync('src/index.html', 'utf8');
-        const keys = Array.from(html.matchAll(/data-i18n-(?:key|title-key|placeholder-key|aria-label-key)="([^"]+)"/g), match => match[1]);
+        const keys = Array.from(html.matchAll(/data-i18n-(?:key|title-key|placeholder-key|aria-label-key)="([^"]+)"/g),
+                                match => match[1]).
+                           filter((key): key is string => key !== undefined);
 
         for (const key of new Set(keys)) {
             expect(i18n[key], `missing i18n key: ${key}`).toBeDefined();
