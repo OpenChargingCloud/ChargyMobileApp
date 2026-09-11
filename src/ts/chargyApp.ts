@@ -452,6 +452,9 @@ export default class ChargyApp {
                 this.clearLiveLinkState();
                 this.currentPublicKeyLookup = null;
                 this.currentSimpleURL = null;
+                // How to draw this record again - when the language changes,
+                // for instance. It belongs to this record, so every view that
+                // replaces it clears it again.
                 this.refreshChargingSessionsPage = (): void => {
                     processChargeTransparencyRecord(result);
                 };
@@ -1067,6 +1070,7 @@ export default class ChargyApp {
                                : [ publicKeyResult ];
 
         this.clearLiveLinkState();
+        this.refreshChargingSessionsPage = null;
         this.currentPublicKeyLookup = { publicKeys };
         this.currentSimpleURL = null;
         this.app.showPage(this.app.publicKeyInfoPage);
@@ -1138,6 +1142,7 @@ export default class ChargyApp {
     private showSimpleURL(urlInfo: simpleURL.IURL): void
     {
         this.clearLiveLinkState();
+        this.refreshChargingSessionsPage = null;
         this.currentSimpleURL = urlInfo;
         this.currentPublicKeyLookup = null;
         this.app.showPage(this.app.publicKeyInfoPage);
@@ -1193,6 +1198,7 @@ export default class ChargyApp {
         this.currentLiveLinkMeterValues = meterValues;
         this.currentPublicKeyLookup     = null;
         this.currentSimpleURL           = null;
+        this.refreshChargingSessionsPage = null;
 
         // A background reload while the user studies the crypto details of one
         // of this live link's meter values must not tear those details away:
