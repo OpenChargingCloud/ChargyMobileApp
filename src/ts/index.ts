@@ -119,6 +119,10 @@ export default class App {
     measurementInfosPage_MovementStartX:  number | null = null;
     cryptoDetailsPage_MovementStartX:     number | null = null;
 
+    // When the back button was last acted on, to tell one press from the
+    // duplicate that follows it. See handleBackButton().
+    private lastBackButtonAt: number = 0;
+
     _chargyApp: ChargyApp;
 
     start(): void {
@@ -208,6 +212,23 @@ export default class App {
 
     private handleBackButton(event: Event): void {
         event.preventDefault();
+
+        // One press, one step back. Cordova 15.1 raises this event twice on
+        // current Android versions: once from the key event travelling through
+        // the WebView, and once from the OnBackPressedCallback it registers,
+        // which synthesises that same key event. Two steps then happen where
+        // the user asked for one - and from a charging session that is the
+        // start page and then out of the application, which looks like the app
+        // simply closing.
+        //
+        // Nobody presses back twice within a fraction of a second, so a second
+        // event that close is the duplicate rather than a second press.
+        const now = Date.now();
+
+        if (now - this.lastBackButtonAt < 300)
+            return;
+
+        this.lastBackButtonAt = now;
 
         if (this.qrCodeScannerDiv?.style.display === 'flex') {
             this.closeQRCodeScanner();
