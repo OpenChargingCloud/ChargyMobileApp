@@ -31,11 +31,25 @@ const modernFixtures = [
         publicKeyOID:      "1.3.101.113"
     },
     {
+        algorithm:        "ML-DSA-44" as const,
+        fileName:         "001-01_ML-DSA-44.ocmf",
+        publicKeyFileName: "001-01_ML-DSA-44.publicKey.hex",
+        publicKeyPEMName:  "001-01_ML-DSA-44.publicKey.pem",
+        publicKeyOID:      "2.16.840.1.101.3.4.3.17"
+    },
+    {
         algorithm:        "ML-DSA-65" as const,
         fileName:         "001-01_ML-DSA-65.ocmf",
         publicKeyFileName: "001-01_ML-DSA-65.publicKey.hex",
         publicKeyPEMName:  "001-01_ML-DSA-65.publicKey.pem",
         publicKeyOID:      "2.16.840.1.101.3.4.3.18"
+    },
+    {
+        algorithm:        "ML-DSA-87" as const,
+        fileName:         "001-01_ML-DSA-87.ocmf",
+        publicKeyFileName: "001-01_ML-DSA-87.publicKey.hex",
+        publicKeyPEMName:  "001-01_ML-DSA-87.publicKey.pem",
+        publicKeyOID:      "2.16.840.1.101.3.4.3.19"
     }
 ] as const;
 
@@ -84,7 +98,9 @@ describe("Chargy OCMF modern signature extensions", () => {
     test.each([
         [ "001-01_Ed25519.ocmf",   32 ],
         [ "001-01_Ed448.ocmf",     57 ],
-        [ "001-01_ML-DSA-65.ocmf", undefined ]
+        [ "001-01_ML-DSA-44.ocmf", undefined ],
+        [ "001-01_ML-DSA-65.ocmf", undefined ],
+        [ "001-01_ML-DSA-87.ocmf", undefined ]
     ])("formats the raw signature components of %s", (fileName, componentByteLength) => {
 
         const document  = readFileSync(new URL(fileName, fixtureRoot), "utf8").trim();

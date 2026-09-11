@@ -7,7 +7,11 @@ text profile defined by the Bonner Eichrechtstage:
 - `002`: start fee, energy price and blocking fee after charging ends
 - `003`: start fee and charging-time price
 
-Every `.ocmf` file is a standalone OCMF document containing two readings.
+Every `.ocmf` file is a standalone OCMF document containing two readings. The
+tariff does not change within any of them, so every `TT` here names a single
+tariff. For the extended form that records a tariff change — the same texts
+separated by a vertical bar — see `documentation/OCMF/README.md`, "Recording a
+tariff change".
 The numbered baseline fixtures use ECDSA P-256/SHA-256; the explicitly named
 Ed25519, Ed448, and ML-DSA-65 fixtures exercise Chargy's modern signature
 extensions. Each baseline fixture's `.expected.json` file describes the tariff

@@ -5,7 +5,7 @@ Fixtures for the charge transparency live link format
 
 | Fixture                            | |
 | ---------------------------------- | - |
-| `ChargeTransparencyLiveLink_1.json`| a full live link: the **final document** of the `OCMF-Test-01` series, byte-identical to `OCMF-Test-01__0019.json`. Generated, not hand-maintained. |
+| `ChargeTransparencyLiveLink_1.json`| a full live link: the **final document** of the `OCMF-Test-01` series, byte-identical to `OCMF-Test-01__0034.json`. Generated, not hand-maintained. |
 | `ChargeTransparencyLiveLink_2.json`| the minimal form: context, creation timestamp and live transports only |
 | `OCMF-Test-01/`                    | the generated 22 kW charging session it comes from, see its own README |
 
@@ -21,11 +21,14 @@ but they describe them with the same words:
 | Property | |
 | -------- | - |
 | `chargingStationOperator`             | who runs the station, with its `publicKeys` |
+| `gridOperator`                        | who runs the grid the station draws from, with its `publicKeys` |
 | `chargingStation`                     | `@id`, `geoLocation`, `address`, and the devices below it |
 | `chargingStation.EVSE`                | `@id`, `powerType`, `maxPower` |
 | `chargingStation.EVSE.energyMeter`    | `@id`, `manufacturer`, `model`, `hardware`, `firmware`, `signatureFormat`, `publicKeys` |
 | `chargingStation.EVSE.connector`      | `standard`, `format`, `powerType`, `maxPower`, `cable` |
 | `contract`                            | `@id` and `type` of the identification that started the session |
+| `chargingPeriods`                     | the tariff element in force and the costs, per period of the session |
+| `legallyRelevantLogMessages`          | what happened that a verifier has to know of, e.g. a grid power constraint |
 
 An identifier is `@id` here as it is there, and the containment follows the
 hardware: the meter and the connector below the EVSE, the EVSE below the
@@ -33,12 +36,12 @@ station, the position on the station rather than in a location of its own.
 
 The cardinality is the one difference that remains. A live link describes
 exactly one of each, so these are single objects where a record carries lists
-(`chargingStationOperators`, `chargingStations`). The two stay separate
-document types, and merging them would be wrong: a live link is one session
-that has not finished, a record a collection of sessions that have. What the
-shared names buy is that nothing has to be renamed when one is read next to the
-other, and that an application can show a running session with the code it
-already has for a finished one.
+(`chargingStationOperators`, `gridOperators`, `chargingStations`). The two
+stay separate document types, and merging them would be wrong: a live link is
+one session that has not finished, a record a collection of sessions that
+have. What the shared names buy is that nothing has to be renamed when one is
+read next to the other, and that an application can show a running session
+with the code it already has for a finished one.
 
 ## Describing the encodings
 
@@ -178,7 +181,8 @@ serialization layer.
 ## Public keys
 
 Public keys are listed where they belong: the operator ones under
-`chargingStationOperator.publicKeys`, the meter one under
+`chargingStationOperator.publicKeys`, the grid operator ones under
+`gridOperator.publicKeys`, the meter one under
 `chargingStation.EVSE.energyMeter.publicKeys`. Each entry states its
 `keyUsage`, its `algorithm`, its `encodings` and its `value`.
 
@@ -765,6 +769,11 @@ means checking that no document quietly rewrites history:
 - Once a document contains an **end value** (`TX: "E"`), no later document may
   add anything. The session is over; a value appearing afterwards means the
   series is not what it claims to be.
+- The tariff list in an OCMF document's `TT` may only **grow**, and the entries
+  already there must stay unchanged and in place. It records the tariffs that
+  have been in effect so far, so a later document appends to that history and
+  never rewrites it — the same append-only rule as for the values themselves.
+  See [The tariff texts](OCMF-Test-01/README.md#the-tariff-texts).
 - `lastUpdated` must not go backwards.
 
 None of this follows from the signatures. Each document is perfectly signed on

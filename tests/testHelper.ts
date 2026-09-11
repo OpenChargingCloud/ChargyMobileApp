@@ -1,10 +1,10 @@
 import { expect, vi }     from 'vitest';
 import { Chargy }         from '@open-charging-cloud/chargy-core';
-import coreI18n           from '@open-charging-cloud/chargy-core/i18n.json';
+import { DOMParser as OozcitakDOMParser } from '@oozcitak/dom';
 import { readFileSync }   from "node:fs";
-import { DOMParser }      from "@oozcitak/dom";
 import {
     createTestChargy,
+    mergeI18NDictionaries,
     parseValidationRules
 } from "./chargyTestRuntime";
 import {
@@ -22,9 +22,19 @@ import type {
     IValidationRules
 } from '@open-charging-cloud/chargy-core';
 
+import coreI18n  from '@open-charging-cloud/chargy-core/i18n.json';
+import localI18n from '../src/i18n.json';
+
 type DetectionResult = Awaited<ReturnType<Chargy["DetectAndConvertContentFormat"]>>;
+type PdfJsTestModule = {
+    GlobalWorkerOptions: {
+        workerSrc: string;
+    };
+};
+
 
 export {
+    createVerificationChargy,
     expectVerificationReport,
     expectVerificationReportInline,
     expectBinaryVerificationReport,
@@ -36,8 +46,12 @@ export {
     verifyChargeDataFiles
 }
 
+const DOMParser = OozcitakDOMParser as unknown as typeof globalThis.DOMParser;
+
+// Vitest runs in Node, so route ChargyCore's PDF.js import to its legacy build.
+// Browser builds select the regular PDF.js entry point inside ChargyCore itself.
 vi.mock('pdfjs-dist', async () => {
-    const pdfjs = await import('pdfjs-dist/legacy/build/pdf.mjs');
+    const pdfjs = await vi.importActual<PdfJsTestModule>('pdfjs-dist/legacy/build/pdf.mjs');
     pdfjs.GlobalWorkerOptions.workerSrc = 'pdfjs-dist/legacy/build/pdf.worker.mjs';
     return pdfjs;
 });
@@ -67,6 +81,9 @@ function archiveMimeType(fileName: string): string {
 
     if (fileName.endsWith(".chargy"))
         return "application/chargy";
+
+    if (fileName.endsWith(".ocmf"))
+        return "application/ocmf";
 
     if (fileName.endsWith(".json"))
         return "application/json";
@@ -113,7 +130,7 @@ function archiveMimeType(fileName: string): string {
 
 function createVerificationChargy(validationRules?: IValidationRules): Chargy {
 
-    const i18n = coreI18n;
+    const i18n = mergeI18NDictionaries(coreI18n, localI18n);
 
     return validationRules === undefined
                ? createTestChargy(Chargy, { i18n })
@@ -185,49 +202,42 @@ async function expectArchiveVerificationReport(archiveFixture: string, expectedF
 
 }
 
-async function expectMultiArchiveVerificationReport(inputFixtures:    string[],
-                                                    expectedFixture:  string): Promise<void>
-{
+async function expectMultiArchiveVerificationReport(inputFixtures: string[], expectedFixture: string): Promise<void> {
 
-    const expected  = readFixture(expectedFixture);
+    const expected = readFixture(expectedFixture);
 
-    const report    = await verifyChargeDataFiles(
-                                inputFixtures.map(inputFixture => ({
-                                    name:  inputFixture,
-                                    type:  archiveMimeType(inputFixture),
-                                    data:  readBinaryFixture(inputFixture)
-                                }))
-                            );
+    const report   = await verifyChargeDataFiles(
+        inputFixtures.map(inputFixture => ({
+            name:  inputFixture,
+            type:  archiveMimeType(inputFixture),
+            data:  readBinaryFixture(inputFixture)
+        }))
+    );
 
-    const summary   = formatChargeDataVerificationReport(report);
+    const summary  = formatChargeDataVerificationReport(report);
 
     expectReportLines(summary, expected);
 
 }
 
-async function expectBinaryVerificationReport(inputFixture:     string,
-                                              expectedFixture:  string): Promise<void>
-{
+async function expectBinaryVerificationReport(inputFixture: string, expectedFixture: string): Promise<void> {
 
-    const input     = readBinaryFixture(inputFixture);
-    const expected  = readFixture(expectedFixture);
+    const input    = readBinaryFixture(inputFixture);
+    const expected = readFixture(expectedFixture);
 
-    const report    = await verifyChargeData(
-                                inputFixture,
-                                input,
-                                archiveMimeType(inputFixture)
-                            );
+    const report   = await verifyChargeData(
+                               inputFixture,
+                               input,
+                               archiveMimeType(inputFixture)
+                           );
 
-    const summary   = formatChargeDataVerificationReport(report);
+    const summary  = formatChargeDataVerificationReport(report);
 
     expectReportLines(summary, expected);
 
 }
 
-async function expectVerificationReportWithPublicKey(inputFixture:      string,
-                                                     publicKeyFixture:  string,
-                                                     expectedFixture:   string): Promise<void>
-{
+async function expectVerificationReportWithPublicKey(inputFixture: string, publicKeyFixture: string, expectedFixture: string): Promise<void> {
 
     const input    = readBinaryFixture(inputFixture);
     const expected = readFixture(expectedFixture);
@@ -251,10 +261,10 @@ async function expectVerificationReportWithPublicKey(inputFixture:      string,
 
 }
 
-async function verifyChargeData(fileName:          string,
-                                input:             string | Uint8Array,
-                                type?:             string,
-                                validationRules?:  IValidationRules)
+async function verifyChargeData(fileName:  string,
+                                input:     string | Uint8Array,
+                                type?:     string,
+                                validationRules?: IValidationRules)
 
     : Promise<DetectionResult>
 
@@ -272,8 +282,8 @@ async function verifyChargeData(fileName:          string,
 
 }
 
-async function verifyChargeDataFiles(fileInfos:         IFileInfo[],
-                                     validationRules?:  IValidationRules)
+async function verifyChargeDataFiles(fileInfos: IFileInfo[],
+                                     validationRules?: IValidationRules)
 
     : Promise<DetectionResult>
 
@@ -281,8 +291,7 @@ async function verifyChargeDataFiles(fileInfos:         IFileInfo[],
     return createVerificationChargy(validationRules).DetectAndConvertContentFormat(fileInfos);
 }
 
-function formatChargeDataVerificationReport(report: DetectionResult): string
-{
+function formatChargeDataVerificationReport(report: DetectionResult): string {
 
     if (IsAChargeTransparencyLiveLink(report))
         return [
@@ -346,8 +355,7 @@ function formatChargeDataVerificationReport(report: DetectionResult): string
 function appendMeasurementLines(lines:              string[],
                                 sessionNumber:      number,
                                 measurementNumber:  number,
-                                measurement:        IMeasurement): void
-{
+                                measurement:        IMeasurement): void {
 
     lines.push("measurement " + sessionNumber.toString() + "." + measurementNumber.toString() + " name: " + measurement.name);
     lines.push("measurement " + sessionNumber.toString() + "." + measurementNumber.toString() + " obis: " + measurement.obis);
@@ -363,8 +371,7 @@ function appendMeasurementValueLines(lines:              string[],
                                      sessionNumber:      number,
                                      measurementNumber:  number,
                                      valueNumber:        number,
-                                     value:              IMeasurementValue): void
-{
+                                     value:              IMeasurementValue): void {
 
     const prefix = "value " + sessionNumber.toString() + "." + measurementNumber.toString() + "." + valueNumber.toString();
 
@@ -375,23 +382,23 @@ function appendMeasurementValueLines(lines:              string[],
 
 }
 
-function formatCryptoResult(result: ICryptoResult | undefined): string
-{
+function formatCryptoResult(result: ICryptoResult | undefined): string {
     return result?.status ?? "unknown";
 }
 
-function formatWarning(warning: { level: string; message: I18NString }): string
-{
+function formatWarning(warning: { level: string; message: I18NString }): string {
+
     return warning.level + ": " + formatMultilanguageText(warning.message);
+
 }
 
-function formatMultilanguageText(text: I18NString): string
-{
+function formatMultilanguageText(text: I18NString): string {
+
     return text['en'] ?? Object.values(text)[0] ?? "";
+
 }
 
-function formatOptionalMultilanguageText(text: I18NString | undefined): string
-{
+function formatOptionalMultilanguageText(text: I18NString | undefined): string {
 
     if (text == null)
         return "";

@@ -1,16 +1,14 @@
-import { DOMParser } from "@oozcitak/dom";
 import { describe, expect, test } from 'vitest';
 import { expectVerificationReport, expectVerificationReportInline } from './testHelper';
-import { Chargy } from '@open-charging-cloud/chargy-core';
-import { SAFEXML } from '@open-charging-cloud/chargy-core';
-import { createTestChargy } from './chargyTestRuntime';
+import { Chargy, SAFEXML } from '@open-charging-cloud/chargy-core';
+import { createTestChargy, parseTestXML } from './chargyTestRuntime';
 
 
 describe('SAFE Tests with Chargy Extensions', () => {
 
     test("SAFE chargingStation context is parsed into a JSON object", () => {
 
-        const xmlDocument = new DOMParser().parseFromString(`<?xml version="1.0" encoding="UTF-8"?>
+        const xmlDocument = parseTestXML(`<?xml version="1.0" encoding="UTF-8"?>
 <values>
     <chargingStation id="DE*GEF*STATION*CI*TESTS*1*A" xmlns="https://open.charging.cloud/CTR/2020/01">
         <description language="en">GraphDefined Charging Station - CI-Tests Pool 1 / Station A</description>
@@ -31,7 +29,7 @@ describe('SAFE Tests with Chargy Extensions', () => {
     <value transactionId="begin" context="Transaction.Begin">
         <signedData format="ALFEN">dummy</signedData>
     </value>
-</values>`, "text/xml") as unknown as Document;
+</values>`);
 
 
         const chargy   = createTestChargy(Chargy);
@@ -81,10 +79,9 @@ describe('SAFE Tests with Chargy Extensions', () => {
     test("SAFE OCMF v0.1 chargingStation extensions are wired into the charging station and EVSE", async () => {
 
         const xmlText      = (await import("node:fs/promises")).readFile;
-        const xmlDocument  = new DOMParser().parseFromString(
-                                 await xmlText(new URL("./fixtures/SAFE/withChargyExtensions/SAFE-Testdata-01_OCMFv0.1_withExtensions.xml", import.meta.url), "utf8"),
-                                 "text/xml"
-                             ) as unknown as Document;
+        const xmlDocument  = parseTestXML(
+                                 await xmlText(new URL("./fixtures/SAFE/withChargyExtensions/SAFE-Testdata-01_OCMFv0.1_withExtensions.xml", import.meta.url), "utf8")
+                             );
 
         const result = await new SAFEXML(createTestChargy(Chargy)).tryToParseSAFEXML(xmlDocument);
 

@@ -4,11 +4,9 @@ import {
     ocmfBonnTariffToChargingTariff,
     parseOCMFBonnTariffText,
     tryParseOCMFBonnTariffText,
-    type IOCMFBonnTariff
+    type IOCMFBonnTariff,
+    type IChargingTariffElement
 } from '@open-charging-cloud/chargy-core';
-import type { ChargyInterfaces } from '@open-charging-cloud/chargy-core';
-
-type IChargingTariffElement = ChargyInterfaces.IChargingTariffElement;
 
 
 function elementShape(element: IChargingTariffElement | undefined): unknown {

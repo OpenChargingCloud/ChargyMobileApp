@@ -1,5 +1,5 @@
 import { describe, test } from 'vitest';
-import { expectVerificationReport, expectArchiveVerificationReport } from './testHelper';
+import { expectVerificationReport, expectVerificationReportInline, expectArchiveVerificationReport } from './testHelper';
 
 
 describe('chargeIT Tests', () => {
@@ -58,10 +58,43 @@ describe('chargeIT BSM Tests', () => {
         );
     });
 
-    test("ocmf_withoutIF", async () => {
+    // The real BSM document in ocmf.xml carries no Identification Flags, so this
+    // one supplies the IF branch. Generated and signed by generate_ocmf_withIF.mjs,
+    // because IF sits inside the signed payload and cannot be added by hand.
+    test("ocmf_withIF", async () => {
         await expectVerificationReport(
-            "chargeIT/bsm/ocmf_withoutIF.xml",
-            "chargeIT/bsm/ocmf_withoutIF.expected.txt"
+            "chargeIT/bsm/ocmf_withIF.xml",
+            "chargeIT/bsm/ocmf_withIF.expected.txt"
+        );
+    });
+
+    // The verification report does not list the identification flags, so passing
+    // the two tests above would not actually show that IF was read. Asserted
+    // directly instead: flags that are present have to reach the record, and an
+    // absent IF has to become the empty array the OCMF specification asks for.
+    test("ocmf_withIF carries the identification flags into the record", async () => {
+        await expectVerificationReportInline(
+            "chargeIT/bsm/ocmf_withIF.xml",
+            {
+                chargingSessions: [{
+                    authorizationStart: {
+                        identificationFlags: [ "RFID_PLAIN", "OCPP_AUTH" ]
+                    }
+                }]
+            }
+        );
+    });
+
+    test("ocmf without identification flags yields an empty list", async () => {
+        await expectVerificationReportInline(
+            "chargeIT/bsm/ocmf.xml",
+            {
+                chargingSessions: [{
+                    authorizationStart: {
+                        identificationFlags: []
+                    }
+                }]
+            }
         );
     });
 

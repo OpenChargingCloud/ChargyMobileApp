@@ -1,24 +1,20 @@
 import { readFileSync } from "node:fs";
-import {
-    Chargy,
-    IsAURL,
-    IsValidURL,
-    SimpleURL,
-    URLContext,
-    type IFileInfo
-} from "@open-charging-cloud/chargy-core";
+import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { describe, expect, test, vi } from "vitest";
+
+import type { IFileInfo, SimpleURL } from "@open-charging-cloud/chargy-core";
+import { Chargy, IsAURL, IsValidURL, URLContext } from "@open-charging-cloud/chargy-core";
+
+// The flat index carries two unrelated IURL types. The one the URL module and
+// chargyApp work with is the one behind the SimpleURL namespace.
+type IURL = SimpleURL.IURL;
 import { createTestChargy } from "./chargyTestRuntime";
 
-// QR rasterization and decoding is CPU-bound and can exceed Vitest's default
-// five-second timeout on a cold Windows CI runner.
-const qrImageTestTimeout = 15_000;
+const currentDirectory = fileURLToPath(new URL(".", import.meta.url));
 
-function readFixture(fileName: string): Uint8Array {
-    return new Uint8Array(readFileSync(new URL(`fixtures/SimpleURLs/${fileName}`, import.meta.url)));
-}
+async function detectText(text: string): ReturnType<Chargy["DetectAndConvertContentFormat"]> {
 
-async function detectText(text: string): Promise<unknown> {
     const fileInfo: IFileInfo = {
         name: "url.txt",
         type: "text/plain",
@@ -26,6 +22,7 @@ async function detectText(text: string): Promise<unknown> {
     };
 
     return createTestChargy(Chargy).DetectAndConvertContentFormat([ fileInfo ]);
+
 }
 
 describe("Simple URLs", () => {
@@ -39,6 +36,7 @@ describe("Simple URLs", () => {
     });
 
     test("converts a URL string into an IURL object", async () => {
+
         const result = await detectText("https://chargy.charging.cloud/charging-session?id=123#details");
 
         expect(result).toEqual({
@@ -46,15 +44,16 @@ describe("Simple URLs", () => {
             "url":      "https://chargy.charging.cloud/charging-session?id=123#details"
         });
         expect(IsAURL(result)).toBe(true);
+
     });
 
     test("validates the optional IURL properties", () => {
         expect(IsAURL({
-            "@context":   URLContext,
-            "url":        "https://chargy.charging.cloud/",
-            "method":     "GET",
+            "@context":  URLContext,
+            "url":       "https://chargy.charging.cloud/",
+            "method":    "GET",
             "acceptType": "application/json",
-            "actions":    [ "open", "copy" ],
+            "actions":   [ "open", "copy" ],
             "serviceTypes": [ "chargy" ],
             "serviceData":  { "version": 1 }
         })).toBe(true);
@@ -66,70 +65,113 @@ describe("Simple URLs", () => {
     });
 
     test("resolves URLs as application/chargy when enabled", async () => {
+
         const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(new Response(
-            JSON.stringify({ name: "Chargy service", version: 1 }),
+            JSON.stringify({
+                "name":    "Chargy service",
+                "version": 1
+            }),
             {
-                status: 200,
-                headers: { "Content-Type": "application/chargy; charset=utf-8" }
+                status:  200,
+                headers: {
+                    "Content-Type": "application/chargy; charset=utf-8"
+                }
             }
         ));
         vi.stubGlobal("fetch", fetchMock);
 
-        try {
-            const result = await createTestChargy(Chargy, { resolveURLs: true }).
-                DetectAndConvertContentFormat([{
-                    name: "url.txt",
-                    type: "text/plain",
-                    data: new TextEncoder().encode("https://chargy.charging.cloud/service")
-                }]);
-
-            expect(fetchMock).toHaveBeenCalledWith(
-                "https://chargy.charging.cloud/service",
-                { method: "GET", headers: { Accept: "application/chargy" } }
-            );
-            expect(result).toEqual({
-                "@context": URLContext,
-                "url":      "https://chargy.charging.cloud/service",
-                "serviceTypes": [ "chargy" ],
-                "serviceData":  { name: "Chargy service", version: 1 }
-            });
-        }
-        finally {
-            vi.unstubAllGlobals();
-        }
-    });
-
-    test("does not request detected URLs by default", async () => {
-        const fetchMock = vi.fn<typeof fetch>();
-        vi.stubGlobal("fetch", fetchMock);
-
-        try {
-            await detectText("https://chargy.charging.cloud/service");
-            expect(fetchMock).not.toHaveBeenCalled();
-        }
-        finally {
-            vi.unstubAllGlobals();
-        }
-    });
-
-    test("allows URL resolution to be replaced", async () => {
-        const fetchMock = vi.fn<typeof fetch>();
-        vi.stubGlobal("fetch", fetchMock);
-        const urlResolver = vi.fn((url: SimpleURL.IURL): SimpleURL.IURL => ({
-            ...url,
-            serviceTypes: [ "chargy" ],
-            serviceData:  { source: "static lookup" }
-        }));
-
-        try {
-            const result = await createTestChargy(Chargy, {
-                resolveURLs: true,
-                urlResolver
-            }).DetectAndConvertContentFormat([{
+        try
+        {
+            const fileInfo: IFileInfo = {
                 name: "url.txt",
                 type: "text/plain",
                 data: new TextEncoder().encode("https://chargy.charging.cloud/service")
-            }]);
+            };
+            const result = await createTestChargy(Chargy, { resolveURLs: true }).
+                                     DetectAndConvertContentFormat([ fileInfo ]);
+
+            expect(fetchMock).toHaveBeenCalledWith(
+                "https://chargy.charging.cloud/service",
+                {
+                    method:  "GET",
+                    headers: {
+                        "Accept": "application/chargy"
+                    }
+                }
+            );
+            expect(result).toEqual({
+                "@context":    URLContext,
+                "url":         "https://chargy.charging.cloud/service",
+                "serviceTypes": [ "chargy" ],
+                "serviceData": {
+                    "name":    "Chargy service",
+                    "version": 1
+                }
+            });
+        }
+        finally
+        {
+            vi.unstubAllGlobals();
+        }
+
+    });
+
+    test("does not request detected URLs by default", async () => {
+
+        const fetchMock = vi.fn<typeof fetch>();
+        vi.stubGlobal("fetch", fetchMock);
+
+        try
+        {
+            await detectText("https://chargy.charging.cloud/service");
+            expect(fetchMock).not.toHaveBeenCalled();
+        }
+        finally
+        {
+            vi.unstubAllGlobals();
+        }
+
+    });
+
+    test("allows the complete URL resolution to be replaced", async () => {
+
+        const fetchMock = vi.fn<typeof fetch>();
+        vi.stubGlobal("fetch", fetchMock);
+
+        const serviceLookup = new Map<string, {
+            serviceTypes: Array<string>;
+            serviceData:  Record<string, unknown>;
+        }>([
+            [
+                "https://chargy.charging.cloud/service",
+                {
+                    serviceTypes: [ "chargy" ],
+                    serviceData:  { "source": "static lookup" }
+                }
+            ]
+        ]);
+        const urlResolver = vi.fn((url: IURL) => {
+            const service = serviceLookup.get(url.url);
+
+            return service == null
+                       ? url
+                       : {
+                             ...url,
+                             ...service
+                         };
+        });
+
+        try
+        {
+            const fileInfo: IFileInfo = {
+                name: "url.txt",
+                type: "text/plain",
+                data: new TextEncoder().encode("https://chargy.charging.cloud/service")
+            };
+            const result = await createTestChargy(Chargy, {
+                resolveURLs: true,
+                urlResolver
+            }).DetectAndConvertContentFormat([ fileInfo ]);
 
             expect(urlResolver).toHaveBeenCalledWith({
                 "@context": URLContext,
@@ -140,28 +182,36 @@ describe("Simple URLs", () => {
                 "@context":    URLContext,
                 "url":         "https://chargy.charging.cloud/service",
                 "serviceTypes": [ "chargy" ],
-                "serviceData":  { source: "static lookup" }
+                "serviceData":  { "source": "static lookup" }
             });
         }
-        finally {
+        finally
+        {
             vi.unstubAllGlobals();
         }
+
     });
 
+    // Rasterising and decoding a QR code is CPU-bound and can exceed Vitest's
+    // five-second default on a cold Windows CI runner.
     test.each([
         "chargy.charging.cloud_QRCode.png",
         "chargy.charging.cloud_QRCode.svg"
     ])("recognizes a URL from the %s QR fixture", async fileName => {
-        const result = await createTestChargy(Chargy).DetectAndConvertContentFormat([{
+
+        const data = readFileSync(join(currentDirectory, "fixtures", "SimpleURLs", fileName));
+        const fileInfo: IFileInfo = {
             name: fileName,
             type: fileName.endsWith(".png") ? "image/png" : "image/svg+xml",
-            data: readFixture(fileName)
-        }]);
+            data: new Uint8Array(data)
+        };
+
+        const result = await createTestChargy(Chargy).DetectAndConvertContentFormat([ fileInfo ]);
 
         expect(result).toEqual({
             "@context": URLContext,
             "url":      "https://chargy.charging.cloud/"
         });
-    }, qrImageTestTimeout);
 
+    }, 15_000);
 });

@@ -1,12 +1,15 @@
 import { createRequire } from "node:module";
+import { DOMParser as OozcitakDOMParser } from "@oozcitak/dom";
 import type {
     Chargy,
     I18NDictionary,
-    IValidationRules,
     LanguageStrings,
     ShowPKIDetailsFunction,
-    URLResolver
+    IValidationRules,
+    URLResolver,
+    SignedJSONMessage
 } from "@open-charging-cloud/chargy-core";
+
 
 type ChargyConstructorArguments = ConstructorParameters<typeof Chargy>;
 
@@ -26,8 +29,8 @@ type CreateTestChargyOptions = {
     uiLanguages?:     LanguageStrings;
     showPKIDetails?:  ShowPKIDetailsFunction;
     validationRules?: IValidationRules;
-    resolveURLs?:      boolean;
-    urlResolver?:      URLResolver;
+    resolveURLs?:     boolean;
+    urlResolver?:     URLResolver;
 };
 
 const requireModule = createRequire(import.meta.url);
@@ -49,13 +52,13 @@ export function createTestChargy(ChargyClass: ChargyConstructor,
 {
 
     return new ChargyClass(
-        options.i18n           ?? {},
-        options.uiLanguages    ?? [ "en" ],
+        options.i18n            ?? {},
+        options.uiLanguages     ?? [ "en" ],
         chargyDependencies.elliptic,
         chargyDependencies.moment,
         chargyDependencies.asn1,
         chargyDependencies.base32Decode,
-        options.showPKIDetails ?? ((): string => ""),
+        options.showPKIDetails  ?? ((): string => ""),
         options.validationRules,
         options.resolveURLs,
         options.urlResolver
@@ -77,12 +80,57 @@ export function mergeI18NDictionaries(...dictionaries: I18NDictionary[]): I18NDi
     return merged;
 }
 
+export function parseValidationRules(json: string): IValidationRules {
+    const parsed: unknown = JSON.parse(json);
+    return parsed as IValidationRules;
+}
+
 export function parseJSONRecord(json: string): Record<string, unknown> {
     const parsed: unknown = JSON.parse(json);
     return parsed as Record<string, unknown>;
 }
 
-export function parseValidationRules(json: string): IValidationRules {
+export function parseSignedJSONMessage(json: string): SignedJSONMessage {
     const parsed: unknown = JSON.parse(json);
-    return parsed as IValidationRules;
+    return parsed as SignedJSONMessage;
+}
+
+
+
+
+const TestDOMParser = OozcitakDOMParser as unknown as typeof globalThis.DOMParser;
+
+class TestDOMMatrix {
+
+    toString(): string {
+        return "matrix(1, 0, 0, 1, 0, 0)";
+    }
+
+}
+
+function defineTestGlobal(name: "DOMParser" | "DOMMatrix",
+                          value: unknown): void {
+
+    Object.defineProperty(globalThis, name, {
+        configurable:  true,
+        writable:      true,
+        value
+    });
+
+}
+
+export function ensureChargyTestDOM(): void {
+
+    defineTestGlobal("DOMParser", TestDOMParser);
+
+    if (typeof globalThis.DOMMatrix === "undefined")
+        defineTestGlobal("DOMMatrix", TestDOMMatrix);
+
+}
+
+export function parseTestXML(xml: string): Document {
+
+    ensureChargyTestDOM();
+    return new TestDOMParser().parseFromString(xml, "text/xml");
+
 }

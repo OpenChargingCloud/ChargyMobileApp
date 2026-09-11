@@ -1,14 +1,11 @@
 import { describe, expect, test, vi } from "vitest";
 
 import { OCMF, Chargy }    from "@open-charging-cloud/chargy-core";
-import coreI18n             from "@open-charging-cloud/chargy-core/i18n.json";
 import type { IError }     from "@open-charging-cloud/chargy-core";
 
-import { createTestChargy } from "./chargyTestRuntime";
-
-vi.mock("pdfjs-dist", () => ({
-    GlobalWorkerOptions: {}
-}));
+import { createTestChargy, mergeI18NDictionaries } from "./chargyTestRuntime";
+import coreI18n  from "@open-charging-cloud/chargy-core/i18n.json";
+import localI18n from "../src/i18n.json";
 
 vi.stubGlobal("window", {
     navigator: {
@@ -16,7 +13,8 @@ vi.stubGlobal("window", {
     }
 });
 
-const ocmf = new OCMF(createTestChargy(Chargy, { i18n: coreI18n }));
+const i18n = mergeI18NDictionaries(coreI18n, localI18n);
+const ocmf = new OCMF(createTestChargy(Chargy, { i18n }));
 
 // OCMF carries verification diagnostics on the document (own result model), via
 // its own AddValidationError helper exercised here directly.

@@ -2,8 +2,8 @@
 
     "@id":                "5f2c8a10-7b64-4e19-9d3a-1c8e05b4a7f2",
     "@context":           "https://open.charging.cloud/contexts/chargeTransparency/live/link/1.0",
-    "created":            "2026-08-28T11:59:59Z",
-    "lastUpdated":        "2026-08-28T11:59:59Z",
+    "created":            "2026-09-09T00:50:40Z",
+    "lastUpdated":        "2026-09-09T00:50:40Z",
     "description":        {
                               "en": "OCMF-Test-01 Transparency Live-Link",
                               "de": "OCMF-Test-01 Transparenz Live-Link"
@@ -19,7 +19,7 @@
         "accuracy":             "+-2 ms",
         "stratum":              2,
         "syncInterval":         "PT1H",
-        "lastSynchronization":  "2026-08-28T11:14:27Z",
+        "lastSynchronization":  "2026-09-09T00:05:08Z",
         "minServers":           2,
         "serversURL":           "https://time.ptb.de/files/ptb-ntp-services.json",
 
@@ -32,9 +32,28 @@
 
     },
 
+    "gridOperator": {
+        "@id":           "DE*VEN",
+        "name":          { "en": "Vanaheimr Electric" },
+        "publicKeys": [
+            {
+                 "keyUsage":  [ "signGridPowerConstraints" ],
+                 "algorithm":   "ECDSA-secp256r1",
+                 "encodings": [ "SubjectPublicKeyInfo", "DER", "hex" ],
+                 "value":       "3059301306072A8648CE3D020106082A8648CE3D030107034200043FCDF7CCE6FF42E8F12C7D126B5A69F82647D2826957CDF702ECA6B9CACB64C4307793F1C521A52C8B505C6FAFBFDBA0B887478CE8AC55E0C5F8E14BB3C694FD"
+            },
+            {
+                 "keyUsage":  [ "signGridPowerConstraints" ],
+                 "algorithm":   "EdDSA-Ed25519",
+                 "encodings": [ "raw", "hex" ],
+                 "value":       "0B442D1044571F14182EE7AE07A1400C3CDE5D6AD2C180F313E9EA66885C0F9F"
+            }
+        ]
+    },
+
     "chargingStationOperator": {
         "@id":           "DE*GEF",
-        "name":          "GraphDefined",
+        "name":          { "en": "GraphDefined" },
         "publicKeys": [
             {
                  "keyUsage":  [ "signCTRs" ],
@@ -188,6 +207,8 @@
 
 
 
+
+
     "signatures":    [
         {
             "keyId": "2D5BEE2B13118410C5FF9D6DDC0EEE2E03AB978FA1BC838AEE3655EB7095B9F1",
@@ -197,7 +218,7 @@
                 "encodings": [ "JSON", "JCS", "UTF-8" ]
             },
             "encodings": [ "Ecdsa-Sig-Value", "DER", "hex" ],
-            "value": "3045022067579CAD9CF952E5935ADA4F89E7E873E3645E05E9F55F398E01AFC5BD002667022100BBA8C20D2D89B00A7F5CC66635DF1ED6CCCEBFB7DBB6AFB99FF203AB8260029A"
+            "value": "304402202B71C83952EE725B4B0752D7D0EFBE4C75B1D483A6EE1F3A6BB31D94DDA3CE47022046079A062804B1D1B13EF8C6F961A30A2269395B93EE91AF4B48345A18B88A4D"
         },
         {
             "keyId": "A2F94A58FB75E25BC2CECDF582819B6D44F3705D0C3BADD6391E9D536D5671E8",
@@ -207,7 +228,7 @@
                 "encodings": [ "JSON", "JCS", "UTF-8" ]
             },
             "encodings": [ "raw", "hex" ],
-            "value": "7344449B52D611690D821EBD9A6D5A9D702A4B79A16EB9EE4CEB4C205AB15187D9E772A3285169574B9E10753DF1E9098C611850E152E3AAEFE94F4D5104ED07"
+            "value": "EC7B7DA2D4055201329A892374950C90D19BD407B3513A06BC5310E6E018EC99D8333295E1C260BFCD87F6A3A1EF4B0F8AFF4CB5F99499AF8A75198E61646C04"
         }
     ]
 

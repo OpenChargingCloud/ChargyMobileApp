@@ -1,20 +1,18 @@
-import { DOMParser } from "@oozcitak/dom";
 import { describe, expect, test } from 'vitest';
 import { expectVerificationReport, expectArchiveVerificationReport } from './testHelper';
-import { Chargy } from '@open-charging-cloud/chargy-core';
-import { SAFEXML } from '@open-charging-cloud/chargy-core';
-import { createTestChargy } from './chargyTestRuntime';
+import { Chargy, SAFEXML } from '@open-charging-cloud/chargy-core';
+import { createTestChargy, parseTestXML } from './chargyTestRuntime';
 
 describe('SAFE Tests', () => {
 
     test("SAFE value without signedData should fail", async () => {
 
-        const xmlDocument = new DOMParser().parseFromString(`<?xml version="1.0" encoding="UTF-8"?>
+        const xmlDocument = parseTestXML(`<?xml version="1.0" encoding="UTF-8"?>
 <values>
     <value transactionId="begin" context="Transaction.Begin">
         <publicKey encoding="plain">abc</publicKey>
     </value>
-</values>`, "text/xml") as unknown as Document;
+</values>`);
 
         const result = await new SAFEXML(createTestChargy(Chargy)).tryToParseSAFEXML(xmlDocument);
 
