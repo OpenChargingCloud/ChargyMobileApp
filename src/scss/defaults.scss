@@ -1345,6 +1345,7 @@ body {
           .locationInfos,
           .transportInfos,
           .trustInfos,
+          .pollInfos,
           .imageInfos,
           .signatureInfos {
 
@@ -1365,6 +1366,28 @@ body {
               overflow-wrap:      anywhere;
             }
 
+          }
+
+          .liveLinkPollStatus {
+            padding: 5px 0;
+            overflow-wrap: anywhere;
+
+            .pollStatus { font-weight: bold; }
+            &.warning .pollStatus { color: #855100; }
+            .pollMetadata { margin-top: 4px; font-size: 90%; color: #555; }
+            .pollActions { display: flex; flex-wrap: wrap; gap: 8px 16px; margin-top: 6px; align-items: baseline; }
+            button.liveLinkRetry, summary {
+              border: none;
+              background: none;
+              color: #34668a;
+              padding: 0;
+              font: inherit;
+              cursor: pointer;
+              text-decoration: underline;
+            }
+            button:disabled { color: #666; cursor: default; text-decoration: none; }
+            details { flex: 1 1 180px; }
+            details div, details p { margin: 6px 0; font-size: 90%; }
           }
 
           .imageInfos a,
