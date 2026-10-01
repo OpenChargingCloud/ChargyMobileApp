@@ -163,8 +163,16 @@ export default class App {
 
         page.style.display = 'block';
 
-        if (page == this.chargingSessionsPage)
+        if (page === this.chargingSessionsPage || page === this.liveLinkPage)
+        {
+            // Reuse the same Leaflet map on both document pages. Moving its
+            // container preserves the map instance and its zoom/pan state.
+            const mapContainer = this.map?.getContainer() as HTMLElement | undefined;
+            const mapHost = page.querySelector(page === this.liveLinkPage ? '#liveLinkMap' : '#chargingSessionsMap');
+            if (mapContainer !== undefined && mapHost != null && mapContainer.parentElement !== mapHost)
+                mapHost.appendChild(mapContainer);
             this.refreshMap();
+        }
 
         // Leaving the live link view stops its background reloading and closes
         // a trust question still open. The crypto details of one of its meter

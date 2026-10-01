@@ -364,6 +364,20 @@ body {
     color:            #CC0000;
   }
 
+  // One Leaflet map is shared by the charging-session and live-link pages.
+  #map {
+    width:      100%;
+    height:     35vh;
+
+    .leaflet-control-zoom {
+      display:    none;
+    }
+
+    .leaflet-control-attribution {
+      font-size:  65%;
+    }
+  }
+
   .pages {
 
     display:            none;
@@ -1032,21 +1046,6 @@ body {
 
       }
 
-      #map {
-        
-        width:      100%;
-        height:     35vh;
-
-        .leaflet-control-zoom {
-          display:    none;
-        }
-
-        .leaflet-control-attribution {
-          font-size:  65%;
-        }
-
-      }
-
       #chargingSessions {
 
         flex-direction:     column;
@@ -1488,6 +1487,10 @@ body {
 
     #liveLinkMeasurementInfo {
       @include measurement-info-block;
+    }
+
+    #liveLinkMap {
+      margin-top:         12px;
     }
 
     #liveLinkMeasurementValues {

@@ -31,6 +31,7 @@ import base32Decode                    from 'base32-decode';
 import * as asn1                       from 'asn1.js';
 import Chart                           from 'chart.js/auto';
 import type { Plugin, TooltipItem }    from 'chart.js';
+import type { LatLng, Marker }         from 'leaflet';
 import {
     createI18nDictionary,
     SupportedLanguage
@@ -211,7 +212,7 @@ export default class ChargyApp {
     private currentLiveLink: liveLink.IChargeTransparencyLiveLink | null = null;
     private currentLiveLinkMeterValues: chargeTransparencyRecord.IChargeTransparencyRecord | null = null;
     private refreshChargingSessionsPage: (() => void | Promise<void>) | null = null;
-    private mapMarkers: any[] = [];
+    private mapMarkers: Marker[] = [];
 
     //#region Live link reloading and trust
 
@@ -1257,6 +1258,15 @@ export default class ChargyApp {
                          preservePollState: boolean = false): void
     {
 
+        const previousMapLocation: LatLng | undefined = this.currentLiveLink != null &&
+                                                        this.mapMarkers.length === 1
+                                                            ? this.mapMarkers[0]?.getLatLng()
+                                                            : undefined;
+
+        for (const marker of this.mapMarkers)
+            marker.remove();
+        this.mapMarkers = [];
+
         if (!preservePollState && this.currentLiveLink !== liveLinkInfo)
         {
             this.liveLinkPollResult          = null;
@@ -1409,7 +1419,9 @@ export default class ChargyApp {
         const latitude  = geoLocation?.lat;
         const longitude = geoLocation?.lng;
 
-        if (latitude != null && longitude != null)
+        if (typeof latitude  === "number" && Number.isFinite(latitude)  && Math.abs(latitude)  <= 90 &&
+            typeof longitude === "number" && Number.isFinite(longitude) && Math.abs(longitude) <= 180)
+        {
             this.appendLiveLinkInfoRow(
                 tableDiv,
                 "locationInfos",
@@ -1417,6 +1429,27 @@ export default class ChargyApp {
                 this.chargy.GetLocalizedMessage("liveLinkLocationLabel") + " " +
                     latitude.toString() + ", " + longitude.toString()
             );
+
+            // The station's location is independent of whether the live link
+            // already contains verifiable meter values.
+            const marker = leaflet.marker([latitude, longitude]) as Marker;
+            const popup  = document.createElement('div');
+            popup.textContent = this.chargy.GetLocalizedText(chargingStation?.description) ??
+                                chargingStation?.["@id"] ?? this.chargy.GetLocalizedMessage("liveLinkLocationLabel") + " " +
+                                    latitude.toString() + ", " + longitude.toString();
+            marker.bindPopup(popup).addTo(this.app.map);
+            this.mapMarkers.push(marker);
+
+            // Keep the user's zoom and pan when a poll or language change
+            // redraws the same location; move to a newly supplied location.
+            if (previousMapLocation?.lat !== latitude || previousMapLocation.lng !== longitude)
+                this.app.map.setView([latitude, longitude], 16);
+        }
+        else
+            this.app.map.setView([0, 0], 1);
+
+        if (!cryptoDetailsOnTop)
+            this.app.refreshMap();
 
         const transports = this.liveLinkTransports(liveLinkInfo);
 
