@@ -32,16 +32,16 @@ current project uses these major version lines:
 
 | Component | Version |
 | --- | --- |
-| Node.js | `>=22.13 <27` |
+| Node.js | `>=22.18 <27` |
 | npm | `>=10` |
 | Cordova CLI | `13.x` |
 | Cordova Android | `15.x` |
 | Cordova iOS | `8.1.x` |
 | Cordova Browser | `7.x` |
-| TypeScript | `6.x` |
+| TypeScript | `6.0.3` (pinned) |
 | Sass | `1.x` |
 | Webpack | `5.x` |
-| Vitest | `4.x` |
+| Vitest | `5.x` |
 
 Check the active Node.js and npm versions before installing dependencies:
 
@@ -91,7 +91,7 @@ npm run lint
 ## Continuous integration
 
 `.github/workflows/ci.yml` runs for pushes and pull requests against `master`,
-and can also be started manually. It verifies Node.js 22.13 and 26 on Ubuntu
+and can also be started manually. It verifies Node.js 22.18 and 26 on Ubuntu
 plus Node.js 24 on Windows, uploads JUnit test results, and prepares the Cordova
 browser application from a fresh dependency installation.
 
