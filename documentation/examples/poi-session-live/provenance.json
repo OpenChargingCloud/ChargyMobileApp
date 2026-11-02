@@ -1,0 +1,20 @@
+{
+  "repository": "https://github.com/OpenChargingCloud/WWCP_POI.TS",
+  "upstreamRun": "csharp-33447ac",
+  "license": "AGPL-3.0-only",
+  "notice": "Public test identities and keys. Never use as production trust roots.",
+  "files": {
+    "evidence.json": {
+      "source": "tests/vectors/csharp-33447ac/driver/evidence-DE_GEF_E1_1.json",
+      "sha256": "6b710df7747959ffcff80b9fc993a2985004fb509e13452529f2450c42aff3f6"
+    },
+    "trusted-witnesses.json": {
+      "source": "tests/vectors/csharp-33447ac/trusted/witnesses.json",
+      "sha256": "7c2db514cc01d8a33c8a3b1908a6a6f7f90744fafb8b306fcb165aa93e288481"
+    },
+    "trusted-anchor.txt": {
+      "source": "tests/vectors/csharp-33447ac/published/QA-trustAnchor.txt",
+      "sha256": "29b6603850e5dc58eb88b8f10b10a8b94566c410068b7124e4115fc87115a184"
+    }
+  }
+}

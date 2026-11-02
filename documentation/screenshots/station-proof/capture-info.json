@@ -1,0 +1,46 @@
+{
+  "command": "npm run docs:screenshots:station-proof",
+  "locale": "en-US",
+  "timezone": "UTC",
+  "viewport": {
+    "width": 1280,
+    "height": 1000
+  },
+  "mobileViewport": {
+    "width": 390,
+    "height": 844
+  },
+  "fixedTime": "2026-10-27T17:20:48.115Z",
+  "browser": "156.0.8078.4",
+  "screenshots": [
+    "01-station-result.png",
+    "02-meter-details.png",
+    "03-mobile.png"
+  ],
+  "fixtures": {
+    "anchor": {
+      "path": "documentation/examples/poi-session-live/trusted-anchor.txt",
+      "sha256": "29b6603850e5dc58eb88b8f10b10a8b94566c410068b7124e4115fc87115a184"
+    },
+    "evidence": {
+      "path": "documentation/examples/poi-session-live/evidence.json",
+      "sha256": "6b710df7747959ffcff80b9fc993a2985004fb509e13452529f2450c42aff3f6"
+    }
+  },
+  "checks": [
+    "genuine signatures and inclusion proof",
+    "manual trust for two holders",
+    "v1 to v2 migration",
+    "reload and offline recheck",
+    "deduplication",
+    "wrong EVSE",
+    "cancellation",
+    "quota failure and retry",
+    "trust withdrawal during download",
+    "expiry",
+    "navigation during download",
+    "anchor deletion removes proof cache",
+    "no console errors"
+  ],
+  "scope": "Manual station check only. No session/Core handoff, dynamic price or independent-publication verdict."
+}

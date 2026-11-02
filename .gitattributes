@@ -1,0 +1,8 @@
+# Preserve signed POI conformance fixtures and their documented byte identities.
+src/trust/*.jsonl text eol=lf
+tests/fixtures/POI*/** -text
+tests/fixtures/TrustAnchors/** -text
+documentation/examples/poi-session-live/evidence.json -text whitespace=cr-at-eol
+documentation/examples/poi-session-live/trusted-witnesses.json -text whitespace=cr-at-eol
+documentation/examples/poi-session-live/trusted-anchor.txt -text
+documentation/screenshots/**/*.png binary

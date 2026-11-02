@@ -1,0 +1,39 @@
+{
+  "command": "npm run docs:screenshots:poi-live",
+  "locale": "en-US",
+  "timezone": "UTC",
+  "viewport": {
+    "width": 1280,
+    "height": 1000
+  },
+  "fixedTime": "2026-09-09T00:50:41.000Z",
+  "browser": "156.0.8078.4",
+  "screenshots": [
+    "01-trust-ready.png",
+    "02-live-waiting.png",
+    "03-first-reading.png"
+  ],
+  "fixtures": {
+    "anchor": {
+      "path": "tests/fixtures/TrustAnchors/compact.txt",
+      "sha256": "77282c65b146ce7e6eb0ff047c6042a8d00132bf72e5758a9b4ed606456f6d12"
+    },
+    "statement": {
+      "path": "tests/fixtures/TrustAnchors/key-statement.json",
+      "sha256": "2f3ffe9b93563c5cf9c9bcdfc60eec6515ff3a4341d77f73a58a2089cbee80e2"
+    },
+    "initial": {
+      "path": "tests/fixtures/ChargeTransparencyLive/OCMF-Test-01/OCMF-Test-01__0000.json",
+      "sha256": "86969cae8f18a902b722c5512e2bda54ab33564f0ed87fbf011bc3b20ab0d63b"
+    },
+    "first": {
+      "path": "tests/fixtures/ChargeTransparencyLive/OCMF-Test-01/OCMF-Test-01__0001.json",
+      "sha256": "ad2e41c71a94890e8504ea948055a76aa1437b80ad924f3227cfa15918b20386"
+    }
+  },
+  "states": {
+    "trust": "Genuine KeyStatement; two holders explicitly authorized through the UI",
+    "waiting": "Genuine signed live link; no readings; first response held until capture",
+    "firstReading": "Genuine first HTTPS update processed by the existing Core/UI; this legacy fixture has no matching POI evidence; association remains unproven"
+  }
+}

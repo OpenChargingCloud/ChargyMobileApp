@@ -1,0 +1,52 @@
+{
+  "command": "npm run docs:screenshots:poi-prices",
+  "locale": "en-US",
+  "timezone": "UTC",
+  "viewport": {
+    "width": 1440,
+    "height": 1050
+  },
+  "mobileViewport": {
+    "width": 390,
+    "height": 844
+  },
+  "detailsViewport": {
+    "width": 1440,
+    "height": 1900
+  },
+  "fixedTime": "2026-11-01T00:16:21.000Z",
+  "browser": "156.0.8078.4",
+  "screenshots": [
+    "01-before-trust.png",
+    "02-price-verified.png",
+    "03-pqc-details.png",
+    "04-mobile.png",
+    "05-signed-rate-conflict.png",
+    "06-publication-pending.png"
+  ],
+  "fixture": {
+    "path": "tests/fixtures/POIPrices/session-with-price.chargy",
+    "sha256": "ba511f9755e311a4b1317075b22515e57182c48b76c8fc29e2961520536c7de0"
+  },
+  "checks": [
+    "real Drag & Drop and explicit two-holder trust",
+    "Ed25519 and ML-DSA-65 CPO signatures",
+    "historically associated original start signature",
+    "fixed-at-start price expires before end without rebinding",
+    "lossless 0.3500",
+    "all 21 signed fixtures",
+    "signature/assignment/rate/inclusion states separate",
+    "no automatic price requests",
+    "array response remains unbound",
+    "explicit selected-anchor download",
+    "recheck does not refetch",
+    "original network evidence archived/exported",
+    "reload and offline recheck",
+    "no trust restored from export",
+    "withdrawal during real Core crypto",
+    "policy change cancels pending crypto",
+    "anchor deletion removes authorization and retains archive",
+    "no console errors"
+  ],
+  "scope": "Experimental CPO fixed-at-start ad-hoc assignment and gross-rate consistency; customer consent, pre-start publication and final billing remain unproven."
+}

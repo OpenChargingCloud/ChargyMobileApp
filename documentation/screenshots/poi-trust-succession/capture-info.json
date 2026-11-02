@@ -1,0 +1,44 @@
+{
+  "command": "npm run docs:screenshots:poi-succession",
+  "browser": "156.0.8078.4",
+  "viewport": {
+    "width": 1440,
+    "height": 1050
+  },
+  "mobileViewport": {
+    "width": 390,
+    "height": 844
+  },
+  "fixedTime": "2026-11-01T00:16:21.000Z",
+  "screenshots": [
+    "01-cpo-authority.png",
+    "02-forged-first.png",
+    "03-cpo-key-change.png",
+    "04-policy-preview.png",
+    "05-live-after-policy.png",
+    "06-epoch-preview.png",
+    "07-epoch-current.png",
+    "08-mobile.png",
+    "09-invalid-transition.png"
+  ],
+  "checks": [
+    "real initial CPO authority",
+    "foreign self-signed first document refused",
+    "CPO key transition requires POI and old-key authorization",
+    "new CPO key used alone after co-signed bridge",
+    "file and clipboard transition review",
+    "both holder quorums required",
+    "target URL tampering rejected",
+    "explicit acceptance retains local root decisions",
+    "other tab invalidated",
+    "live completion across accepted policy change with original fixed price",
+    "historical per-reading old/new policy coverage",
+    "reload rechecks original live chain",
+    "exact signed epoch genesis required",
+    "epoch transition retains old negative history",
+    "current epoch-2 proof after reload",
+    "mobile without horizontal overflow",
+    "no injected success flags",
+    "no app console errors"
+  ]
+}

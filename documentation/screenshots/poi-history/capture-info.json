@@ -1,0 +1,53 @@
+{
+  "command": "npm run docs:screenshots:poi-history",
+  "locale": "en-US",
+  "timezone": "UTC",
+  "viewport": {
+    "width": 1440,
+    "height": 1050
+  },
+  "mobileViewport": {
+    "width": 390,
+    "height": 844
+  },
+  "fixedTime": "2026-11-01T00:16:21.000Z",
+  "browser": "156.0.8078.4",
+  "screenshots": [
+    "01-before-trust.png",
+    "02-historical-result.png",
+    "03-evidence-archive.png",
+    "04-mobile.png",
+    "05-missing-inclusion.png"
+  ],
+  "fixture": {
+    "path": "tests/fixtures/POIHistory/archived-session.chargy",
+    "sha256": "0e45b67b16aa024aadde40159a0e0d84bbb4bc8c3805347e92c236883b7ee707"
+  },
+  "checks": [
+    "real Drag & Drop",
+    "explicit two-holder authorization",
+    "expired historical documents",
+    "later checkpoint with different signing keys",
+    "individual reading crypto details",
+    "unknown witness not authorized",
+    "quota failure/retry",
+    "actual IndexedDB archive",
+    "reload and recheck",
+    "anchor deletion retains archive but removes authorization",
+    "export/reimport without trust restoration",
+    "wrong period",
+    "conflicting assignments",
+    "tampered checkpoint",
+    "missing inclusion",
+    "two distinct historical meter keys",
+    "tampered original measurement",
+    "withdrawal during real crypto",
+    "navigation cancellation during real crypto",
+    "archive deletion",
+    "unknown expired bootstrap explicitly imported as historical reference",
+    "existing current reference not downgraded",
+    "no POI network requests",
+    "no console errors"
+  ],
+  "scope": "RNO association at signed measurement times and checkpoint inclusion; independent actual time, latest/sole state and witnessed publication are not asserted."
+}

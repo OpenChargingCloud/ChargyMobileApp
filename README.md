@@ -68,6 +68,20 @@ The polling period is what the document asks for, clamped: no faster than every 
 The document format, what operators must provide (including the CORS preflight custom headers require), and what a client may do with these URLs are documented in [Charge Transparency Live](tests/fixtures/ChargeTransparencyLive/README.md).
 
 
+## WWCP POI evidence and trust management
+
+Camera, clipboard and file inputs also accept WWCP TrustAnchors. Their preview
+does not grant trust: importing verifies the KeyStatement, and key authorization
+requires a separate explicit decision under **Settings → Trust Management**.
+The bundled trust list starts empty; see [its configuration guide](src/trust/README.md).
+
+Sessions can carry station proofs, historical meter-key evidence, signed prices
+and publication receipts. These independent checks appear in the mobile session
+details and live view. The evidence archive, locally observed versions, verified
+trust succession and witness policy are managed in the same settings section.
+See the [mobile port guide](documentation/WWCP-POI-Mobile-Port.md) for the source
+revision, supported flows, reproducible checks and the published shared packages.
+
 ## Building from Source
 
 Chargy Mobile is an [Apache Cordova](https://cordova.apache.org) application

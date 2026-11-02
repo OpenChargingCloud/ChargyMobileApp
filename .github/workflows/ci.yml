@@ -77,6 +77,38 @@ jobs:
       - name: Prepare Cordova browser app
         run: npm run build
 
+      - name: Install Chromium for POI browser regression tests
+        if: ${{ matrix.leg == 'ubuntu-node-26' }}
+        run: npx playwright install --with-deps chromium
+
+      - name: Prepare production browser app and validate POI examples
+        if: ${{ matrix.leg == 'ubuntu-node-26' }}
+        run: |
+          npm run bundle:production
+          npm run docs:validate:poi-live
+
+      - name: Verify POI workflows and capture documentation screenshots
+        if: ${{ matrix.leg == 'ubuntu-node-26' }}
+        run: |
+          npm run docs:screenshots:capture -- --output-dir artifacts/poi-screenshots/trust-anchor
+          npm run docs:screenshots:station-proof:capture -- --output-dir artifacts/poi-screenshots/station-proof
+          npm run docs:screenshots:poi-session:capture -- --output-dir artifacts/poi-screenshots/poi-completed-session
+          npm run docs:screenshots:poi-history:capture -- --output-dir artifacts/poi-screenshots/poi-history
+          npm run docs:screenshots:poi-prices:capture -- --output-dir artifacts/poi-screenshots/poi-prices
+          npm run docs:screenshots:poi-live:capture -- --output-dir artifacts/poi-screenshots/poi-live-use-case
+          npm run docs:screenshots:poi-live-pilot:capture -- --output-dir artifacts/poi-screenshots/poi-live-pilot
+          npm run docs:screenshots:poi-observations:capture -- --output-dir artifacts/poi-screenshots/poi-observed-versions
+          npm run docs:screenshots:poi-succession:capture -- --output-dir artifacts/poi-screenshots/poi-trust-succession
+          npm run docs:screenshots:poi-publication:capture -- --output-dir artifacts/poi-screenshots/poi-publication
+
+      - name: Upload POI browser documentation screenshots
+        if: ${{ matrix.leg == 'ubuntu-node-26' && !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: poi-browser-screenshots
+          path: artifacts/poi-screenshots/
+          if-no-files-found: ignore
+
       - name: Upload test results
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v7

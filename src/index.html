@@ -104,6 +104,8 @@
 
         </div> -->
 
+        <div id="poiStatusNotice" role="status" hidden></div>
+
         <div id="startPage" class="pages">
 
             <div id="text" data-i18n-key="inputHelp">Sie können den Transparenzdatensatz zu Ihren Ladevorgängen entweder aus
@@ -162,6 +164,15 @@
                 <h1 data-i18n-key="settingsLabel">Einstellungen</h1>
 
                 <div id="settingsMenu">
+                                <button id="settingsTrustManagementEntry" class="settingsEntry">
+                                    <i class="fas fa-shield-alt"></i>
+                                    <div class="text">
+                                        <div class="title" data-i18n-key="trustManagementTitle">Trust Management</div>
+                                        <div class="description" data-i18n-key="trustManagementDescription">Trust Anchors und mitgelieferte Public Keys verwalten.</div>
+                                    </div>
+                                    <i class="fas fa-chevron-right"></i>
+                                </button>
+
                     <button id="settingsTrustedOriginsEntry" class="settingsEntry">
                         <i class="fas fa-satellite-dish"></i>
                         <div class="text">
@@ -172,7 +183,9 @@
                     </button>
                 </div>
 
-                <div id="settingsTrustedOrigins">
+                <div id="settingsTrustManagement" class="trustManagement" hidden></div>
+
+            <div id="settingsTrustedOrigins">
                     <div id="text" data-i18n-key="trustedOriginsLabel">F&uuml;r das Nachladen von Live-Daten gemerkte Entscheidungen:</div>
                     <div id="trustedOriginsList"></div>
                     <div id="noTrustedOrigins" data-i18n-key="noTrustedOriginsLabel">Bisher wurde keine Entscheidung gemerkt.</div>
@@ -193,6 +206,7 @@
 
         <div id="measurementInfosPage" class="pages">
             <div id="subpage">
+                <button id="exportButton" type="button" class="poiExportButton" data-i18n-key="poiHistoryExport">Ladevorgang mit Evidenz exportieren</button>
                 <div id="measurementInfo"></div>
                 <div id="measurementValues"></div>
                 <div id="sessionValidationWarnings"></div>
@@ -473,30 +487,36 @@
         </div>
 
         <div id="qrCodeScanner" role="dialog" aria-modal="true" aria-labelledby="qrCodeScannerTitle">
-            <div class="scannerDialog">
-                <div class="scannerHeadline">
+            <div class="scannerDialog overlayText">
+                <div class="scannerHeadline headline">
                     <div id="qrCodeScannerError"></div>
-                    <div id="qrCodeScannerTitle" data-i18n-key="scanQRCodeLabel">QR-Code scannen</div>
+                    <div class="intro" id="qrCodeScannerTitle" data-i18n-key="scanQRCodeLabel">QR-Code scannen</div>
                 </div>
 
+                <div class="data">
                 <div id="scannerViewport">
                     <video id="qrCodeScannerVideo" autoplay muted playsinline webkit-playsinline></video>
                     <canvas id="qrCodeScannerCanvas"></canvas>
                     <div id="scannerFrame"></div>
                 </div>
 
-                <div id="qrCodeScannerStatus" aria-live="polite" data-i18n-key="cameraStarting">Kamera wird gestartet...</div>
+                <div id="qrCodeScannerStatus" role="status" aria-live="polite" data-i18n-key="cameraStarting">Kamera wird gestartet...</div>
 
                 <div id="qrCodeScannerResult">
+                            <div id="qrCodeScannerTrustAnchorPreview" hidden></div>
+                            <div id="qrCodeScannerRawContent">
                     <div id="qrCodeScannerResultLabel" data-i18n-key="recognizedContent">Erkannter Inhalt</div>
                     <pre id="qrCodeScannerResultText"></pre>
-                    <div id="qrCodeScannerURLActions">
+                    </div>
+                            <div id="qrCodeScannerURLActions">
                         <button id="qrCodeScannerOpenURLButton"><i class="fas fa-external-link-alt"></i> <span data-i18n-key="openURLLabel">URL öffnen</span></button>
                     </div>
                     <button id="qrCodeScannerRescanButton"><i class="fas fa-redo"></i> <span data-i18n-key="rescanLabel">Erneut scannen</span></button>
                 </div>
 
-                <div class="scannerFooter">
+                </div>
+                <div class="scannerFooter footer">
+                    <div id="qrCodeScannerTrustAnchorActions" hidden></div>
                     <button id="qrCodeScannerCancelButton" aria-label="QR-Code-Scanner schließen" data-i18n-aria-label-key="qrCodeScannerCloseLabel"><i class="fas fa-arrow-alt-circle-left"></i></button>
                 </div>
             </div>

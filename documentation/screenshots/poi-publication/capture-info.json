@@ -1,0 +1,44 @@
+{
+  "command": "npm run docs:screenshots:poi-publication",
+  "browser": "156.0.8078.4",
+  "origin": "http://127.0.0.1:57940",
+  "viewport": {
+    "width": 1440,
+    "height": 1050
+  },
+  "detailViewport": {
+    "width": 1440,
+    "height": 1900
+  },
+  "mobileViewport": {
+    "width": 390,
+    "height": 844
+  },
+  "fixedTime": "2026-11-01T00:16:21.000Z",
+  "screenshots": [
+    "01-no-witness-trust.png",
+    "02-policy-review.png",
+    "03-witnessed-before-start.png",
+    "04-too-late.png",
+    "05-tampered.png",
+    "06-withdrawn.png",
+    "07-mobile.png",
+    "08-live-completed.png"
+  ],
+  "fixturesSHA256": "35d1e3ef613a3e0ce8eb100c63122da1ac67f687ad548d7261c5f9f76ea3a67a",
+  "checks": [
+    "actual anchor and witness decisions",
+    "no automatic witness/source trust",
+    "file and paste policy review",
+    "native storage failure does not grant trust",
+    "two organization quorum with Ed25519 and ML-DSA-65",
+    "clock uncertainty, late, duplicate and tampered receipts",
+    "explicit bounded receipt retrieval; no customer data",
+    "archive export/reload rechecks current witness policy",
+    "withdrawal invalidates another tab",
+    "mobile without horizontal overflow",
+    "genuine cumulative live completion",
+    "no injected success states",
+    "no app console errors"
+  ]
+}

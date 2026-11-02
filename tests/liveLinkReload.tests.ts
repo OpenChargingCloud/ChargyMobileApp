@@ -44,6 +44,10 @@ function createApp(): TestApp {
     const app = Object.create(ChargyAppClass.prototype) as TestApp;
     Object.assign(app, {
         chargy: createTestChargy(Chargy, { i18n: createI18nDictionary(), uiLanguages: ["de"] }),
+        inputDetectionGeneration: 0,
+        sessionPOISources: new WeakMap(),
+        livePOIStates: new WeakMap(),
+        liveOriginalInputs: new WeakMap(),
         currentLiveLink: documentFixture(),
         liveLinkRefreshGeneration: 1,
         liveLinkRefreshTimer: null,
@@ -59,6 +63,32 @@ function createApp(): TestApp {
 const targets = ["https://first.example/live", "https://second.example/live"].map(url => ({ url: new URL(url), maxPayloadBytes: 1_000_000 }));
 
 describe("Mobile live-link reloads", () => {
+    test("routes a TrustAnchor to the mobile preview without ordinary data conversion", async () => {
+        const app = createApp();
+        const showTrustAnchor = vi.fn();
+        Object.assign(app, { app: { showTrustAnchor } });
+        const convert = vi.spyOn(app.chargy, "DetectAndConvertContentFormat");
+        const text = readFileSync("tests/fixtures/TrustAnchors/compact.txt", "utf8");
+        expect(await app.detectContentFormat(text)).toBe(true);
+        expect(showTrustAnchor).toHaveBeenCalledOnce();
+        expect(convert).not.toHaveBeenCalled();
+        expect(app.showLiveLink).not.toHaveBeenCalled();
+    });
+
+    test("rejects a TrustAnchor returned by a live endpoint without opening a trust dialog", async () => {
+        const app = createApp();
+        const showTrustAnchor = vi.fn();
+        Object.assign(app, { app: { showTrustAnchor } });
+        const convert = vi.spyOn(app.chargy, "DetectAndConvertContentFormat");
+        const onError = vi.fn();
+        const text = readFileSync("tests/fixtures/TrustAnchors/compact.txt", "utf8");
+        expect(await app.detectContentFormat(text, onError, { liveReload: true })).toBe(false);
+        expect(onError).toHaveBeenCalledOnce();
+        expect(showTrustAnchor).not.toHaveBeenCalled();
+        expect(convert).not.toHaveBeenCalled();
+        expect(app.showLiveLink).not.toHaveBeenCalled();
+    });
+
     test("tries the next endpoint after a failed JSON response and keeps unchanged data", async () => {
         const app = createApp();
         const fetchMock = vi.fn<typeof fetch>()
@@ -113,6 +143,7 @@ describe("Mobile live-link reloads", () => {
             liveReload: true,
             isCurrent: () => app.liveLinkRefreshGeneration === 1
         });
+        await vi.waitFor(() => { expect(complete).toBeTypeOf('function'); });
         app.stopLiveLinkRefresh();
         complete(documentFixture());
         expect(await pending).toBe(false);

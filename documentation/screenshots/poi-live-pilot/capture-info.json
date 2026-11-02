@@ -1,0 +1,50 @@
+{
+  "command": "npm run docs:screenshots:poi-live-pilot",
+  "locale": "en-US",
+  "timezone": "UTC",
+  "viewport": {
+    "width": 1440,
+    "height": 1050
+  },
+  "mobileViewport": {
+    "width": 390,
+    "height": 844
+  },
+  "fixedTime": "2026-11-01T00:16:21.000Z",
+  "browser": "156.0.8078.4",
+  "screenshots": [
+    "01-prepared.png",
+    "02-start.png",
+    "03-intermediate.png",
+    "04-completed.png",
+    "05-mobile.png",
+    "06-fixed-price-retained.png",
+    "07-rejected-update.png"
+  ],
+  "fixture": {
+    "path": "tests/fixtures/POILive/00-waiting.json",
+    "sha256": "33a4f295dd0ca7c8f676fecd2116f6d3020ae825d353fe57048d4b4ce35f5022"
+  },
+  "checks": [
+    "real signed four-stage live series",
+    "explicit transport consent and two-holder trust",
+    "prepare before first reading",
+    "verify before update adoption",
+    "strict predecessor and append-only originals",
+    "all ten rejection fixtures preserve previous UI",
+    "genuine live forks require explicit history reset before an independent scenario",
+    "all live tariff texts compared",
+    "fixed price retained with visible change warning",
+    "polling stops after verified end",
+    "mobile layout",
+    "archive/export/reload/recheck with four exact live originals",
+    "export grants no trust",
+    "withdrawal during actual crypto",
+    "policy selection changed during crypto",
+    "different record cancels pending candidate",
+    "no POI requests for embedded evidence",
+    "explicit price download retained across updates and archived under the completed record identity",
+    "no console errors"
+  ],
+  "scope": "P-256/OCMF cumulative live pilot; imported envelope-key continuity, separately POI-authorized meter and price evidence. Every envelope additionally requires independently POI-authorized CPO keys. No customer consent or pre-start publication claim."
+}

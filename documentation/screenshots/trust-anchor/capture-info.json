@@ -1,0 +1,22 @@
+{
+  "command": "npm run docs:screenshots",
+  "locale": "en-US",
+  "timezone": "UTC",
+  "viewport": {
+    "width": 1280,
+    "height": 1000
+  },
+  "fixedTime": "2026-10-31T12:00:00.000Z",
+  "browser": "156.0.8078.4",
+  "fixture": "tests/fixtures/TrustAnchors/key-statement.json",
+  "fixtureSHA256": "2f3ffe9b93563c5cf9c9bcdfc60eec6515ff3a4341d77f73a58a2089cbee80e2",
+  "sourceURL": "https://poi.example/RNs/CHARGY-TA-TEST/keyStatement",
+  "screenshots": [
+    "step-1-preview.png",
+    "step-2-key-statement.png"
+  ],
+  "states": {
+    "step1": "Anchor content only; no POI download or trust storage access",
+    "step2": "Valid signatures; unknown signers; trusted quorum 0/2"
+  }
+}

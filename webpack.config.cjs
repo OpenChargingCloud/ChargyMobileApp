@@ -61,7 +61,7 @@ for (const [ name, requested, allowed ] of [
 }
 
 module.exports = {
-    mode:    'development',
+    mode:    isProductionBuild ? 'production' : 'development',
     target:  'web',
     entry:   path.resolve(__dirname, '.build/js/index.js'),
     devtool: 'source-map',
@@ -77,7 +77,16 @@ module.exports = {
             'node:buffer': require.resolve('buffer/')
         }
     },
+    module: {
+        rules: [{
+            test: /trusted-public-keys\.jsonl$/,
+            type: 'asset/source',
+            use: [path.resolve(__dirname, 'build-tools/trustedPublicKeysLoader.cjs')]
+        }]
+    },
     optimization: {
+        // Keep the PDF.js worker identifiable for the minimizer exclusion below.
+        chunkIds: 'named',
         minimize: true,
         minimizer: [
             new MinimizerPlugin({

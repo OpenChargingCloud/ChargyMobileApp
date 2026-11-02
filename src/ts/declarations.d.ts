@@ -44,3 +44,8 @@ declare module "asn1.js" {
     export = asn1;
 
 }
+
+declare module "*.jsonl?raw" {
+    const source: string;
+    export default source;
+}

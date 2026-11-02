@@ -1,0 +1,61 @@
+{
+  "command": "npm run docs:screenshots:poi-session",
+  "locale": "en-US",
+  "timezone": "UTC",
+  "viewport": {
+    "width": 1440,
+    "height": 1050
+  },
+  "mobileViewport": {
+    "width": 390,
+    "height": 844
+  },
+  "fixedTime": "2026-11-01T00:16:21.000Z",
+  "browser": "156.0.8078.4",
+  "screenshots": [
+    "01-before-trust.png",
+    "02-session-verified.png",
+    "03-static-tariff.png",
+    "04-mobile.png",
+    "05-signed-readings.png",
+    "06-container-key-conflict.png",
+    "07-foreign-meter-key.png"
+  ],
+  "fixtures": {
+    "session": {
+      "path": "tests/fixtures/POISession/completed-session-with-evse-proof.chargy",
+      "sha256": "1bd82a3ba65e73d50d7dd36ae5b401d525514788c0f91e8aca171dac61ae6d95"
+    },
+    "provenance": {
+      "path": "tests/fixtures/POISession/provenance.json",
+      "sha256": "ce6dfd62d667a71525d70c7b5a6e145bcfc4a300aa0c623fa66dee9d9feaab1b"
+    }
+  },
+  "checks": [
+    "real Drag & Drop",
+    "two genuine OCMF signatures",
+    "signed-reading detail dialog",
+    "proven-key details show individual reading results",
+    "no self-authorized trust",
+    "offline explicit bootstrap import",
+    "manual authorization of two holders",
+    "genuine pruned EVSE proof",
+    "static tariff inclusion",
+    "locked EVSE",
+    "explicit fresh retrieval",
+    "reload/file selection",
+    "tampered proof",
+    "wrong EVSE",
+    "tampered end reading",
+    "authoritative POI key handoff",
+    "container-key conflict",
+    "foreign proven key",
+    "wrong meter",
+    "ambiguous keys",
+    "export preserves conflicting original key",
+    "trust withdrawal during actual crypto work",
+    "expiry",
+    "no console errors"
+  ],
+  "scope": "Session-bound station verification and explicit P-256 POI-to-Core key handoff. Current association and original-signature validity are separate from unproven historical association."
+}
