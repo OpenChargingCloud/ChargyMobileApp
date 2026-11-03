@@ -1,7 +1,7 @@
 {
   "command": "npm run docs:screenshots:poi-publication",
   "browser": "156.0.8078.4",
-  "origin": "http://127.0.0.1:57940",
+  "origin": "http://127.0.0.1:50669",
   "viewport": {
     "width": 1440,
     "height": 1050

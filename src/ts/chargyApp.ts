@@ -369,6 +369,15 @@ export default class ChargyApp {
         window.addEventListener('chargy-poi-history-reset',()=>{++this.inputDetectionGeneration;this.clearPOIView();this.poiStatusNotice.appendChild(document.createElement('p')).textContent=this.chargy.GetLocalizedMessage('poiObservedResetDone');});
         window.addEventListener('chargy-poi-policy-change',()=>{++this.inputDetectionGeneration;this.clearPOIView();this.poiStatusNotice.appendChild(document.createElement('p')).textContent=this.chargy.GetLocalizedMessage('poiTransitionApplied');this.trustManagement.refresh();});
         window.addEventListener('chargy-poi-witness-change',()=>{++this.inputDetectionGeneration;this.clearPOIView();this.poiStatusNotice.appendChild(document.createElement('p')).textContent=this.chargy.GetLocalizedMessage('poiWitnessChanged');this.trustManagement.refresh();});
+        window.addEventListener('chargy-poi-observations-changed',()=>{
+            // Keep independent original decoding: its new panel must check the committed journal.
+            // Dropping that input could hide a concurrently supplied authenticated contradiction.
+            this.stopLiveLinkRefresh();
+            this.closeLiveLinkTrustDialog();
+            this.sessionPOIPanel?.recheckAfterObservations();
+            this.renderLiveLinkPollStatus();
+            this.trustManagement.observationsChanged();
+        });
         new MutationObserver(() => {
             if (this.app.measurementInfosPage.style.display === 'none' && this.app.cryptoDetailsPage.style.display === 'none' && this.app.liveLinkPage.style.display === 'none') {
                 this.sessionPOIPanel?.dispose(); this.sessionPOIPanel = null;

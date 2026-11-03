@@ -24,6 +24,15 @@ the conflict. Import 2, then `price-fork-1.chargy`: a later genuine checkpoint
 contains a genuinely CPO-signed competing price sequence. Math and inclusion can
 be valid while local consistency fails.
 
+The observation browser suite opens these originals in two tabs. A newly
+committed fork must invalidate an already displayed result in the other tab,
+including when its old meter crypto is still pending. Repeating an identical
+packet or aborting a write must not start a notification loop. An independent
+live scenario uses the unchanged signed `POILive/same-time-fork.json` while a
+response is in flight: the accepted start remains, the late update is discarded
+and polling stops. Only the real management UI resets between these independent
+fixture worlds; no signatures, successful outcomes or production roots are edited.
+
 Reset only between independent experiments via Settings → Trust Management →
 Observed versions. Do not reset while testing persistence of a contradiction.
 Reset does not remove accepted keys or archived session evidence.

@@ -8,7 +8,7 @@ independent witnesses or the absence of an unseen competing offer.
 
 ## Authentication, consistency and historical use
 
-The shared `@open-charging-cloud/wwcp-poi` development candidate provides the pure
+The published `@open-charging-cloud/wwcp-poi@0.2.0` package provides the pure
 `compareObservedVersions` policy and metadata projections. The app owns IndexedDB,
 local decisions, UI and cancellation. Normal signature, role, subject, validity
 and quorum verification runs before observations enter the journal. Projection
@@ -77,6 +77,52 @@ envelope or advance its live head.
 ![An authentic price fork can appear in a later authentic checkpoint](screenshots/poi-observed-versions/03-price-fork.png)
 
 ![A current station rollback remains rejected after reload](screenshots/poi-observed-versions/04-station-rollback.png)
+
+## Invalidating open views across windows
+
+The Web, Desktop and Mobile adapters notify other documents of the same
+installation after a journal transaction commits a changed authenticated state.
+This includes new points/predecessor links, heads, conflicts and verified
+succession. Merely updating the local check time or retained live audit export,
+rechecking identical observations, or aborting a write sends no notification.
+
+```mermaid
+sequenceDiagram
+    participant B as Window B
+    participant J as Shared local journal
+    participant A as Already open window A
+    B->>J: Verify originals and atomically compare/store observations
+    J-->>B: Transaction committed
+    B-->>A: Invalidation hint (no verdict or trusted state)
+    A->>A: Abort POI checks and in-flight live requests; remove old POI results
+    A->>J: Recheck retained originals under current local authorization
+    J-->>A: Current consistency, including known contradictions
+    A->>A: Present separate station, reading, history and price results
+```
+
+BroadcastChannel messages grant no authority and never import a success flag.
+The receiver reverifies its retained evidence through the ordinary storage-backed
+service. The selected local policy remains selected; fixed session prices and
+accepted live originals are not replaced. A late crypto or network completion
+cannot restore a result cancelled by this invalidation. Live polling stays
+stopped until the user explicitly reconnects through the existing source-permission
+UI. No source request is needed just to recheck embedded originals.
+
+Independent decoding of another supplied original can finish: the resulting
+panel checks the newly committed journal. Discarding that input solely because
+another window wrote first could hide a concurrent signed contradiction.
+Existing policy/witness withdrawal and explicit-reset cancellation remain
+separate. An open station-management result is cleared and pending retrieval
+cancelled; the user can recheck its retained proof. Journal management refreshes
+without removing an already open explicit reset confirmation.
+
+![An already open tab rechecks its originals after another tab discovers a signed fork](screenshots/poi-observed-versions/09-cross-tab-fork.png)
+
+The negative consistency result is separate from individually valid meter/CPO
+signatures and checkpoint inclusion. Historical fixed prices still remain
+checkable after harmless newer offers. This notification mechanism works within
+one app installation/profile; it does not synchronize trust or journals between
+the four independent apps.
 
 ## Durable storage and recovery
 
@@ -189,6 +235,24 @@ quota/corruption failures and reopening original live data. Existing independent
 fixture worlds intentionally reuse RN/version coordinates; their browser suites
 now separate those scenarios through the real reset UI. The dedicated persistence
 tests keep related packets together and never reset between fork/reload assertions.
+It also holds genuine meter crypto and a live response while a second window
+commits a signed fork, checks automatic invalidation, retains the last accepted
+start reading, and checks that duplicate/aborted writes cannot trigger an echo.
+
+For the actual Windows Electron renderer/preload and a second renderer sharing
+its isolated QA profile, run from ChargyWebApp after building Desktop:
+
+```sh
+node build-tools/checkDesktopPOIObservations.mjs --desktop ../ChargyDesktopApp
+```
+
+This uses the existing WebApp Playwright runtime and installed Desktop Electron.
+It imports the genuine originals and explicitly accepts holder keys through the
+UI; it does not widen main-process IPC permissions or inject verification outcomes.
+Reports and the native screenshot go to a temporary directory unless `--output-dir`
+is supplied. Mobile runs the extended capture through its actual Cordova-browser
+navigation and native-file adapter; physical device camera/permission testing
+remains separate.
 
 Regenerate and visually review these screenshots and capture metadata whenever
 the trust, consistency, live-resume or management UI changes.

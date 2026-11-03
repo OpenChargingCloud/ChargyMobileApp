@@ -1,7 +1,7 @@
 {
   "command": "npm run docs:screenshots:poi-observations",
   "browser": "156.0.8078.4",
-  "origin": "http://127.0.0.1:56922",
+  "origin": "http://127.0.0.1:52930",
   "viewport": {
     "width": 1440,
     "height": 1050
@@ -19,7 +19,8 @@
     "05-management.png",
     "06-reset-warning.png",
     "07-mobile.png",
-    "08-live-resume.png"
+    "08-live-resume.png",
+    "09-cross-tab-fork.png"
   ],
   "fixturesSHA256": "180c52625f6b04ab05a651695de2fdf165e205bfcf404db42fe8ff72c6732a3b",
   "checks": [
@@ -27,6 +28,11 @@
     "native IndexedDB across reload and tabs",
     "historical fixed price remains valid after newer offer",
     "checkpoint fork survives source switch/reload",
+    "new authenticated fork automatically invalidates and rechecks the other tab",
+    "held pre-fork crypto cannot restore green results",
+    "duplicate/aborted writes send no observation notifications",
+    "an explicitly unselected policy remains unselected after journal changes",
+    "cross-window signed live fork aborts an in-flight response and stops polling without replacing the accepted start",
     "price fork in a later valid checkpoint",
     "current station rollback after reload",
     "concurrent transactions retain contradiction",
