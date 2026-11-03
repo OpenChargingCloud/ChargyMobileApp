@@ -1,7 +1,7 @@
 {
   "command": "npm run docs:screenshots:poi-observations",
   "browser": "156.0.8078.4",
-  "origin": "http://127.0.0.1:52930",
+  "origin": "http://127.0.0.1:52141",
   "viewport": {
     "width": 1440,
     "height": 1050
@@ -37,6 +37,7 @@
     "current station rollback after reload",
     "concurrent transactions retain contradiction",
     "explicit reset rotates generation and invalidates other tab",
+    "a genuine peer commit replaces the selected card before reset; completion waits for the settled scope list",
     "reset retains trust and evidence archive",
     "reset during real crypto cannot be undone by a late continuation",
     "quota failure retains journal and fails closed",

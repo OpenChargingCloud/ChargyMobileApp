@@ -238,6 +238,12 @@ tests keep related packets together and never reset between fork/reload assertio
 It also holds genuine meter crypto and a live response while a second window
 commits a signed fork, checks automatic invalidation, retains the last accepted
 start reading, and checks that duplicate/aborted writes cannot trigger an echo.
+The reset regression also commits genuine peer evidence after selecting the
+scope to reset. A notification can replace its DOM card, so the browser helper
+waits for that scope to disappear from a completed list render after explicit
+confirmation. It never treats detachment of an old card as a committed reset.
+The held-crypto scenario waits for the other tab's reset notification before
+releasing the original operation, then checks that its late result stays cancelled.
 
 For the actual Windows Electron renderer/preload and a second renderer sharing
 its isolated QA profile, run from ChargyWebApp after building Desktop:

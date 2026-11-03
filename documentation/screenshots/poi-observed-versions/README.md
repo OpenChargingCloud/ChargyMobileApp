@@ -12,6 +12,10 @@ already open tab rechecking its original evidence after another tab commits a
 genuine signed fork. The suite also exercises late crypto and live responses,
 unchanged/aborted write notification suppression, and retained original readings.
 
+It also commits genuine signed peer evidence after selecting a scope for reset.
+The helper must wait until that scope is absent from a completed list render;
+detaching an old card during a notification-driven refresh is not reset completion.
+
 Regenerate and visually inspect every image whenever these flows change. Keep
 PNGs, capture-info.json, captions and the observed-versions guide in the same
 change. Never set positive results or inject fixture keys into production roots.

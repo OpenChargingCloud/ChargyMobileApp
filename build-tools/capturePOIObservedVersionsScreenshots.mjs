@@ -96,7 +96,17 @@ try{
     await page.reload({waitUntil:'networkidle'});await drop(page,archive1);await page.locator('.sessionPriceResult .poiConsistency[data-state=invalid]').waitFor();
     assert.ok((await readJournal(page))[0].state.conflicts.some(item=>item.kind==='checkpoint'));
     // Reset is an explicit user decision, never a consequence of changing source or deleting an anchor.
-    await resetObservedPOIHistory(page);await drop(page,archive2);await valid(page);await drop(other,await fixture('price-fork-1.chargy'));
+    // A genuine peer commit replaces the list after the helper has selected a scope,
+    // before its first click. DOM detachment alone must not stand in for reset completion.
+    let concurrentResetCommit=true;
+    await resetObservedPOIHistory(page,async()=>{
+        if(!concurrentResetCommit)return;concurrentResetCommit=false;
+        const previous=await page.locator('[data-observation-id]').first().elementHandle();
+        await drop(other,await fixture('price-fork-1.chargy'));
+        await other.locator('.sessionPriceResult .poiConsistency[data-state=invalid]').waitFor();
+        await page.waitForFunction(element=>!element.isConnected,previous);await previous.dispose();
+    });
+    await drop(page,archive2);await valid(page);await drop(other,await fixture('price-fork-1.chargy'));
     await other.locator('.sessionPriceResult .poiConsistency[data-state=invalid]').waitFor();
     await drop(page,archive2);await page.locator('.sessionPriceResult .poiConsistency[data-state=invalid]').waitFor();
     assert.match(await price.textContent(),/CPO price signatures and key permissions valid/);assert.equal(await price.getAttribute('data-publication'),'valid');await capture(2,price);
@@ -141,7 +151,11 @@ try{
                 held=true;window.historyDigestHeld=true;await new Promise(resolve=>{window.releaseHistoryDigest=resolve;});}
             const result=await original(algorithm,data);if(held)window.historyDigestFinished=true;return result;};});
     await drop(page,archive2);await page.waitForFunction(()=>window.historyDigestHeld===true);
-    await resetObservedPOIHistory(other);await page.evaluate(()=>window.releaseHistoryDigest());await page.waitForFunction(()=>window.historyDigestFinished===true);
+    await resetObservedPOIHistory(other);
+    // BroadcastChannel delivery is asynchronous: cancel the old verification in
+    // this tab before releasing it, rather than racing reset against its completion.
+    await page.getByText('Observed history reset. Reopen data to check again.',{exact:true}).waitFor();
+    await page.evaluate(()=>window.releaseHistoryDigest());await page.waitForFunction(()=>window.historyDigestFinished===true);
     await page.getByText('Observed history reset. Reopen data to check again.',{exact:true}).waitFor();
     assert.equal((await readJournal(page))[0].state.points.length,0);assert.equal(await page.locator('.sessionPriceResult[data-state=valid]').count(),0);
     await page.evaluate(()=>{crypto.subtle.digest=window.historyOriginalDigest;});
@@ -191,6 +205,7 @@ try{
             'an explicitly unselected policy remains unselected after journal changes',
             'cross-window signed live fork aborts an in-flight response and stops polling without replacing the accepted start',
             'price fork in a later valid checkpoint','current station rollback after reload','concurrent transactions retain contradiction','explicit reset rotates generation and invalidates other tab',
+            'a genuine peer commit replaces the selected card before reset; completion waits for the settled scope list',
             'reset retains trust and evidence archive','reset during real crypto cannot be undone by a late continuation','quota failure retains journal and fails closed','local live resume rechecks exact originals','old live QR version rejected after reload','corrupt journal fails closed','no injected success states','no app console errors']},null,2)+'\n');
     console.log('Captured nine durable-version screenshots; cross-tab invalidation, late crypto, duplicate suppression, reload, signed contradictions, reset, quota, corruption and live resume passed.');await context.close();
 }finally{releaseLive?.();await browser?.close();server.closeAllConnections();await new Promise(resolve=>server.close(resolve));}
